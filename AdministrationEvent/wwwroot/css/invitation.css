@@ -1,0 +1,80 @@
+/* All palette and typography values are supplied by each invitation's configuration. */
+.invitation { scroll-behavior:smooth; }
+.invitation .hero-link { display:block; margin:28px auto;color:var(--accent);font-size:13px;letter-spacing:.04em;text-decoration:none; }
+.invitation .hero-link span {display:block;font-size:24px;margin-top:10px;}
+.invitation .section-copy p {white-space:pre-line;}
+.countdown-band {text-align:center;padding:54px 20px;background:color-mix(in srgb,var(--highlight) 45%,var(--background));}
+.countdown {display:flex;justify-content:center;gap:45px;margin:24px 0 12px;}
+.countdown strong {display:block;font:normal clamp(3.5rem,8vw,5.5rem)/1 var(--heading);color:var(--accent);font-variant-numeric:tabular-nums;}
+.countdown span {display:block;font-size:11px;text-transform:uppercase;letter-spacing:.18em;margin-top:12px;}
+.countdown-band p {font:italic 20px var(--heading);margin-bottom:0;}
+.rsvp-section {padding:64px 28px;margin:50px 0;background:color-mix(in srgb,var(--highlight) 35%,var(--background));border-radius:var(--radius);}
+.rsvp-intro {text-align:center;}.rsvp-intro h2 {font:normal clamp(2.4rem,6vw,4rem)/1.1 var(--heading);margin:18px 0;}.rsvp-intro p {line-height:1.8;}
+.rsvp-form {display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:640px;margin:36px auto 0;}
+.form-field {display:flex;flex-direction:column;gap:9px;min-width:0;}.form-field.full,.rsvp-form .errors {grid-column:1/-1;}
+.form-field label {font-size:13px;font-weight:600;}.form-field label span {font-weight:400;opacity:.65;}
+.form-field input,.form-field select,.form-field textarea {box-sizing:border-box;width:100%;background:var(--background);color:var(--ink);border:1px solid color-mix(in srgb,var(--secondary) 40%,transparent);border-radius:6px;padding:14px;font:16px var(--body);}
+.form-field small,.preview-note {font-size:12px;line-height:1.6;opacity:.8;}.form-field textarea{resize:vertical;}.form-field .button {background:var(--accent);color:var(--background);justify-content:center;align-self:center;min-width:240px;cursor:pointer;border:0;}
+.form-field.full small{text-align:center;}.preview-note{text-align:center;}.rsvp-success {max-width:640px;margin:24px auto;padding:18px;background:var(--background);border-left:3px solid var(--secondary);}
+.invitation :focus-visible{outline:3px solid var(--secondary);outline-offset:4px;}
+.vineyard {background:var(--background);color:var(--ink);}
+.vineyard .invitation-content {max-width:var(--width);padding:0;margin:auto;}
+.wedding-nav {max-width:var(--width);margin:auto;display:flex;justify-content:space-between;align-items:center;padding:28px 44px;border-bottom:1px solid color-mix(in srgb,var(--secondary) 22%,transparent);box-sizing:border-box;gap:20px;}
+.wedding-nav a {text-decoration:none;color:var(--ink);}.wedding-nav .nav-signature {font:italic 23px var(--heading);color:var(--accent);}.wedding-nav div{display:flex;gap:26px;font-size:12px;}
+.vineyard .invitation-hero {position:relative;padding:70px 0 0;overflow:hidden;text-align:center;}
+.vineyard .eyebrow {color:var(--secondary);letter-spacing:.22em;font-size:11px;font-weight:500;}
+.vineyard .ornament {font-size:27px;color:var(--secondary);margin:22px 0 15px;}
+.vineyard .invitation-hero h1 {font:normal clamp(3.4rem,8vw,6.8rem)/1.1 var(--heading);color:var(--accent);letter-spacing:-.06em;margin:0 20px 25px;}
+.vineyard .message {font:italic clamp(1.2rem,2.2vw,1.65rem)/1.6 var(--heading);max-width:510px;margin:0 auto;padding:0 24px;}
+.vineyard .event-date {color:var(--secondary);font-size:12px;text-transform:uppercase;letter-spacing:.12em;margin-top:28px;}
+.vineyard .hero-link {position:relative;z-index:1;margin-bottom:0;}
+.vineyard .cover {display:block;width:100%;max-height:none;aspect-ratio:3/2;object-fit:cover;margin:-36px 0 0;border-radius:0;mix-blend-mode:darken;}
+.vineyard .countdown-band {margin-top:-10px;position:relative;padding:46px 24px 48px;border-top:1px solid color-mix(in srgb,var(--secondary) 20%,transparent);border-bottom:1px solid color-mix(in srgb,var(--secondary) 20%,transparent);}
+.vineyard .invitation-sections {display:flex;flex-direction:column;gap:0;margin:0;padding:30px 65px;}
+.vineyard .invitation-section {border:0;border-radius:0;background:transparent;padding:55px 0;display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:65px;border-bottom:1px solid color-mix(in srgb,var(--secondary) 20%,transparent);}
+.vineyard .invitation-section.with-image .section-art img {width:100%;height:auto;max-height:500px;object-fit:contain;border-radius:0;margin:0;mix-blend-mode:darken;}
+.vineyard .section-number {display:flex;align-items:center;gap:14px;color:var(--secondary);font-size:11px;letter-spacing:.1em;}.section-number span {width:50px;height:1px;background:var(--secondary);opacity:.4;}
+.vineyard .section-copy h2 {font:normal clamp(2.4rem,4.5vw,3.5rem)/1.1 var(--heading);color:var(--accent);margin:20px 0 25px;letter-spacing:-.035em;}
+.vineyard .section-copy p {font-size:15px;line-height:1.9;max-width:440px;}
+.vineyard .text-only {grid-template-columns:1fr;padding:65px 0;}.vineyard .text-only .section-copy {max-width:700px;margin:0 auto;width:100%;}.vineyard .text-only .section-copy p {max-width:none;}
+.vineyard .rsvp-section {margin:35px 45px 0;border-radius:var(--radius);padding:64px 42px;}.vineyard .rsvp-intro h2 {color:var(--accent);}
+.vineyard .invitation-footer {padding:60px 20px;color:var(--secondary);border:0;}.vineyard .invitation-footer p {font:italic 32px var(--heading);margin:12px 0;}.vineyard .invitation-footer small{font-size:10px;letter-spacing:.25em;}
+@media(max-width:650px){.wedding-nav{padding:22px;}.wedding-nav .nav-signature{font-size:19px;}.wedding-nav div{gap:14px;font-size:11px;}.wedding-nav div a:first-child{display:none;}.vineyard .invitation-hero{padding-top:48px;}.vineyard .event-date{font-size:10px;padding:0 20px;line-height:1.9;}.vineyard .cover{margin:0;}.vineyard .invitation-sections{padding:12px 25px;}.vineyard .invitation-section{grid-template-columns:1fr;gap:30px;padding:45px 0;}.vineyard .section-art{max-width:290px;margin:auto;}.vineyard .section-copy h2{font-size:2.5rem;}.vineyard .rsvp-section{margin:20px 16px 0;padding:45px 22px;}.rsvp-form{grid-template-columns:1fr;gap:22px;}.countdown{gap:20px;}.vineyard .message{max-width:330px;}.vineyard .hero-link{font-size:11px;}.vineyard .invitation-footer{padding:45px 20px;}}
+@media(prefers-reduced-motion:reduce){.invitation{scroll-behavior:auto;}}
+
+.form-field[hidden]{display:none;}
+
+/* Painted stationery: clear text above full-color watercolor, on one paper plane. */
+.vineyard .invitation-hero {
+  min-height:800px;box-sizing:border-box;display:flex;flex-direction:column;
+  align-items:center;justify-content:flex-start;padding:75px 24px 480px;isolation:isolate;
+}
+.vineyard .invitation-hero > :not(.cover) {position:relative;z-index:1;}
+.vineyard .invitation-hero .message:empty {display:none;}
+.vineyard .invitation-hero h1 {font-size:clamp(2.8rem,6vw,4.6rem);letter-spacing:-.025em;}
+.vineyard .invitation-hero .ornament {margin:16px 0;}
+.vineyard .invitation-hero .cover {
+  position:absolute;bottom:0;left:0;width:100%;height:580px;margin:0;aspect-ratio:auto;
+  object-fit:cover;object-position:center bottom;opacity:1;z-index:0;pointer-events:none;
+  mask-image:linear-gradient(to bottom,transparent 0%,#000 15%,#000 100%);
+}
+.vineyard .invitation-hero .hero-link {margin-top:18px;}
+.vineyard .countdown-band {background:transparent;border:0;margin-top:0;padding-top:35px;}
+.vineyard .invitation-section.with-image {
+  display:flex;flex-direction:column;gap:0;padding:55px 0 65px;border:0;
+}
+.vineyard .with-image .section-art {width:min(100%,440px);max-width:none;margin:0 auto;}
+.vineyard .invitation-section.with-image .section-art img {
+  width:100%;height:auto;max-height:none;object-fit:contain;opacity:1;
+}
+.vineyard .with-image .section-copy {max-width:580px;width:100%;text-align:center;margin-top:-15px;}
+.vineyard .with-image .section-copy p {max-width:none;}
+.vineyard .with-image .section-number {display:none;}
+@media(max-width:650px) {
+  .vineyard .invitation-hero {min-height:570px;padding:35px 20px 260px;}
+  .vineyard .invitation-hero h1 {font-size:clamp(2.8rem,10vw,3.4rem);}
+  .vineyard .invitation-hero .cover {height:330px;width:140%;left:-20%;object-fit:cover;}
+  .vineyard .invitation-section.with-image {padding:35px 0 55px;}
+  .vineyard .with-image .section-art {width:min(100%,330px);}
+  .vineyard .with-image .section-copy h2 {font-size:2.5rem;}
+}

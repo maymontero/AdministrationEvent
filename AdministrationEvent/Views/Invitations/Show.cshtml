@@ -1,0 +1,57 @@
+@model InvitationConfiguration
+@using System.Globalization
+@using System.Linq
+@{
+    Layout = null;
+    var t = Model.Theme;
+    var vineyard = t.Layout == "vineyard";
+    var preview = ViewData["Preview"] != null;
+    var headingFont = string.IsNullOrEmpty(t.HeadingFontUrl) ? t.HeadingFont : "InvitationHeading";
+    var bodyFont = string.IsNullOrEmpty(t.BodyFontUrl) ? t.BodyFont : "InvitationBody";
+    var culture = new CultureInfo("es-UY");
+    var blocks = Model.Sections.Where(x => x.Enabled).ToList();
+    var form = ViewData["RsvpForm"] as RsvpForm ?? new RsvpForm();
+}
+@if(t.Layout == "relaxed") { <partial name="_Relaxed" model="Model" /> } else {
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>@Model.Title</title>
+<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/invitation.css" asp-append-version="true" />
+<script src="~/js/invitation.js" asp-append-version="true" defer></script>
+<style>
+@if(!string.IsNullOrEmpty(t.HeadingFontUrl)) { <text>@@font-face { font-family: InvitationHeading; src: url('@t.HeadingFontUrl'); font-display: swap; }</text> }
+@if(!string.IsNullOrEmpty(t.BodyFontUrl)) { <text>@@font-face { font-family: InvitationBody; src: url('@t.BodyFontUrl'); font-display: swap; }</text> }
+</style></head>
+<body class="invitation @(vineyard ? "vineyard" : "classic")" style="--background:@t.Background;--ink:@t.Text;--accent:@t.Accent;--secondary:@t.Secondary;--highlight:@t.Highlight;--heading:@headingFont;--body:@bodyFont;--radius:@(t.CornerRadius)px;--size:@(t.FontSize)px;--width:@(t.ContentWidth)px;">
+@if(preview) { <div class="preview-banner">Vista previa · @(Model.IsPublished ? "Publicada" : "Borrador") <a href="/admin/edit/@Model.Id">Volver a configurar</a></div> }
+@if(vineyard) { <nav class="wedding-nav" aria-label="Secciones de la invitación"><a class="nav-signature" href="#inicio">@Model.Hosts</a><div><a href="#detalles">El encuentro</a>@if(Model.RsvpEnabled) { <a href="#asistencia">Confirmar asistencia</a> }</div></nav> }
+<main class="invitation-content" id="inicio">
+<section class="invitation-hero">
+<span class="eyebrow">@Model.EventType</span><div class="ornament" aria-hidden="true">✧</div>
+<h1>@Model.Hosts</h1><p class="message">@Model.Message</p>
+@if(Model.Date.HasValue) { <p class="event-date">@Model.Date.Value.ToString(Model.HasConfirmedTime ? "dddd d 'de' MMMM 'de' yyyy · HH:mm" : "dddd d 'de' MMMM 'de' yyyy", culture)</p> }
+@if(Model.RsvpEnabled) { <a class="hero-link" href="#asistencia">Compartí este día con nosotros <span aria-hidden="true">↓</span></a> }
+@if(!string.IsNullOrEmpty(Model.CoverImageUrl)) { <img class="cover" src="@Model.CoverImageUrl" alt="@Model.Title" fetchpriority="high" /> }
+</section>
+@if(Model.ShowCountdown && Model.Date.HasValue) {
+<section class="countdown-band" aria-label="Cuenta regresiva">
+<span class="eyebrow">Cada día, un poquito más cerca</span>
+<div class="countdown" data-date="@Model.Date.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)" data-zone="@Model.TimeZone" data-confirmed="@Model.HasConfirmedTime.ToString().ToLowerInvariant()" data-target="@(new DateTimeOffset(DateTime.SpecifyKind(Model.Date.Value, DateTimeKind.Unspecified), TimeZoneInfo.FindSystemTimeZoneById(Model.TimeZone).GetUtcOffset(DateTime.SpecifyKind(Model.Date.Value, DateTimeKind.Unspecified))).ToString("o", CultureInfo.InvariantCulture))">
+<div><strong data-days>—</strong><span>días</span></div>
+@if(Model.HasConfirmedTime) { <div><strong data-hours>—</strong><span>horas</span></div><div><strong data-minutes>—</strong><span>minutos</span></div> }
+</div><p data-countdown-caption>Para celebrar juntos</p><noscript>Nos encontramos el @Model.Date.Value.ToString("d 'de' MMMM 'de' yyyy", culture).</noscript>
+</section> }
+<div class="invitation-sections" id="detalles">
+@for(var i = 0; i < blocks.Count; i++) { var block = blocks[i];
+<section class="invitation-section @(!string.IsNullOrEmpty(block.ImageUrl) ? "with-image" : "text-only")">
+@if(!string.IsNullOrEmpty(block.ImageUrl)) { <div class="section-art"><img src="@block.ImageUrl" alt="@block.Title" loading="lazy" /></div> }
+<div class="section-copy">@if(vineyard) { <span class="section-number" aria-hidden="true">@((i + 1).ToString("00")) <span></span></span> }
+<h2>@block.Title</h2><p>@block.Content</p>
+@if(!string.IsNullOrEmpty(block.LinkUrl)) { <a class="button" href="@block.LinkUrl" target="_blank" rel="noopener noreferrer">@block.LinkLabel ↗</a> }
+</div></section> }
+</div>
+@if(Model.RsvpEnabled) { <partial name="_Rsvp" model="Model" /> }
+<footer class="invitation-footer"><span aria-hidden="true">✧</span><p>@Model.Hosts</p>@if(Model.Date.HasValue) { <small>@Model.Date.Value.ToString("dd · MM · yyyy")</small> }</footer>
+</main></body></html>
+
+}

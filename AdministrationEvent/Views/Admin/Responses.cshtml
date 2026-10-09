@@ -1,0 +1,7 @@
+@model GuestResponseList
+@using System.Linq
+@{ ViewData["Title"] = "Confirmaciones de asistencia"; }
+<a href="/admin">← Mis invitaciones</a>
+<div class="page-heading"><div><span class="eyebrow">@Model.Invitation.Hosts</span><h1>Confirmaciones de asistencia</h1><p>@Model.Responses.Count respuestas · @Model.Responses.Where(x => x.Attending).Sum(x => x.GuestCount) personas confirmadas</p></div><a href="/admin/edit/@Model.Invitation.Id">Configurar invitación</a></div>
+@if(!Model.Responses.Any()) { <div class="panel"><h2>Aún no hay respuestas</h2><p>Cuando los invitados completen el formulario de la invitación publicada, sus respuestas aparecerán aquí.</p></div> }
+<div class="cards">@foreach(var response in Model.Responses) { <article class="panel"><span class="eyebrow">@(response.Attending ? "Asistirá" : "No asistirá")</span><h2>@response.Name</h2><p>@response.GuestCount personas · @response.Contact</p><p style="white-space:pre-line">@response.Notes</p><small>Recibida @TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(response.SubmittedAtUtc, DateTimeKind.Utc), TimeZoneInfo.FindSystemTimeZoneById(Model.Invitation.TimeZone)).ToString("dd/MM/yyyy HH:mm")</small></article> }</div>

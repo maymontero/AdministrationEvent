@@ -1,0 +1,16 @@
+@model InvitationConfiguration
+@{ var preview = ViewData["Preview"] != null; var form = ViewData["RsvpForm"] as RsvpForm ?? new RsvpForm(); }
+<section class="rsvp-section" id="asistencia">
+<div class="rsvp-intro"><span class="eyebrow">El mejor regalo es encontrarnos</span><h2>Contamos con vos</h2><p>Nos encantará compartir este día con vos.<br />Dejanos tu respuesta para preparar cada detalle.</p></div>
+@if(TempData["RsvpSuccess"] != null) { <p class="rsvp-success" role="status">@TempData["RsvpSuccess"]</p> }
+@if(preview) { <p class="preview-note">Podés probar el formulario. Las pruebas de esta vista previa no se guardan.</p> }
+<form class="rsvp-form" method="post" action="@(preview ? "/admin/preview/" + Model.Id : "/invitacion/" + Model.Slug)/asistencia">
+@Html.AntiForgeryToken()
+@if(!ViewData.ModelState.IsValid) { <div asp-validation-summary="All" class="errors" role="alert"></div> }
+<div class="form-field"><label for="guest-name">Tu nombre y apellido</label><input id="guest-name" name="Name" value="@form.Name" required maxlength="120" autocomplete="name" /></div>
+<div class="form-field"><label for="guest-attending">¿Nos acompañás?</label><select id="guest-attending" name="Attending" required><option value="">Elegí tu respuesta</option><option value="true" selected="@(form.Attending == true)">Sí, voy a estar</option><option value="false" selected="@(form.Attending == false)">Esta vez no podré asistir</option></select></div>
+<div class="form-field" data-guest-count><label for="guest-count">Personas incluidas en tu respuesta</label><input id="guest-count" name="GuestCount" type="number" min="1" max="10" value="@form.GuestCount" required /><small>Incluyéndote a vos y respetando las personas invitadas.</small></div>
+<div class="form-field"><label for="guest-contact">Email o teléfono <span>(opcional)</span></label><input id="guest-contact" name="Contact" value="@form.Contact" maxlength="200" /></div>
+<div class="form-field full"><label for="guest-notes">Un mensaje para nosotros <span>(opcional)</span></label><textarea id="guest-notes" name="Notes" rows="3" maxlength="500">@form.Notes</textarea></div>
+<div class="form-field full"><button class="button" type="submit">Enviar mi respuesta <span aria-hidden="true">→</span></button><small>Tu respuesta solo será visible para quienes organizan el evento.</small></div>
+</form></section>

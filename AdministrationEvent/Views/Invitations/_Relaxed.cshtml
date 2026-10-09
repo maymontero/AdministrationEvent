@@ -1,0 +1,82 @@
+@model InvitationConfiguration
+@using System.Globalization
+@using System.Linq
+@functions {
+    private static string SpotifyId(string url)
+    {
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || uri.Scheme != "https" || uri.Host != "open.spotify.com") return null;
+        var match = System.Text.RegularExpressions.Regex.Match(uri.AbsolutePath, "^/track/([a-zA-Z0-9]{22})/?$");
+        return match.Success ? match.Groups[1].Value : null;
+    }
+    private static string YouTubeId(string url)
+    {
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || uri.Scheme != "https") return null;
+        string id = null;
+        if (uri.Host == "youtu.be") id = uri.AbsolutePath.Trim('/');
+        else if ((uri.Host == "www.youtube.com" || uri.Host == "youtube.com") && uri.AbsolutePath == "/watch")
+            id = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query)["v"].FirstOrDefault();
+        return id != null && System.Text.RegularExpressions.Regex.IsMatch(id, "^[a-zA-Z0-9_-]{11}$") ? id : null;
+    }
+}
+@{
+    var t = Model.Theme;
+    var preview = ViewData["Preview"] != null;
+    var culture = new CultureInfo("es-UY");
+    var headingFont = string.IsNullOrEmpty(t.HeadingFontUrl) ? t.HeadingFont : "InvitationHeading";
+    var bodyFont = string.IsNullOrEmpty(t.BodyFontUrl) ? t.BodyFont : "InvitationBody";
+    var names = Model.Hosts?.Split('&', 2) ?? new[] { "" };
+}
+<!DOCTYPE html><html lang="es"><head>
+<meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>@Model.Title</title>
+<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/invitation.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/relaxed.css" asp-append-version="true" />
+<script src="~/js/invitation.js" asp-append-version="true" defer></script>
+<style>
+@if(!string.IsNullOrEmpty(t.HeadingFontUrl)) { <text>@@font-face {font-family:InvitationHeading;src:url('@t.HeadingFontUrl');font-display:swap;}</text> }
+@if(!string.IsNullOrEmpty(t.BodyFontUrl)) { <text>@@font-face {font-family:InvitationBody;src:url('@t.BodyFontUrl');font-display:swap;}</text> }
+</style></head>
+<body class="invitation relaxed" style="--background:@t.Background;--ink:@t.Text;--accent:@t.Accent;--secondary:@t.Secondary;--highlight:@t.Highlight;--heading:@headingFont;--body:@bodyFont;--radius:@(t.CornerRadius)px;--size:@(t.FontSize)px;--width:@(t.ContentWidth)px;">
+@if(preview) { <div class="preview-banner">Vista previa · @(Model.IsPublished ? "Publicada" : "Borrador") <a href="/admin/edit/@Model.Id">Volver a configurar</a></div> }
+<nav class="relaxed-nav" aria-label="Secciones de la invitación"><a href="#inicio">@Model.Hosts</a><div><a href="#detalles">Dónde y cuándo</a>@if(Model.RsvpEnabled) { <a href="#asistencia">¿Venís?</a> }</div></nav>
+<main class="relaxed-content" id="inicio">
+<section class="paper-card relaxed-hero">
+<partial name="_BotanicalFrame" />
+
+
+<h1><span>@names[0].Trim()</span>@if(names.Length > 1) { <em>&amp;</em><span>@(names[1].Trim() == "Diego" ? "DiegO" : names[1].Trim())</span> }</h1>
+@if(!string.IsNullOrWhiteSpace(Model.Message)) { <p class="welcome-note">@Model.Message</p> }
+@if(Model.Date.HasValue) { <p class="relaxed-date">@Model.Date.Value.ToString("dd · MM · yyyy")</p> }
+@if(!string.IsNullOrEmpty(Model.CoverImageUrl)) { <img class="relaxed-cover" src="@Model.CoverImageUrl" alt="Acuarela para @Model.Title" fetchpriority="high" /> }
+@if(Model.RsvpEnabled) { <a class="handwritten-link" href="#asistencia">¡Queremos verte ahí! <span aria-hidden="true">↓</span></a> }
+</section>
+@if(Model.ShowCountdown && Model.Date.HasValue) {
+<section class="relaxed-countdown" aria-label="Cuenta regresiva"><p class="countdown-intro">Cada vez falta menos</p>
+<div class="countdown" data-days-only="true" data-date="@Model.Date.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)" data-zone="@Model.TimeZone" data-confirmed="@Model.HasConfirmedTime.ToString().ToLowerInvariant()" data-target="@(new DateTimeOffset(DateTime.SpecifyKind(Model.Date.Value, DateTimeKind.Unspecified), TimeZoneInfo.FindSystemTimeZoneById(Model.TimeZone).GetUtcOffset(DateTime.SpecifyKind(Model.Date.Value, DateTimeKind.Unspecified))).ToString("o", CultureInfo.InvariantCulture))"><div><strong data-days>—</strong><span>días</span></div></div>
+<p data-countdown-caption>¡Ya falta menos!</p><noscript>@Model.Date.Value.ToString("d 'de' MMMM 'de' yyyy",culture)</noscript></section> }
+<div class="relaxed-details" id="detalles">
+@foreach(var block in Model.Sections.Where(s => s.Enabled)) {
+var videoId = YouTubeId(block.LinkUrl);
+var spotifyId = SpotifyId(block.LinkUrl);
+<section class="paper-card detail-card @(videoId != null || spotifyId != null ? "music-card" : "")">
+@if(videoId != null || spotifyId != null) { <span class="music-symbol" aria-hidden="true">♫</span> }
+<h2>@block.Title</h2>
+@if(!string.IsNullOrEmpty(block.ImageUrl)) { <img src="@block.ImageUrl" alt="@block.Title" loading="lazy" /> }
+<div class="detail-information">
+@{ var information = block.Content.Split("\n\n", StringSplitOptions.RemoveEmptyEntries); }
+@for(var index = 0; index < information.Length; index++) {
+<p class="@(information.Length > 1 && index == information.Length - 1 ? "detail-venue" : "detail-context")">@information[index]</p>
+}
+</div>
+@if(videoId != null) {
+<iframe class="music-player" src="https://www.youtube-nocookie.com/embed/@videoId" title="Escuchar @block.Content" loading="lazy" allow="encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+}
+@if(spotifyId != null) {
+<iframe class="music-player music-player-compact" src="https://open.spotify.com/embed/track/@(spotifyId)?theme=0" title="Escuchar @block.Content" loading="lazy" allow="autoplay; encrypted-media" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+}
+@if(!string.IsNullOrEmpty(block.LinkUrl)) { <a class="handwritten-link" href="@block.LinkUrl" target="_blank" rel="noopener noreferrer">@block.LinkLabel ↗</a> }
+<span class="card-signature">@Model.Hosts</span></section> }
+</div>
+@if(Model.RsvpEnabled) { <div class="paper-card relaxed-rsvp"><partial name="_Rsvp" model="Model" /></div> }
+<footer class="relaxed-footer"><span aria-hidden="true">♡</span><p>@Model.Hosts</p>@if(Model.Date.HasValue) { <small>@Model.Date.Value.ToString("dd · MM · yyyy")</small> }</footer>
+</main></body></html>

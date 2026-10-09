@@ -1,0 +1,59 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
+
+namespace AdministrationEvent
+{
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            using (var host = CreateApplicationHostBuilder(args).Build())
+            {
+                if (args.Contains("--import-invitations"))
+                {
+                    using (var scope = host.Services.CreateScope())
+                    {
+                        var db = scope.ServiceProvider.GetRequiredService<InvitationDbContext>();
+                        var store = scope.ServiceProvider.GetRequiredService<Services.InvitationStore>();
+                        var folder = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "App_Data", "Invitations");
+                        if (!System.IO.Directory.Exists(folder)) { Console.WriteLine("No hay archivos JSON para importar."); return; }
+                        var invitations = System.IO.Directory.GetFiles(folder, "*.json")
+                            .Select(path => System.Text.Json.JsonSerializer.Deserialize<Models.InvitationConfiguration>(System.IO.File.ReadAllText(path), Services.InvitationStore.JsonOptions)).ToList();
+                        using (var transaction = db.Database.BeginTransaction())
+                        {
+                            var count = 0;
+                            foreach (var invitation in invitations)
+                            {
+                                if (invitation == null) throw new InvalidOperationException("Hay un archivo de invitación vacío.");
+                                if (store.Find(invitation.Id) != null) continue;
+                                var error = store.Save(invitation);
+                                if (error != null) throw new InvalidOperationException("No se pudo importar la invitación: " + error);
+                                count++;
+                            }
+                            transaction.Commit();
+                            Console.WriteLine("Invitaciones importadas: " + count + ". Los archivos originales se conservan.");
+                        }
+                    }
+                    return;
+                }
+                host.Run();
+            }
+        }
+
+        // EF usa InvitationDbContextFactory para migraciones, sin iniciar la configuración web.
+        public static IHostBuilder CreateApplicationHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseStartup<Startup>();
+                });
+    }
+}
