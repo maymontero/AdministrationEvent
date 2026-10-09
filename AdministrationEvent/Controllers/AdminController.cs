@@ -22,10 +22,8 @@ namespace AdministrationEvent.Controllers
         public AdminController(InvitationStore store, IConfiguration config, InvitationDbContext db) { this.store = store; this.config = config; this.db = db; }
         [HttpGet("responses/{id:guid}")]
         public IActionResult Responses(Guid id) {
-            var invitation = store.Find(id);
-            if (invitation == null) return NotFound();
-            var entityId = db.Invitations.Where(x => x.PublicId == id).Select(x => x.Id).Single();
-            return View(new GuestResponseList { Invitation = invitation, Responses = db.GuestResponses.AsNoTracking().Where(x => x.InvitationId == entityId).OrderByDescending(x => x.SubmittedAtUtc).ToList() });
+            if (store.Find(id) == null) return NotFound();
+            return RedirectToAction("Index", "Guests", new { id });
         }
         [HttpGet("")] public IActionResult Index() => View(store.All());
         [AllowAnonymous, HttpGet("login")] public IActionResult Login() { ViewData["Configured"] = !string.IsNullOrWhiteSpace(config["Admin:Password"]); return View(); }

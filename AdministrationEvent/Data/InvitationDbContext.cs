@@ -10,6 +10,7 @@ public class InvitationDbContext : DbContext
     }
 
     public DbSet<GuestResponse> GuestResponses => Set<GuestResponse>();
+    public DbSet<Guest> Guests => Set<Guest>();
 
     public DbSet<InvitationSection> InvitationSections => Set<InvitationSection>();
 
@@ -37,6 +38,14 @@ public class InvitationDbContext : DbContext
         base.OnModelCreating(modelBuilder);
 
         ConfigureInvitation(modelBuilder);
+        modelBuilder.Entity<Guest>(entity => {
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Name).HasMaxLength(120).IsRequired();
+            entity.Property(x => x.Contact).HasMaxLength(200);
+            entity.Property(x => x.Notes).HasMaxLength(500);
+            entity.HasIndex(x => new { x.InvitationId, x.IsArchived });
+            entity.HasOne<Invitation>().WithMany().HasForeignKey(x => x.InvitationId).OnDelete(DeleteBehavior.Cascade);
+        });
         modelBuilder.Entity<GuestResponse>(entity => {
             entity.HasKey(x => x.Id);
             entity.Property(x => x.Name).HasMaxLength(120).IsRequired();
@@ -44,6 +53,7 @@ public class InvitationDbContext : DbContext
             entity.Property(x => x.Notes).HasMaxLength(500);
             entity.HasIndex(x => new { x.InvitationId, x.SubmittedAtUtc });
             entity.HasOne<Invitation>().WithMany().HasForeignKey(x => x.InvitationId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne<Guest>().WithMany().HasForeignKey(x => x.GuestId).OnDelete(DeleteBehavior.SetNull);
         });
         ConfigureEvent(modelBuilder);
         ConfigureTheme(modelBuilder);

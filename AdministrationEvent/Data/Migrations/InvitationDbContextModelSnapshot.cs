@@ -146,6 +146,44 @@ namespace AdministrationEvent.Migrations
                     b.ToTable("FontResources");
                 });
 
+            modelBuilder.Entity("Application.Guest", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Contact")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<long>("InvitationId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("InvitedCount")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsWaitlisted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("varchar(120)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InvitationId", "IsArchived");
+
+                    b.ToTable("Guests");
+                });
+
             modelBuilder.Entity("Application.GuestResponse", b =>
                 {
                     b.Property<long>("Id")
@@ -161,6 +199,9 @@ namespace AdministrationEvent.Migrations
 
                     b.Property<int>("GuestCount")
                         .HasColumnType("int");
+
+                    b.Property<long?>("GuestId")
+                        .HasColumnType("bigint");
 
                     b.Property<long>("InvitationId")
                         .HasColumnType("bigint");
@@ -178,6 +219,8 @@ namespace AdministrationEvent.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("GuestId");
 
                     b.HasIndex("InvitationId", "SubmittedAtUtc");
 
@@ -474,8 +517,22 @@ namespace AdministrationEvent.Migrations
                     b.Navigation("Theme");
                 });
 
+            modelBuilder.Entity("Application.Guest", b =>
+                {
+                    b.HasOne("Application.Invitation", null)
+                        .WithMany()
+                        .HasForeignKey("InvitationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Application.GuestResponse", b =>
                 {
+                    b.HasOne("Application.Guest", null)
+                        .WithMany()
+                        .HasForeignKey("GuestId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Application.Invitation", null)
                         .WithMany()
                         .HasForeignKey("InvitationId")

@@ -31,7 +31,7 @@
   const attendance = document.querySelector('#guest-attending');
   const guestCount = document.querySelector('[data-guest-count]');
   if (attendance && guestCount) {
-    const update = () => { const absent = attendance.value === 'false'; guestCount.hidden = absent; guestCount.querySelector('input').disabled = absent; };
+    const update = () => { const absent = attendance.value === 'false'; guestCount.hidden = absent; guestCount.querySelector('select').disabled = absent; };
     attendance.addEventListener('change', update); update();
   }
 })();

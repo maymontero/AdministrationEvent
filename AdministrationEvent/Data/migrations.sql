@@ -272,5 +272,57 @@ BEGIN
     VALUES ('20261008222907_InvitationDesignAndGuestResponses', '10.0.9');
 END;
 
+IF NOT EXISTS(SELECT * FROM `__EFMigrationsHistory` WHERE `MigrationId` = '20261009174631_GuestAdministration')
+BEGIN
+    ALTER TABLE `GuestResponses` ADD `GuestId` bigint NULL;
+END;
+
+IF NOT EXISTS(SELECT * FROM `__EFMigrationsHistory` WHERE `MigrationId` = '20261009174631_GuestAdministration')
+BEGIN
+    CREATE TABLE `Guests` (
+        `Id` bigint NOT NULL AUTO_INCREMENT,
+        `InvitationId` bigint NOT NULL,
+        `Name` varchar(120) NOT NULL,
+        `Contact` varchar(200) NULL,
+        `InvitedCount` int NOT NULL,
+        `Notes` varchar(500) NULL,
+        `IsArchived` tinyint(1) NOT NULL,
+        PRIMARY KEY (`Id`),
+        CONSTRAINT `FK_Guests_Invitations_InvitationId` FOREIGN KEY (`InvitationId`) REFERENCES `Invitations` (`Id`) ON DELETE CASCADE
+    );
+END;
+
+IF NOT EXISTS(SELECT * FROM `__EFMigrationsHistory` WHERE `MigrationId` = '20261009174631_GuestAdministration')
+BEGIN
+    CREATE INDEX `IX_GuestResponses_GuestId` ON `GuestResponses` (`GuestId`);
+END;
+
+IF NOT EXISTS(SELECT * FROM `__EFMigrationsHistory` WHERE `MigrationId` = '20261009174631_GuestAdministration')
+BEGIN
+    CREATE INDEX `IX_Guests_InvitationId_IsArchived` ON `Guests` (`InvitationId`, `IsArchived`);
+END;
+
+IF NOT EXISTS(SELECT * FROM `__EFMigrationsHistory` WHERE `MigrationId` = '20261009174631_GuestAdministration')
+BEGIN
+    ALTER TABLE `GuestResponses` ADD CONSTRAINT `FK_GuestResponses_Guests_GuestId` FOREIGN KEY (`GuestId`) REFERENCES `Guests` (`Id`) ON DELETE SET NULL;
+END;
+
+IF NOT EXISTS(SELECT * FROM `__EFMigrationsHistory` WHERE `MigrationId` = '20261009174631_GuestAdministration')
+BEGIN
+    INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+    VALUES ('20261009174631_GuestAdministration', '10.0.9');
+END;
+
+IF NOT EXISTS(SELECT * FROM `__EFMigrationsHistory` WHERE `MigrationId` = '20261009175916_GuestWaitingList')
+BEGIN
+    ALTER TABLE `Guests` ADD `IsWaitlisted` tinyint(1) NOT NULL DEFAULT FALSE;
+END;
+
+IF NOT EXISTS(SELECT * FROM `__EFMigrationsHistory` WHERE `MigrationId` = '20261009175916_GuestWaitingList')
+BEGIN
+    INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+    VALUES ('20261009175916_GuestWaitingList', '10.0.9');
+END;
+
 COMMIT;
 

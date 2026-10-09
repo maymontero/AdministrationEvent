@@ -5,6 +5,7 @@ namespace Application
     {
         public long Id { get; set; }
         public long InvitationId { get; set; }
+        public long? GuestId { get; set; }
         public string Name { get; set; } = "";
         public string Contact { get; set; } = "";
         public bool Attending { get; set; }

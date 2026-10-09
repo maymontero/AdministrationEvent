@@ -1,0 +1,83 @@
+@model GuestAdministration
+@using System.Linq
+@using Application
+@{
+    ViewData["Title"] = "Invitados y asistencia";
+    var active = Model.Guests.Where(x => !x.IsArchived && !x.IsWaitlisted).ToList();
+    var waiting = Model.Guests.Where(x => !x.IsArchived && x.IsWaitlisted).ToList();
+    var latest = Model.Responses.Where(x => x.GuestId.HasValue).GroupBy(x => x.GuestId.Value).ToDictionary(x => x.Key, x => x.First());
+    var unlinked = Model.Responses.Where(x => !x.GuestId.HasValue).ToList();
+    var shown = Model.Guests.Where(x => Model.Status == "archived" ? x.IsArchived : Model.Status == "waitlist" ? !x.IsArchived && x.IsWaitlisted : !x.IsArchived && !x.IsWaitlisted)
+        .Where(x => string.IsNullOrWhiteSpace(Model.Search) || x.Name.Contains(Model.Search, StringComparison.OrdinalIgnoreCase) || x.Contact.Contains(Model.Search, StringComparison.OrdinalIgnoreCase))
+        .Where(x => Model.Status != "pending" || !latest.ContainsKey(x.Id))
+        .Where(x => Model.Status != "yes" || (latest.ContainsKey(x.Id) && latest[x.Id].Attending))
+        .Where(x => Model.Status != "no" || (latest.ContainsKey(x.Id) && !latest[x.Id].Attending)).ToList();
+    var confirmed = active.Where(x => latest.ContainsKey(x.Id) && latest[x.Id].Attending).ToList();
+    var zone = TimeZoneInfo.FindSystemTimeZoneById(Model.Invitation.TimeZone);
+}
+<a href="/admin">← Mis invitaciones</a>
+<div class="page-heading"><div><span class="eyebrow">@Model.Invitation.Hosts</span><h1>Invitados y asistencia</h1><p>Organizá la lista y revisá las respuestas en un mismo lugar.</p></div><div class="actions"><a href="/admin/edit/@Model.Invitation.Id">Configurar invitación</a><a href="/admin/preview/@Model.Invitation.Id">Vista previa ↗</a></div></div>
+@if(TempData["Success"] != null) { <p class="success" role="status">@TempData["Success"]</p> }
+@if(TempData["Error"] != null) { <p class="errors" role="alert">@TempData["Error"]</p> }
+<div class="guest-summary">
+<div class="panel"><strong>@active.Sum(x => x.InvitedCount)</strong><span>Personas en lista fija · @active.Count grupos</span></div>
+<div class="panel"><strong>@confirmed.Sum(x => latest[x.Id].GuestCount)</strong><span>Personas confirmadas</span></div>
+<div class="panel"><strong>@active.Count(x => !latest.ContainsKey(x.Id))</strong><span>Invitados o familias pendientes</span></div>
+<div class="panel"><strong>@active.Count(x => latest.ContainsKey(x.Id) && !latest[x.Id].Attending)</strong><span>Invitados o familias que no asisten</span></div>
+<div class="panel"><strong>@waiting.Sum(x => x.InvitedCount)</strong><span>Personas en espera · @waiting.Count grupos</span></div>
+</div>
+@if(unlinked.Any()) { <p class="guest-notice">Hay @unlinked.Count respuestas sin asociar. Revisalas abajo para incluirlas en el seguimiento.</p> }
+<div class="guest-layout">
+<section class="panel">
+<h2>@(Model.Editor.Id == 0 ? "Agregar invitado" : "Editar invitado")</h2>
+<form method="post" action="/admin/guests/@Model.Invitation.Id/save">
+@Html.AntiForgeryToken()<div asp-validation-summary="All" class="errors"></div>
+<input type="hidden" name="Id" value="@Model.Editor.Id" />
+<label for="edit-name">Nombre o familia</label><input id="edit-name" name="Name" value="@Model.Editor.Name" maxlength="120" required />
+<label for="edit-contact">Email o teléfono (opcional)</label><input id="edit-contact" name="Contact" value="@Model.Editor.Contact" maxlength="200" />
+<label for="edit-list">Lista</label><select id="edit-list" name="IsWaitlisted"><option value="false" selected="@(!Model.Editor.IsWaitlisted)">Lista fija</option><option value="true" selected="@Model.Editor.IsWaitlisted">Lista de espera</option></select>
+<label for="edit-count">Personas invitadas en este grupo</label><input id="edit-count" name="InvitedCount" type="number" min="1" max="10" value="@Model.Editor.InvitedCount" required />
+<label for="edit-notes">Notas internas (opcional)</label><textarea id="edit-notes" name="Notes" maxlength="500" rows="3">@Model.Editor.Notes</textarea>
+<button class="button" type="submit">Guardar invitado</button>
+@if(Model.Editor.Id != 0) { <a href="/admin/guests/@Model.Invitation.Id">Cancelar edición</a> }
+</form></section>
+<section>
+<form class="guest-filters panel" method="get" action="/admin/guests/@Model.Invitation.Id">
+<div><label for="search">Buscar nombre o contacto</label><input id="search" name="search" value="@Model.Search" /></div>
+<div><label for="status">Estado</label><select id="status" name="status">
+<option value="active" selected="@(Model.Status == "active")">Lista fija · todos</option><option value="waitlist" selected="@(Model.Status == "waitlist")">Lista de espera</option><option value="pending" selected="@(Model.Status == "pending")">Pendientes</option><option value="yes" selected="@(Model.Status == "yes")">Confirman</option><option value="no" selected="@(Model.Status == "no")">No asisten</option><option value="archived" selected="@(Model.Status == "archived")">Archivados</option>
+</select></div><button class="button" type="submit">Filtrar</button></form>
+<p>@shown.Count invitados o familias en esta vista</p>
+@if(!shown.Any()) { <div class="panel"><p>No hay invitados en esta vista. Agregá el primero o cambiá los filtros.</p></div> }
+@foreach(var guest in shown) {
+    GuestResponse response = latest.ContainsKey(guest.Id) ? latest[guest.Id] : null;
+<article class="panel guest-entry">
+<div class="guest-entry-heading"><h2>@guest.Name</h2><span class="guest-badge">@(guest.IsArchived ? "Archivado" : guest.IsWaitlisted ? "En espera" : response == null ? "Pendiente" : response.Attending ? "Confirma" : "No asiste")</span></div>
+<p>@guest.InvitedCount @(guest.IsWaitlisted ? "personas en espera" : "personas invitadas") @if(response != null) { <text>· @response.GuestCount confirmadas</text> }</p>
+@if(!string.IsNullOrEmpty(guest.Contact)) { <p>@guest.Contact</p> }
+@if(!string.IsNullOrEmpty(guest.Notes)) { <p class="guest-note">@guest.Notes</p> }
+@if(response != null) { <p><small>Última respuesta: @TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(response.SubmittedAtUtc, DateTimeKind.Utc), zone).ToString("dd/MM/yyyy HH:mm")</small></p>
+@if(response.GuestCount > guest.InvitedCount) { <p class="errors">Revisar: confirmó más personas que las invitadas.</p> } }
+<div class="actions"><a href="/admin/guests/@Model.Invitation.Id/edit/@guest.Id">Editar</a>
+<form method="post" action="/admin/guests/@Model.Invitation.Id/archive/@guest.Id">@Html.AntiForgeryToken()<input type="hidden" name="restore" value="@guest.IsArchived.ToString().ToLowerInvariant()" /><button class="quiet" type="submit">@(guest.IsArchived ? "Recuperar" : "Quitar de la lista")</button></form></div>
+@if(!guest.IsArchived) {
+<form method="post" action="/admin/guests/@Model.Invitation.Id/membership/@guest.Id">@Html.AntiForgeryToken()<input type="hidden" name="waitlisted" value="@((!guest.IsWaitlisted).ToString().ToLowerInvariant())" /><button class="quiet" type="submit">@(guest.IsWaitlisted ? "Pasar a lista fija" : "Mover a lista de espera")</button></form>
+}
+@if(!guest.IsArchived && !guest.IsWaitlisted) {
+<details><summary>Registrar o actualizar respuesta</summary><form class="guest-record" method="post" action="/admin/guests/@Model.Invitation.Id/response/@guest.Id">
+@Html.AntiForgeryToken()<label for="attending-@guest.Id">Asistencia de @guest.Name</label><select id="attending-@guest.Id" name="Attending" required><option value="">Elegí una respuesta</option><option value="true">Confirma asistencia</option><option value="false">No asiste</option></select>
+<label for="count-@guest.Id">Personas que asistirán</label><input id="count-@guest.Id" name="GuestCount" type="number" min="1" max="@guest.InvitedCount" value="@(response?.Attending == true ? Math.Min(response.GuestCount, guest.InvitedCount) : 1)" required />
+<label for="notes-@guest.Id">Mensaje o aclaración</label><textarea id="notes-@guest.Id" name="Notes" maxlength="500" rows="2"></textarea><button class="button" type="submit">Guardar respuesta</button></form></details>
+}
+</article> }
+</section></div>
+<section class="guest-inbox" id="respuestas"><h2>Respuestas recibidas</h2><p>Se conserva cada envío. Para cada invitado, el estado y los totales usan su última respuesta asociada. La cantidad incluye al titular y sus acompañantes, aunque solo figure un nombre. Asociá una respuesta a un grupo que incluya a todas las personas que confirma; podés editar el grupo si hace falta. Un enlace común no verifica la identidad de quien responde.</p>
+@if(!Model.Responses.Any()) { <div class="panel">Todavía no hay respuestas. Las pruebas de la vista previa no se guardan.</div> }
+@foreach(var response in Model.Responses.OrderBy(x => x.GuestId.HasValue)) {
+<article class="panel guest-entry"><div class="guest-entry-heading"><h2>@response.Name</h2><span class="guest-badge">@(response.Attending ? "Asiste" : "No asiste") · @response.GuestCount personas</span></div>
+<p>@response.Contact</p><p class="guest-note">@response.Notes</p><small>@TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(response.SubmittedAtUtc, DateTimeKind.Utc), zone).ToString("dd/MM/yyyy HH:mm") · Respuesta #@response.Id</small>
+@if(response.GuestId.HasValue && latest[response.GuestId.Value].Id != response.Id) { <p><small>Histórica: hay una respuesta más reciente para este invitado.</small></p> }
+@if(response.GuestId.HasValue && Model.Guests.Any(x => x.Id == response.GuestId && (x.IsArchived || x.IsWaitlisted))) { <p>Invitado archivado o en espera: no suma en los totales.</p> }
+<form class="guest-link" method="post" action="/admin/guests/@Model.Invitation.Id/link/@response.Id">@Html.AntiForgeryToken()<label for="link-@response.Id">Asociar respuesta de @response.Name</label><select id="link-@response.Id" name="guestId"><option value="">Sin asociar</option>@foreach(var guest in active) { <option value="@guest.Id" selected="@(guest.Id == response.GuestId)">@guest.Name (@guest.InvitedCount personas, #@guest.Id)</option> }</select><button class="button" type="submit">Guardar asociación</button></form>
+</article> }
+</section>
