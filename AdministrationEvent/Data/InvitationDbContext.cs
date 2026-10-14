@@ -10,6 +10,9 @@ public class InvitationDbContext : DbContext
     }
 
     public DbSet<GuestResponse> GuestResponses => Set<GuestResponse>();
+    public DbSet<GuestTag> GuestTags => Set<GuestTag>();
+    public DbSet<SeatingTable> SeatingTables => Set<SeatingTable>();
+    public DbSet<GuestTagAssignment> GuestTagAssignments => Set<GuestTagAssignment>();
     public DbSet<Guest> Guests => Set<Guest>();
 
     public DbSet<InvitationSection> InvitationSections => Set<InvitationSection>();
@@ -38,15 +41,33 @@ public class InvitationDbContext : DbContext
         base.OnModelCreating(modelBuilder);
 
         ConfigureInvitation(modelBuilder);
+        modelBuilder.Entity<GuestTag>(e => {
+            e.HasKey(x => x.Id); e.Property(x => x.Name).HasMaxLength(80).IsRequired(); e.Property(x => x.Color).HasMaxLength(7).IsRequired();
+            e.HasIndex(x => new { x.InvitationId, x.Name }).IsUnique();
+            e.HasOne<Invitation>().WithMany().HasForeignKey(x => x.InvitationId).OnDelete(DeleteBehavior.Cascade);
+        });
+        modelBuilder.Entity<SeatingTable>(e => {
+            e.HasKey(x => x.Id); e.Property(x => x.Name).HasMaxLength(80).IsRequired();
+            e.HasIndex(x => new { x.InvitationId, x.Name }).IsUnique();
+            e.HasOne<Invitation>().WithMany().HasForeignKey(x => x.InvitationId).OnDelete(DeleteBehavior.Cascade);
+        });
+        modelBuilder.Entity<GuestTagAssignment>(e => {
+            e.HasKey(x => new { x.GuestId, x.TagId });
+            e.HasOne<Guest>().WithMany().HasForeignKey(x => x.GuestId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne<GuestTag>().WithMany().HasForeignKey(x => x.TagId).OnDelete(DeleteBehavior.Cascade);
+        });
         modelBuilder.Entity<Guest>(entity => {
             entity.HasKey(x => x.Id);
             entity.Property(x => x.Name).HasMaxLength(120).IsRequired();
             entity.Property(x => x.Contact).HasMaxLength(200);
             entity.Property(x => x.Notes).HasMaxLength(500);
             entity.HasIndex(x => new { x.InvitationId, x.IsArchived });
+            entity.HasOne<SeatingTable>().WithMany().HasForeignKey(x => x.TableId).OnDelete(DeleteBehavior.SetNull);
             entity.HasOne<Invitation>().WithMany().HasForeignKey(x => x.InvitationId).OnDelete(DeleteBehavior.Cascade);
         });
         modelBuilder.Entity<GuestResponse>(entity => {
+            entity.Property(x => x.DietaryRestrictions).HasMaxLength(500);
+            entity.Property(x => x.SongRequest).HasMaxLength(200);
             entity.HasKey(x => x.Id);
             entity.Property(x => x.Name).HasMaxLength(120).IsRequired();
             entity.Property(x => x.Contact).HasMaxLength(200);

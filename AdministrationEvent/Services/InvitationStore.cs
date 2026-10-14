@@ -49,7 +49,7 @@ namespace AdministrationEvent.Services
             SetFont(theme, "heading", item.Theme.HeadingFont, item.Theme.HeadingFontUrl);
             SetFont(theme, "body", item.Theme.BodyFont, item.Theme.BodyFontUrl);
             db.InvitationSections.RemoveRange(entity.Sections);
-            entity.Sections = item.Sections.Select((s, index) => new Domain.InvitationSection { Order = index, Enabled = s.Enabled, Title = s.Title, Content = s.Content, ImageUrl = s.ImageUrl, LinkLabel = s.LinkLabel, LinkUrl = s.LinkUrl }).ToList();
+            entity.Sections = item.Sections.Select((s, index) => new Domain.InvitationSection { Order = index, Enabled = s.Enabled, Title = s.Title, TitleFontSize = s.TitleFontSize, Content = s.Content, ImageUrl = s.ImageUrl, LinkLabel = s.LinkLabel, LinkUrl = s.LinkUrl }).ToList();
             try { db.SaveChanges(); }
             catch (DbUpdateException error) when (error.InnerException is MySqlException mysql && mysql.Number == 1062)
             { return "Ese enlace ya pertenece a otra invitación."; }
@@ -78,7 +78,7 @@ namespace AdministrationEvent.Services
                 result.Theme.BodyFontUrl = theme.Fonts.SingleOrDefault(x => x.Key == "body")?.Url;
                 result.Theme.CornerRadius = theme.CornerRadius; result.Theme.FontSize = theme.FontSize; result.Theme.ContentWidth = theme.ContentWidth;
             }
-            result.Sections = entity.Sections.OrderBy(s => s.Order).Select(s => new InvitationSection { Enabled = s.Enabled, Title = s.Title, Content = s.Content, ImageUrl = s.ImageUrl, LinkLabel = s.LinkLabel, LinkUrl = s.LinkUrl }).ToList();
+            result.Sections = entity.Sections.OrderBy(s => s.Order).Select(s => new InvitationSection { Enabled = s.Enabled, Title = s.Title, TitleFontSize = s.TitleFontSize, Content = s.Content, ImageUrl = s.ImageUrl, LinkLabel = s.LinkLabel, LinkUrl = s.LinkUrl }).ToList();
             return result;
         }
     }

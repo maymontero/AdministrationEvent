@@ -84,3 +84,9 @@ Desde `/admin`, abrir **Invitados y asistencia** en la invitación elegida. Cada
 - Las pruebas del formulario desde la vista previa no se guardan. Los envíos de la invitación publicada sí.
 
 Aplicar las migraciones `GuestAdministration` y `GuestWaitingList` con `dotnet ef database update` antes de abrir el panel. Pruebas: `dotnet run --project Tests/DatabaseChecks/DatabaseChecks.csproj`; contra MySQL, agregar `-- --mysql` (usa una transacción revertida).
+
+## Etiquetas y mesas
+
+Desde **Invitados y asistencia → Etiquetas y mesas**, crear etiquetas con nombre y color y mesas con nombre y capacidad. Cada invitación mantiene su propia organización. En el editor de invitados se pueden seleccionar varias etiquetas y una mesa por grupo; la lista permite filtrar por etiqueta, mesa o sin mesa.
+
+El listado de mesas incluye los grupos asignados y permite moverlos o dejarlos sin mesa. Los lugares previstos usan la cantidad invitada para pendientes y la cantidad de la última respuesta para confirmados; las ausencias, los archivados y la lista de espera no ocupan lugares. Los acompañantes están incluidos en la cantidad del grupo y se sientan juntos. Se muestra un aviso al superar la capacidad, sin impedir reorganizar. Eliminar una mesa conserva sus invitados sin asignación; eliminar una etiqueta solo quita sus asociaciones. Aplicar la migración `GuestTagsAndTables` antes de usar estas opciones. No incluye plano visual por ahora.

@@ -54,7 +54,7 @@ namespace AdministrationEvent.Controllers
                 db.GuestResponses.Add(new GuestResponse {
                     InvitationId = entity.Id, GuestId = GuestMatching.FindUnique(db, entity.Id, form.Name), Name = form.Name.Trim(), Contact = form.Contact?.Trim() ?? "",
                     Attending = form.Attending.Value, GuestCount = form.Attending.Value ? form.GuestCount.Value : 0,
-                    Notes = form.Notes?.Trim() ?? "", SubmittedAtUtc = DateTime.UtcNow
+                    DietaryRestrictions = form.DietaryRestrictions?.Trim() ?? "", SongRequest = form.SongRequest?.Trim() ?? "", Notes = form.Notes?.Trim() ?? "", SubmittedAtUtc = DateTime.UtcNow
                 });
                 db.SaveChanges();
             }

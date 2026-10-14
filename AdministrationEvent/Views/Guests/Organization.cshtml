@@ -1,0 +1,45 @@
+@model GuestAdministration
+@using System.Linq
+@using Application
+@{
+    ViewData["Title"] = "Etiquetas y mesas";
+    var active = Model.Guests.Where(g => !g.IsArchived && !g.IsWaitlisted).ToList();
+    var latest = Model.Responses.Where(r => r.GuestId.HasValue).GroupBy(r => r.GuestId.Value).ToDictionary(g => g.Key, g => g.First());
+    int Planned(Guest g) => latest.ContainsKey(g.Id) ? (latest[g.Id].Attending ? latest[g.Id].GuestCount : 0) : g.InvitedCount;
+    int Confirmed(Guest g) => latest.ContainsKey(g.Id) && latest[g.Id].Attending ? latest[g.Id].GuestCount : 0;
+    var unseated = active.Where(g => !g.TableId.HasValue && Planned(g) > 0).ToList();
+}
+<a href="/admin/guests/@Model.Invitation.Id">← Invitados y asistencia</a>
+<div class="page-heading"><div><span class="eyebrow">@Model.Invitation.Hosts</span><h1>Etiquetas y mesas</h1><p>Organizá los grupos y los lugares para compartir la celebración.</p></div></div>
+@if(TempData["Success"] != null) { <p class="success" role="status">@TempData["Success"]</p> }
+@if(TempData["Error"] != null) { <p class="errors" role="alert">@TempData["Error"]</p> }
+<nav class="actions organization-nav"><a href="#mesas">Mesas (@Model.Tables.Count)</a><a href="#sin-mesa">Sin mesa (@unseated.Sum(Planned) personas)</a><a href="#etiquetas">Etiquetas (@Model.Tags.Count)</a></nav>
+<section id="mesas"><h2>Mesas</h2>
+<p>Los lugares previstos incluyen a quienes aún no respondieron y usan la cantidad confirmada cuando hay respuesta. Las ausencias, la lista de espera y los archivados no ocupan lugares. Cada pareja o familia se asigna completa a una mesa.</p>
+<form class="panel organization-create" method="post" action="/admin/guests/@Model.Invitation.Id/table">@Html.AntiForgeryToken()
+<div><label for="new-table">Nombre de la mesa</label><input id="new-table" name="name" maxlength="80" required placeholder="Ej.: Mesa 1" /></div>
+<div><label for="new-capacity">Lugares</label><input id="new-capacity" name="capacity" type="number" min="1" max="100" value="8" required /></div><button class="button">Crear mesa</button></form>
+<div class="organization-grid">
+@foreach(var table in Model.Tables) {
+    var guests = active.Where(g => g.TableId == table.Id).ToList(); var occupied = guests.Sum(Planned); var confirmed = guests.Sum(Confirmed);
+<article class="panel table-card"><h2>@table.Name</h2><p><strong>@occupied / @table.Capacity lugares previstos</strong> · @confirmed confirmados</p>
+@if(occupied > table.Capacity) { <p class="errors" role="status">La capacidad se supera por @(occupied - table.Capacity) personas. Revisá la distribución.</p> }
+else { <p>@(table.Capacity - occupied) lugares disponibles</p> }
+@if(!guests.Any()) { <p>Esta mesa todavía no tiene invitados.</p> }
+@foreach(var guest in guests) {
+<div class="seating-guest"><a href="/admin/guests/@Model.Invitation.Id/edit/@guest.Id">@guest.Name</a><span>@Planned(guest) personas · @(latest.ContainsKey(guest.Id) ? latest[guest.Id].Attending ? "Confirma" : "No asiste" : "Pendiente")</span>
+<div class="tag-list">@foreach(var tag in Model.Tags.Where(t => Model.TagAssignments.Any(a => a.GuestId == guest.Id && a.TagId == t.Id))) { <span class="tag-chip" style="--tag-color:@tag.Color">@tag.Name</span> }</div>
+<form class="table-assignment" method="post" action="/admin/guests/@Model.Invitation.Id/assign/@guest.Id">@Html.AntiForgeryToken()<label class="sr-only" for="move-@guest.Id">Mesa de @guest.Name</label><select id="move-@guest.Id" name="tableId"><option value="">Sin mesa</option>@foreach(var destination in Model.Tables) { <option value="@destination.Id" selected="@(destination.Id == table.Id)">@destination.Name</option> }</select><button class="button">Mover</button></form></div>
+}
+<details><summary>Editar mesa</summary><form method="post" action="/admin/guests/@Model.Invitation.Id/table">@Html.AntiForgeryToken()<input type="hidden" name="tableId" value="@table.Id" /><label for="table-name-@table.Id">Nombre</label><input id="table-name-@table.Id" name="name" value="@table.Name" maxlength="80" required /><label for="capacity-@table.Id">Capacidad</label><input id="capacity-@table.Id" name="capacity" value="@table.Capacity" type="number" min="1" max="100" required /><button class="button">Guardar mesa</button></form>
+<form method="post" action="/admin/guests/@Model.Invitation.Id/remove-table/@table.Id">@Html.AntiForgeryToken()<p>Al eliminar la mesa, sus invitados quedan sin mesa.</p><button class="quiet">Eliminar mesa</button></form></details>
+</article> }
+</div></section>
+<section id="sin-mesa"><h2>Invitados sin mesa</h2><p>@unseated.Sum(Planned) personas · @unseated.Sum(Confirmed) confirmadas</p>
+@if(!unseated.Any()) { <p class="panel">No hay invitados pendientes de ubicar.</p> }
+@foreach(var guest in unseated) { <article class="panel seating-unassigned"><div><a href="/admin/guests/@Model.Invitation.Id/edit/@guest.Id"><strong>@guest.Name</strong></a><p>@Planned(guest) personas · @(latest.ContainsKey(guest.Id) ? "Confirma" : "Pendiente")</p></div><form class="table-assignment" method="post" action="/admin/guests/@Model.Invitation.Id/assign/@guest.Id">@Html.AntiForgeryToken()<label class="sr-only" for="assign-@guest.Id">Mesa de @guest.Name</label><select id="assign-@guest.Id" name="tableId" required><option value="">Elegí una mesa</option>@foreach(var table in Model.Tables) { <option value="@table.Id">@table.Name</option> }</select><button class="button">Asignar</button></form></article> }
+</section>
+<section id="etiquetas"><h2>Etiquetas</h2><p>Podés usar varias por invitado: familia, amigos, trabajo u otros grupos.</p>
+<form class="panel organization-create" method="post" action="/admin/guests/@Model.Invitation.Id/tag">@Html.AntiForgeryToken()<div><label for="new-tag">Nombre</label><input id="new-tag" name="name" maxlength="80" required placeholder="Ej.: Familia de la novia" /></div><div><label for="new-color">Color</label><input id="new-color" name="color" type="color" value="#54745b" /></div><button class="button">Crear etiqueta</button></form>
+<div class="organization-grid">@foreach(var tag in Model.Tags) { <article class="panel"><span class="tag-chip" style="--tag-color:@tag.Color">@tag.Name</span><p>@active.Count(g => Model.TagAssignments.Any(a => a.GuestId == g.Id && a.TagId == tag.Id)) grupos en lista fija</p><a href="/admin/guests/@Model.Invitation.Id?tag=@tag.Id">Ver invitados</a><details><summary>Editar etiqueta</summary><form method="post" action="/admin/guests/@Model.Invitation.Id/tag">@Html.AntiForgeryToken()<input type="hidden" name="tagId" value="@tag.Id" /><label for="tag-name-@tag.Id">Nombre</label><input id="tag-name-@tag.Id" name="name" value="@tag.Name" maxlength="80" required /><label for="tag-color-@tag.Id">Color</label><input id="tag-color-@tag.Id" name="color" type="color" value="@tag.Color" /><button class="button">Guardar etiqueta</button></form><form method="post" action="/admin/guests/@Model.Invitation.Id/remove-tag/@tag.Id">@Html.AntiForgeryToken()<p>Se quitará esta etiqueta de todos los invitados.</p><button class="quiet">Eliminar etiqueta</button></form></details></article> }</div>
+</section>

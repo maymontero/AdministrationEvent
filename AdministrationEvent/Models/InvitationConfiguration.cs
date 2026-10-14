@@ -39,6 +39,7 @@ namespace AdministrationEvent.Models
     }
     public class InvitationSection
     {
+        [Range(16, 80)] public int? TitleFontSize { get; set; }
         public bool Enabled { get; set; } = true;
         [Required, StringLength(120)] public string Title { get; set; } = "Celebración";
         [StringLength(5000)] public string Content { get; set; } = "";

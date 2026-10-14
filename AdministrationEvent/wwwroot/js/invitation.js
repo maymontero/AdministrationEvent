@@ -14,8 +14,9 @@
       const remaining = Math.max(0, confirmed ? target - now.getTime() : targetDay - today);
       if (daysOnly && remaining === 0) {
         countdown.hidden = true;
-        const section = countdown.closest('.relaxed-countdown');
-        section.querySelector('.countdown-intro').textContent = 'Gracias por acompañarnos';
+        const section = countdown.closest('.relaxed-countdown, .countdown-band');
+        const intro = section.querySelector('.countdown-intro, .eyebrow');
+        if (intro) intro.textContent = 'Gracias por acompañarnos';
         section.querySelector('[data-countdown-caption]').textContent = 'Gracias por compartir con nosotros este día tan especial.';
         return;
       }

@@ -10,6 +10,8 @@ namespace Application
         public string Contact { get; set; } = "";
         public bool Attending { get; set; }
         public int GuestCount { get; set; }
+        public string DietaryRestrictions { get; set; } = "";
+        public string SongRequest { get; set; } = "";
         public string Notes { get; set; } = "";
         public DateTime SubmittedAtUtc { get; set; }
     }

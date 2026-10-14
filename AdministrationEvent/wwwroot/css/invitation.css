@@ -78,3 +78,83 @@
   .vineyard .with-image .section-art {width:min(100%,330px);}
   .vineyard .with-image .section-copy h2 {font-size:2.5rem;}
 }
+
+/* Give the formal invitation's practical details a clear hierarchy. */
+.vineyard .event-date{font:normal clamp(1.25rem,2.6vw,1.7rem)/1.5 var(--body);text-transform:none;letter-spacing:.02em;margin:30px 24px 24px;color:var(--ink);position:relative;z-index:1}
+.vineyard .section-copy .event-information p{max-width:none;white-space:normal;margin:12px 0;line-height:1.45}
+.vineyard .section-copy .event-context{font-size:18px;color:var(--secondary);margin-bottom:20px}
+.vineyard .section-copy .event-schedule{font-size:clamp(1.4rem,2.5vw,1.8rem);color:var(--ink)}
+.vineyard .section-copy .event-venue{font:normal clamp(1.9rem,3.2vw,2.5rem)/1.25 var(--heading);color:var(--accent);margin:22px 0 16px}
+.vineyard .section-copy .event-address{font-size:19px;color:var(--ink);margin-bottom:24px}
+.vineyard .section-copy .button{margin-top:10px;font-size:17px}
+.vineyard .invitation-section{gap:44px}
+@media(max-width:650px){.vineyard .event-date{font-size:1.3rem;margin:24px 18px;line-height:1.5}.vineyard .invitation-section{gap:22px}.vineyard .section-art{max-width:340px}.vineyard .section-copy .event-venue{font-size:2rem}}
+
+.vineyard .section-copy .event-venue{font-size:clamp(2.1rem,3.7vw,2.85rem);margin-top:20px;margin-bottom:22px}
+.vineyard .section-copy .event-address{font-size:17px;line-height:1.65;word-spacing:.12em;letter-spacing:.015em;margin:0 0 25px}
+.vineyard .section-copy .button{border-radius:28px;padding:13px 25px;word-spacing:.06em}
+@media(max-width:650px){.vineyard .section-copy .event-venue{font-size:2.15rem}.vineyard .section-copy .event-address{font-size:16px}}
+
+.vineyard .section-copy .event-schedule{font-size:17px;line-height:1.65;letter-spacing:.015em;word-spacing:.06em}
+@media(max-width:650px){.vineyard .section-copy .event-schedule{font-size:16px}}
+
+.vineyard .other-details{padding:65px 45px 80px;text-align:center;background:color-mix(in srgb,var(--highlight) 12%,var(--background));color:var(--accent)}
+.vineyard .other-details>h2{font:normal clamp(2rem,4vw,3.2rem)/1.2 var(--heading);letter-spacing:.09em;text-transform:uppercase;margin:0 0 55px}
+.other-details-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:38px}
+.other-details-grid h3{font:normal 25px/1.3 var(--heading);letter-spacing:.08em;text-transform:uppercase;margin:0 0 22px}
+.other-details-grid p{font:normal 20px/1.7 var(--body);white-space:pre-line;margin:0;overflow-wrap:anywhere}
+.other-details-grid a{text-decoration:underline}
+@media(max-width:650px){.vineyard .other-details{padding:45px 25px}.other-details-grid{grid-template-columns:1fr;gap:40px}.vineyard .other-details>h2{margin-bottom:40px}.other-details-grid p{font-size:19px}}
+
+.vineyard .invitation-hero.has-cover{min-height:660px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:90px 24px 130px;isolation:isolate;background:var(--secondary)}
+.vineyard .invitation-hero.has-cover .cover{position:absolute;inset:0;z-index:-2;width:100%;height:100%;aspect-ratio:auto;object-fit:cover;margin:0;mix-blend-mode:normal;filter:saturate(.7)}
+.vineyard .invitation-hero.has-cover::after{content:"";position:absolute;inset:0;z-index:-1;background:color-mix(in srgb,var(--secondary) 58%,transparent)}
+.vineyard .invitation-hero.has-cover h1,.vineyard .invitation-hero.has-cover .event-date,.vineyard .invitation-hero.has-cover .eyebrow,.vineyard .invitation-hero.has-cover .ornament,.vineyard .invitation-hero.has-cover .hero-link{color:var(--background)}
+.vineyard .invitation-hero.has-cover h1{letter-spacing:-.025em;text-shadow:0 2px 18px #293d3520}
+.vineyard .section-art{position:relative;isolation:isolate}
+.vineyard .section-art::after{content:"";position:absolute;inset:0;pointer-events:none;background:color-mix(in srgb,var(--secondary) 14%,transparent);mix-blend-mode:multiply;mask-image:radial-gradient(ellipse at center,black 40%,transparent 72%)}
+.vineyard .section-art img{filter:saturate(.74) contrast(.94);mask-image:radial-gradient(ellipse at center,black 48%,transparent 73%)}
+.vineyard .invitation-section{border-bottom:0}
+.vineyard .section-copy .button{display:inline-flex;align-items:center;justify-content:center;gap:14px;background:var(--secondary);color:var(--background);border-radius:9px;min-width:205px;padding:17px 26px;font:normal 15px/1.4 Arial,sans-serif;letter-spacing:.19em;text-transform:uppercase}
+.vineyard .section-copy .button:hover{background:color-mix(in srgb,var(--secondary) 88%,black);text-decoration:none}
+@media(max-width:650px){.vineyard .invitation-hero.has-cover{min-height:580px;padding:85px 18px}.vineyard .section-copy .button{font-size:13px;min-width:195px}}
+
+/* Celebration becomes an immersive image with readable copy over the olive veil. */
+.vineyard .invitation-section.celebration-backdrop{position:relative;isolation:isolate;display:flex;justify-content:center;min-height:650px;margin:35px -65px 25px;padding:80px 30px;overflow:hidden;background:var(--secondary);text-align:center}
+.vineyard .celebration-backdrop .section-art{position:absolute;inset:0;z-index:-2;max-width:none;width:100%;height:100%;margin:0}
+.vineyard .celebration-backdrop .section-art::after{display:none}
+.vineyard .celebration-backdrop.with-image .section-art img{width:100%;height:100%;max-height:none;object-fit:cover;object-position:center 55%;mask-image:none;mix-blend-mode:normal;filter:saturate(.7)}
+.vineyard .celebration-backdrop::after{content:"";position:absolute;inset:0;z-index:-1;background:color-mix(in srgb,var(--secondary) 72%,transparent)}
+.vineyard .celebration-backdrop .section-copy{width:100%;max-width:620px;padding:28px 20px}
+.vineyard .celebration-backdrop .section-number{display:none}
+.vineyard .celebration-backdrop .section-copy h2,.vineyard .celebration-backdrop .section-copy .event-context,.vineyard .celebration-backdrop .section-copy .event-venue,.vineyard .celebration-backdrop .section-copy .event-address{color:var(--background)}
+.vineyard .celebration-backdrop .section-copy .event-venue{font-size:clamp(2.6rem,5vw,3.8rem)}
+.vineyard .celebration-backdrop .section-copy .button{border:1px solid color-mix(in srgb,var(--background) 65%,transparent);background:color-mix(in srgb,var(--secondary) 82%,transparent)}
+.other-details-grid{grid-template-columns:repeat(2,minmax(0,1fr));max-width:820px;margin:auto;gap:65px}
+@media(max-width:650px){.vineyard .invitation-section.celebration-backdrop{margin:25px -25px;min-height:580px;padding:50px 20px}.vineyard .celebration-backdrop .section-copy{padding:20px 5px}.other-details-grid{grid-template-columns:1fr;gap:40px}}
+/* Fade the complete image + veil together into the invitation paper. */
+.vineyard .invitation-hero.has-cover{background:var(--background);padding-bottom:160px}
+.vineyard .invitation-hero.has-cover .cover,.vineyard .invitation-hero.has-cover::after{mask-image:linear-gradient(to bottom,black 0%,black 66%,transparent 100%)}
+.vineyard .invitation-hero.has-cover::after{background:color-mix(in srgb,var(--secondary) 62%,transparent)}
+.vineyard .countdown-band{background:var(--background);border:0;margin-top:-15px;padding-top:25px}
+.vineyard .invitation-section.celebration-backdrop{background:var(--background);padding-top:145px;padding-bottom:145px;min-height:740px}
+.vineyard .celebration-backdrop .section-art,.vineyard .celebration-backdrop::after{mask-image:linear-gradient(to bottom,transparent 0%,black 23%,black 76%,transparent 100%)}
+.vineyard .celebration-backdrop::after{background:color-mix(in srgb,var(--secondary) 72%,transparent)}
+.vineyard .other-details{background:var(--background)}
+@media(max-width:650px){.vineyard .invitation-hero.has-cover{padding-bottom:140px}.vineyard .invitation-section.celebration-backdrop{padding:115px 20px;min-height:650px}}
+.vineyard .section-copy .button{border-radius:999px}
+
+.vineyard .invitation-hero.has-cover .cover,.vineyard .invitation-hero.has-cover::after{mask-image:linear-gradient(to bottom,black 0%,black 48%,rgba(0,0,0,.85) 62%,rgba(0,0,0,.4) 78%,rgba(0,0,0,.08) 92%,transparent 100%)}
+.vineyard .countdown-band{background:transparent;margin-top:-1px}
+.vineyard .invitation-section .section-copy .button,.vineyard .celebration-backdrop .section-copy .button{border-radius:999px}
+.other-details-grid .detail-vignette{display:block;width:96px;height:96px;object-fit:contain;margin:0 auto 20px;mix-blend-mode:multiply;mask-image:radial-gradient(ellipse,black 43%,transparent 74%)}
+.vineyard .section-art img[src*="sagrada-familia-novia"]{mask-image:none;filter:none;mix-blend-mode:multiply}
+.vineyard .section-art:has(img[src*="sagrada-familia-novia"])::after{display:none}
+
+.other-details-grid:has(>article:only-child){grid-template-columns:1fr;max-width:570px}
+.vineyard .other-details{background:transparent;padding-top:35px}
+.vineyard .invitation-section.celebration-backdrop .section-art,.vineyard .invitation-section.celebration-backdrop::after{mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.15) 10%,black 30%,black 65%,rgba(0,0,0,.35) 85%,transparent 100%)}
+.other-details-grid .detail-vignette{width:110px;height:110px;mask-image:radial-gradient(ellipse,black 35%,rgba(0,0,0,.75) 53%,transparent 75%)}
+
+.vineyard .other-details .gift-heading-art{display:block;width:clamp(170px,24vw,240px);height:auto;margin:0 auto 26px;mix-blend-mode:multiply;mask-image:radial-gradient(ellipse,black 42%,rgba(0,0,0,.8) 58%,transparent 76%)}
+.vineyard .other-details:has(.gift-heading-art)>h2{margin-bottom:30px}
