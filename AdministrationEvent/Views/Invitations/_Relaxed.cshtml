@@ -78,5 +78,6 @@ var spotifyId = SpotifyId(block.LinkUrl);
 <span class="card-signature">@Model.Hosts</span></section> }
 </div>
 @if(Model.RsvpEnabled) { <div class="paper-card relaxed-rsvp"><partial name="_Rsvp" model="Model" /></div> }
+<partial name="_SpotifyMusic" model="Model" />
 <footer class="relaxed-footer"><span aria-hidden="true">♡</span><p>@Model.Hosts</p>@if(Model.Date.HasValue) { <small>@Model.Date.Value.ToString("dd · MM · yyyy")</small> }</footer>
 </main></body></html>

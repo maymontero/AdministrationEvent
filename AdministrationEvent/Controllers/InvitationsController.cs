@@ -63,10 +63,11 @@ namespace AdministrationEvent.Controllers
         }
 
         [Authorize, HttpGet("admin/preview/{id:guid}")]
-        public IActionResult Preview(Guid id)
+        public IActionResult Preview(Guid id, bool spotifyTest = false)
         {
             var invitation = store.Find(id);
             ViewData["Preview"] = true;
+            if (spotifyTest && invitation != null) { invitation.Theme.SpotifyTrackUrl = "https://open.spotify.com/track/2TD8Bhc5hFPKh52lFJ2Ec5"; }
             return invitation == null ? (IActionResult)NotFound() : View("Show", invitation);
         }
     }

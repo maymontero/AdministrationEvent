@@ -25,6 +25,7 @@ class DatabaseChecks
                 new InvitationSection { Title = "Oculta", Enabled = false }
             }};
             item.Theme.HeadingFontUrl = "/fonts/test.woff2";
+            item.Theme.SpotifyTrackUrl = "https://open.spotify.com/embed/track/2TD8Bhc5hFPKh52lFJ2Ec5?theme=0";
             item.Theme.Layout = "vineyard"; item.ShowCountdown = true; item.HasConfirmedTime = false; item.RsvpEnabled = true;
             item.CoverImageUrl = "/images/zenia-diego/vineyard-watercolor.png";
             using (var db = new InvitationDbContext(options)) Check(new InvitationStore(db).Save(item) == null, "Crear invitación");
@@ -33,6 +34,11 @@ class DatabaseChecks
                 Check(restored.Sections[0].TitleFontSize == 28, "Tamaño de título por sección persistido");
                 Check(restored.Date == item.Date && restored.Sections.Count == 2 && !restored.Sections[1].Enabled, "Fecha y secciones persistidas");
                 Check(restored.Theme.HeadingFontUrl == item.Theme.HeadingFontUrl, "Fuente persistida");
+                Check(restored.Theme.SpotifyTrackUrl == item.Theme.SpotifyTrackUrl, "Canción Spotify persistida");
+                restored.Theme.SpotifyTrackUrl = "https://example.com/track/2TD8Bhc5hFPKh52lFJ2Ec5";
+                Check(store.Save(restored) != null, "Rechazar enlaces ajenos a Spotify");
+                restored.Theme.SpotifyTrackUrl = "";
+                Check(store.Save(restored) == null && store.Find(item.Id).Theme.SpotifyTrackUrl == "", "Quitar música guardada");
                 Check(restored.Theme.Layout == "vineyard" && restored.ShowCountdown && !restored.HasConfirmedTime && restored.RsvpEnabled && restored.TimeZone == "America/Montevideo", "Opciones de diseño persistidas");
                 Check(store.FindPublished(item.Slug) == null, "Borrador privado");
                 restored.IsPublished = true; restored.Theme.Accent = "#123456"; restored.Theme.Layout = "relaxed";
@@ -174,6 +180,7 @@ class DatabaseChecks
                 new InvitationSection { Title = "Oculta", Enabled = false }
             }};
             item.Theme.HeadingFontUrl = "/fonts/test.woff2";
+            item.Theme.SpotifyTrackUrl = "https://open.spotify.com/embed/track/2TD8Bhc5hFPKh52lFJ2Ec5?theme=0";
             item.Theme.Layout = "vineyard"; item.ShowCountdown = true; item.HasConfirmedTime = false; item.RsvpEnabled = true;
             item.CoverImageUrl = "/images/zenia-diego/vineyard-watercolor.png";
             Check(store.Save(item) == null, "MySQL: crear invitación");

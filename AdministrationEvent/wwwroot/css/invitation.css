@@ -99,7 +99,7 @@
 @media(max-width:650px){.vineyard .section-copy .event-schedule{font-size:16px}}
 
 .vineyard .other-details{padding:65px 45px 80px;text-align:center;background:color-mix(in srgb,var(--highlight) 12%,var(--background));color:var(--accent)}
-.vineyard .other-details>h2{font:normal clamp(2rem,4vw,3.2rem)/1.2 var(--heading);letter-spacing:.09em;text-transform:uppercase;margin:0 0 55px}
+.vineyard .other-details>h2{font:normal clamp(2.4rem,4.5vw,3.5rem)/1.1 var(--heading);color:var(--accent);letter-spacing:-.035em;text-transform:none;margin:0 0 35px}
 .other-details-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:38px}
 .other-details-grid h3{font:normal 25px/1.3 var(--heading);letter-spacing:.08em;text-transform:uppercase;margin:0 0 22px}
 .other-details-grid p{font:normal 20px/1.7 var(--body);white-space:pre-line;margin:0;overflow-wrap:anywhere}
@@ -156,5 +156,21 @@
 .vineyard .invitation-section.celebration-backdrop .section-art,.vineyard .invitation-section.celebration-backdrop::after{mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.15) 10%,black 30%,black 65%,rgba(0,0,0,.35) 85%,transparent 100%)}
 .other-details-grid .detail-vignette{width:110px;height:110px;mask-image:radial-gradient(ellipse,black 35%,rgba(0,0,0,.75) 53%,transparent 75%)}
 
-.vineyard .other-details .gift-heading-art{display:block;width:clamp(170px,24vw,240px);height:auto;margin:0 auto 26px;mix-blend-mode:multiply;mask-image:radial-gradient(ellipse,black 42%,rgba(0,0,0,.8) 58%,transparent 76%)}
+.vineyard .other-details .gift-heading-art{display:block;width:clamp(170px,24vw,240px);height:auto;margin:0 auto 26px;mix-blend-mode:normal;mask-image:none}
 .vineyard .other-details:has(.gift-heading-art)>h2{margin-bottom:30px}
+
+.invitation-spotify{display:block;border:0;border-radius:12px;width:100%;height:152px}
+
+.background-music{position:fixed;bottom:calc(14px + env(safe-area-inset-bottom,0px));right:calc(14px + env(safe-area-inset-right,0px));z-index:30;max-width:calc(100vw - 36px)}
+.background-music-toggle{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 14px;border:1px solid var(--accent);border-radius:30px;background:var(--background);color:var(--ink);font:14px/1.2 var(--body);box-shadow:0 3px 12px #0002;cursor:pointer}
+.background-music-toggle:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.background-music-toggle:disabled{cursor:wait;opacity:.75}
+.invitation-song{max-width:560px;margin:10px auto 50px;padding:24px 18px 30px;text-align:center;color:var(--ink)}
+.song-ornament{display:block;margin-bottom:14px;color:var(--accent);font-size:32px}
+.invitation-song h2{font-family:var(--heading);font-size:clamp(28px,5vw,38px);font-weight:400;margin:0 0 12px}
+.song-intro{font-family:var(--body);font-size:16px;line-height:1.6;margin:0 0 22px}
+.song-player{scroll-margin-top:90px}
+.song-player iframe{display:block;width:100%;height:152px;border:0;border-radius:12px}
+@media(max-width:600px){.background-music-toggle{font-size:13px;padding:10px 12px}.invitation-song{margin-bottom:30px;padding:20px 12px}.invitation-footer,.relaxed-footer{padding-bottom:90px}}
+
+.song-status{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}

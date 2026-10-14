@@ -10,8 +10,8 @@
     var bodyFont = string.IsNullOrEmpty(t.BodyFontUrl) ? t.BodyFont : "InvitationBody";
     var culture = new CultureInfo("es-UY");
     var detailTitles = new[] { "Niños", "Regalos", "Dress code" };
-    var details = vineyard ? Model.Sections.Where(x => x.Enabled && (detailTitles.Contains(x.Title) || x.ImageUrl == "/images/zenia-diego/regalos-acuarela.png")).ToList() : new System.Collections.Generic.List<AdministrationEvent.Models.InvitationSection>();
-    var blocks = Model.Sections.Where(x => x.Enabled && (!vineyard || !(detailTitles.Contains(x.Title) || x.ImageUrl == "/images/zenia-diego/regalos-acuarela.png"))).ToList();
+    var details = vineyard ? Model.Sections.Where(x => x.Enabled && (detailTitles.Contains(x.Title) || (x.ImageUrl == "/images/zenia-diego/regalos-acuarela.png" || x.ImageUrl == "/images/zenia-diego/regalos-estilo-sagrada-familia-v2.png"))).ToList() : new System.Collections.Generic.List<AdministrationEvent.Models.InvitationSection>();
+    var blocks = Model.Sections.Where(x => x.Enabled && (!vineyard || !(detailTitles.Contains(x.Title) || (x.ImageUrl == "/images/zenia-diego/regalos-acuarela.png" || x.ImageUrl == "/images/zenia-diego/regalos-estilo-sagrada-familia-v2.png")))).ToList();
     var form = ViewData["RsvpForm"] as RsvpForm ?? new RsvpForm();
 }
 @if(t.Layout == "relaxed") { <partial name="_Relaxed" model="Model" /> } else {
@@ -61,10 +61,11 @@
 </div>
 @if(details.Any()) {
 <section class="other-details" id="otros-detalles" aria-labelledby="other-details-title">@if(details.Count == 1 && !string.IsNullOrEmpty(details[0].ImageUrl)) { <img class="gift-heading-art" src="@details[0].ImageUrl" alt="" loading="lazy" /> }<h2 id="other-details-title" style="@(details.Count == 1 && details[0].TitleFontSize.HasValue ? $"font-size:{details[0].TitleFontSize.Value}px" : null)">@(details.Count == 1 ? details[0].Title : "Otros detalles")</h2><div class="other-details-grid">
-@foreach(var detail in details) { <article>@if(details.Count > 1 && !string.IsNullOrEmpty(detail.ImageUrl)) { <img class="detail-vignette" src="@detail.ImageUrl" alt="" loading="lazy" /> }@if(details.Count > 1) { <h3 style="@(detail.TitleFontSize.HasValue ? $"font-size:{detail.TitleFontSize.Value}px" : null)">@detail.Title</h3> }<p>@detail.Content</p>@if(!string.IsNullOrEmpty(detail.LinkUrl)) { <a href="@detail.LinkUrl" target="_blank" rel="noopener noreferrer">@detail.LinkLabel ↗</a> }</article> }
+@foreach(var detail in details) { <article>@if(details.Count > 1 && !string.IsNullOrEmpty(detail.ImageUrl)) { <img class="detail-vignette" src="@detail.ImageUrl" alt="" loading="lazy" /> }@if(details.Count > 1) { <h3 style="@(detail.TitleFontSize.HasValue ? $"font-size:{detail.TitleFontSize.Value}px" : null)">@detail.Title</h3> }<p>@(System.Text.RegularExpressions.Regex.Replace(detail.Content ?? "", @"(Si (?:quieres|querés|queres) hacernos llegar algo más)\s*:", "$1", System.Text.RegularExpressions.RegexOptions.IgnoreCase))</p>@if(!string.IsNullOrEmpty(detail.LinkUrl)) { <a href="@detail.LinkUrl" target="_blank" rel="noopener noreferrer">@detail.LinkLabel ↗</a> }</article> }
 </div></section>
 }
 @if(Model.RsvpEnabled) { <partial name="_Rsvp" model="Model" /> }
+<partial name="_SpotifyMusic" model="Model" />
 <footer class="invitation-footer"><span aria-hidden="true">✧</span><p>@Model.Hosts</p>@if(Model.Date.HasValue) { <small>@Model.Date.Value.ToString("dd · MM · yyyy")</small> }</footer>
 </main></body></html>
 

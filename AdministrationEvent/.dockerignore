@@ -1,0 +1,15 @@
+**/bin
+**/obj
+.git
+.vs
+.vscode
+.codex
+.agents
+.aws
+App_Data
+Tests
+docs
+**/.env
+**/.env.*
+**/secrets.json
+**/*.user

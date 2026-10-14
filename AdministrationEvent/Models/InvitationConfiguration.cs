@@ -23,6 +23,8 @@ namespace AdministrationEvent.Models
     }
     public class InvitationTheme
     {
+        [StringLength(2000), RegularExpression(@"^$|^https://open\.spotify\.com/(?:embed/)?track/[a-zA-Z0-9]{22}/?(?:\?[^\s]*)?$")]
+        public string SpotifyTrackUrl { get; set; } = "";
         [Required, RegularExpression("^(classic|vineyard|relaxed)$")] public string Layout { get; set; } = "classic";
         [Required, RegularExpression("^#[0-9a-fA-F]{6}$")] public string Secondary { get; set; } = "#76805e";
         [Required, RegularExpression("^#[0-9a-fA-F]{6}$")] public string Highlight { get; set; } = "#eee3bd";

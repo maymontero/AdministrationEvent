@@ -17,6 +17,7 @@ namespace AdministrationEvent.Services
         private IQueryable<Domain.Invitation> Query() => db.Invitations
             .Include(x => x.Theme).ThenInclude(x => x.Colors)
             .Include(x => x.Theme).ThenInclude(x => x.Fonts)
+            .Include(x => x.Theme).ThenInclude(x => x.Audios)
             .Include(x => x.Sections);
         public List<InvitationConfiguration> All() => Query().AsNoTracking().OrderBy(x => x.Title).ToList().Select(ToConfiguration).ToList();
         public InvitationConfiguration Find(Guid id) { var item = Query().AsNoTracking().SingleOrDefault(x => x.PublicId == id); return item == null ? null : ToConfiguration(item); }
@@ -43,6 +44,12 @@ namespace AdministrationEvent.Services
             if (entity.Theme == null) entity.Theme = new Domain.InvitationTheme();
             var theme = entity.Theme;
             theme.Layout = item.Theme.Layout;
+            var music = theme.Audios.SingleOrDefault(x => x.Key == "spotify");
+            if (string.IsNullOrEmpty(item.Theme.SpotifyTrackUrl)) { if (music != null) db.AudioResources.Remove(music); }
+            else {
+                if (music == null) { music = new Domain.AudioResource { Key = "spotify", Loop = false }; theme.Audios.Add(music); }
+                music.Url = item.Theme.SpotifyTrackUrl;
+            }
             theme.CornerRadius = item.Theme.CornerRadius; theme.FontSize = item.Theme.FontSize; theme.ContentWidth = item.Theme.ContentWidth;
             SetColor(theme, "background", item.Theme.Background); SetColor(theme, "text", item.Theme.Text); SetColor(theme, "accent", item.Theme.Accent);
             SetColor(theme, "secondary", item.Theme.Secondary); SetColor(theme, "highlight", item.Theme.Highlight);
@@ -67,6 +74,7 @@ namespace AdministrationEvent.Services
             if (entity.Theme != null) {
                 var theme = entity.Theme;
                 result.Theme.Layout = theme.Layout;
+                result.Theme.SpotifyTrackUrl = theme.Audios.SingleOrDefault(x => x.Key == "spotify")?.Url ?? "";
                 result.Theme.Secondary = theme.Colors.SingleOrDefault(x => x.Key == "secondary")?.Value ?? result.Theme.Secondary;
                 result.Theme.Highlight = theme.Colors.SingleOrDefault(x => x.Key == "highlight")?.Value ?? result.Theme.Highlight;
                 result.Theme.Background = theme.Colors.SingleOrDefault(x => x.Key == "background")?.Value ?? result.Theme.Background;

@@ -1,4 +1,49 @@
 (() => {
+  const spotify = document.querySelector('[data-spotify-music]');
+  if (spotify) {
+    const button = spotify.querySelector('[data-spotify-toggle]');
+    const panel = spotify.querySelector('[data-spotify-panel]');
+    const status = spotify.querySelector('[data-spotify-status]');
+    let controller = null, ready = false, paused = true, pending = null;
+    const clearPending = () => { if (pending) clearTimeout(pending); pending = null; };
+    const fallback = () => {
+      clearPending(); button.disabled = false;
+      panel.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'center' });
+      status.textContent = 'Tocá Play en Spotify para escuchar.';
+    };
+    const update = isPaused => {
+      paused = isPaused; clearPending(); button.disabled = false;
+      button.textContent = paused ? '♫ Reproducir' : '♫ Pausar';
+      button.setAttribute('aria-pressed', String(!paused));
+      status.textContent = paused ? 'Reproducción pausada' : 'Sonando en Spotify';
+    };
+    button.hidden = false;
+    button.addEventListener('click', () => {
+      if (!ready) { fallback(); return; }
+      button.disabled = true;
+      pending = setTimeout(fallback, 5000);
+      try { if (paused) controller.resume(); else controller.pause(); } catch { fallback(); }
+    });
+    window.onSpotifyIframeApiReady = api => {
+      try {
+        api.createController(spotify.querySelector('[data-spotify-embed]'), {
+          uri: 'spotify:track:' + spotify.dataset.track, width: '100%', height: 152, theme: 'dark'
+        }, embed => {
+          controller = embed;
+          embed.addListener('ready', () => { ready = true; });
+          embed.addListener('playback_started', () => { update(false); });
+          embed.addListener('playback_update', event => {
+            if (typeof event.data?.isPaused === 'boolean' && !event.data.isBuffering) update(event.data.isPaused);
+          });
+        });
+      } catch { fallback(); }
+    };
+    const script = document.createElement('script');
+    script.src = 'https://open.spotify.com/embed/iframe-api/v1';
+    script.async = true;
+    script.addEventListener('error', fallback);
+    document.head.appendChild(script);
+  }
   const countdown = document.querySelector('[data-date]');
   if (countdown) {
     const daysOnly = countdown.dataset.daysOnly === 'true';

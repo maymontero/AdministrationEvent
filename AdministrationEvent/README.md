@@ -90,3 +90,9 @@ Aplicar las migraciones `GuestAdministration` y `GuestWaitingList` con `dotnet e
 Desde **Invitados y asistencia → Etiquetas y mesas**, crear etiquetas con nombre y color y mesas con nombre y capacidad. Cada invitación mantiene su propia organización. En el editor de invitados se pueden seleccionar varias etiquetas y una mesa por grupo; la lista permite filtrar por etiqueta, mesa o sin mesa.
 
 El listado de mesas incluye los grupos asignados y permite moverlos o dejarlos sin mesa. Los lugares previstos usan la cantidad invitada para pendientes y la cantidad de la última respuesta para confirmados; las ausencias, los archivados y la lista de espera no ocupan lugares. Los acompañantes están incluidos en la cantidad del grupo y se sientan juntos. Se muestra un aviso al superar la capacidad, sin impedir reorganizar. Eliminar una mesa conserva sus invitados sin asignación; eliminar una etiqueta solo quita sus asociaciones. Aplicar la migración `GuestTagsAndTables` antes de usar estas opciones. No incluye plano visual por ahora.
+
+La música de la invitación se configura con `Theme.SpotifyTrackUrl` (por ejemplo `https://open.spotify.com/track/2TD8Bhc5hFPKh52lFJ2Ec5`). Acepta enlaces de canción o embed de Spotify, se guarda en AudioResources y aparece como control flotante en los tres diseños. Vacío oculta el reproductor. El invitado pulsa Play; Spotify determina si reproduce la canción completa o una muestra. No requiere una migración adicional.
+
+
+
+El botón flotante `♫ Reproducir` controla Spotify con su iFrame API y cambia a `♫ Pausar` según los eventos reales de reproducción, también cuando se usa Play en el panel. Si la API no responde o el navegador bloquea el inicio, el botón desplaza a la sección de la canción, al final, después del formulario de confirmación, donde está el reproductor oficial. `?spotifyTest=true` en la vista previa prueba Brindo sin guardar cambios.
