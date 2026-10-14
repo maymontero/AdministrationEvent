@@ -60,7 +60,7 @@ var videoId = YouTubeId(block.LinkUrl);
 var spotifyId = SpotifyId(block.LinkUrl);
 <section class="paper-card detail-card @(videoId != null || spotifyId != null ? "music-card" : "")">
 @if(videoId != null || spotifyId != null) { <span class="music-symbol" aria-hidden="true">♫</span> }
-<h2>@block.Title</h2>
+<h2 style="@(block.TitleFontSize.HasValue ? $"font-size:{block.TitleFontSize.Value}px" : null)">@block.Title</h2>
 @if(!string.IsNullOrEmpty(block.ImageUrl)) { <img src="@block.ImageUrl" alt="@block.Title" loading="lazy" /> }
 <div class="detail-information">
 @{ var information = block.Content.Split("\n\n", StringSplitOptions.RemoveEmptyEntries); }

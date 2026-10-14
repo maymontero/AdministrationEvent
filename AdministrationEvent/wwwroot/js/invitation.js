@@ -14,8 +14,9 @@
       const remaining = Math.max(0, confirmed ? target - now.getTime() : targetDay - today);
       if (daysOnly && remaining === 0) {
         countdown.hidden = true;
-        const section = countdown.closest('.relaxed-countdown');
-        section.querySelector('.countdown-intro').textContent = 'Gracias por acompañarnos';
+        const section = countdown.closest('.relaxed-countdown, .countdown-band');
+        const intro = section.querySelector('.countdown-intro, .eyebrow');
+        if (intro) intro.textContent = 'Gracias por acompañarnos';
         section.querySelector('[data-countdown-caption]').textContent = 'Gracias por compartir con nosotros este día tan especial.';
         return;
       }
@@ -31,7 +32,7 @@
   const attendance = document.querySelector('#guest-attending');
   const guestCount = document.querySelector('[data-guest-count]');
   if (attendance && guestCount) {
-    const update = () => { const absent = attendance.value === 'false'; guestCount.hidden = absent; guestCount.querySelector('input').disabled = absent; };
+    const update = () => { const absent = attendance.value === 'false'; guestCount.hidden = absent; guestCount.querySelector('select').disabled = absent; };
     attendance.addEventListener('change', update); update();
   }
 })();

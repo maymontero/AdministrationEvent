@@ -40,6 +40,8 @@ namespace AdministrationEvent.Controllers
         private IActionResult HandleResponse(InvitationConfiguration invitation, RsvpForm form, bool preview)
         {
             if (string.IsNullOrWhiteSpace(form.Name)) ModelState.AddModelError("Name", "Ingresá tu nombre.");
+            if (form.Attending == true && (!form.GuestCount.HasValue || form.GuestCount < 1 || form.GuestCount > 10))
+                ModelState.AddModelError("GuestCount", "Indicá cuántas personas asistirán en total, incluyéndote (entre 1 y 10).");
             if (!ModelState.IsValid)
             {
                 if (preview) ViewData["Preview"] = true;
@@ -50,9 +52,9 @@ namespace AdministrationEvent.Controllers
             {
                 var entity = db.Invitations.Single(x => x.PublicId == invitation.Id);
                 db.GuestResponses.Add(new GuestResponse {
-                    InvitationId = entity.Id, Name = form.Name.Trim(), Contact = form.Contact?.Trim() ?? "",
-                    Attending = form.Attending.Value, GuestCount = form.Attending.Value ? form.GuestCount : 0,
-                    Notes = form.Notes?.Trim() ?? "", SubmittedAtUtc = DateTime.UtcNow
+                    InvitationId = entity.Id, GuestId = GuestMatching.FindUnique(db, entity.Id, form.Name), Name = form.Name.Trim(), Contact = form.Contact?.Trim() ?? "",
+                    Attending = form.Attending.Value, GuestCount = form.Attending.Value ? form.GuestCount.Value : 0,
+                    DietaryRestrictions = form.DietaryRestrictions?.Trim() ?? "", SongRequest = form.SongRequest?.Trim() ?? "", Notes = form.Notes?.Trim() ?? "", SubmittedAtUtc = DateTime.UtcNow
                 });
                 db.SaveChanges();
             }

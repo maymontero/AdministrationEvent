@@ -272,5 +272,155 @@ BEGIN
     VALUES ('20261008222907_InvitationDesignAndGuestResponses', '10.0.9');
 END;
 
+IF NOT EXISTS(SELECT * FROM `__EFMigrationsHistory` WHERE `MigrationId` = '20261009174631_GuestAdministration')
+BEGIN
+    ALTER TABLE `GuestResponses` ADD `GuestId` bigint NULL;
+END;
+
+IF NOT EXISTS(SELECT * FROM `__EFMigrationsHistory` WHERE `MigrationId` = '20261009174631_GuestAdministration')
+BEGIN
+    CREATE TABLE `Guests` (
+        `Id` bigint NOT NULL AUTO_INCREMENT,
+        `InvitationId` bigint NOT NULL,
+        `Name` varchar(120) NOT NULL,
+        `Contact` varchar(200) NULL,
+        `InvitedCount` int NOT NULL,
+        `Notes` varchar(500) NULL,
+        `IsArchived` tinyint(1) NOT NULL,
+        PRIMARY KEY (`Id`),
+        CONSTRAINT `FK_Guests_Invitations_InvitationId` FOREIGN KEY (`InvitationId`) REFERENCES `Invitations` (`Id`) ON DELETE CASCADE
+    );
+END;
+
+IF NOT EXISTS(SELECT * FROM `__EFMigrationsHistory` WHERE `MigrationId` = '20261009174631_GuestAdministration')
+BEGIN
+    CREATE INDEX `IX_GuestResponses_GuestId` ON `GuestResponses` (`GuestId`);
+END;
+
+IF NOT EXISTS(SELECT * FROM `__EFMigrationsHistory` WHERE `MigrationId` = '20261009174631_GuestAdministration')
+BEGIN
+    CREATE INDEX `IX_Guests_InvitationId_IsArchived` ON `Guests` (`InvitationId`, `IsArchived`);
+END;
+
+IF NOT EXISTS(SELECT * FROM `__EFMigrationsHistory` WHERE `MigrationId` = '20261009174631_GuestAdministration')
+BEGIN
+    ALTER TABLE `GuestResponses` ADD CONSTRAINT `FK_GuestResponses_Guests_GuestId` FOREIGN KEY (`GuestId`) REFERENCES `Guests` (`Id`) ON DELETE SET NULL;
+END;
+
+IF NOT EXISTS(SELECT * FROM `__EFMigrationsHistory` WHERE `MigrationId` = '20261009174631_GuestAdministration')
+BEGIN
+    INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+    VALUES ('20261009174631_GuestAdministration', '10.0.9');
+END;
+
+IF NOT EXISTS(SELECT * FROM `__EFMigrationsHistory` WHERE `MigrationId` = '20261009175916_GuestWaitingList')
+BEGIN
+    ALTER TABLE `Guests` ADD `IsWaitlisted` tinyint(1) NOT NULL DEFAULT FALSE;
+END;
+
+IF NOT EXISTS(SELECT * FROM `__EFMigrationsHistory` WHERE `MigrationId` = '20261009175916_GuestWaitingList')
+BEGIN
+    INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+    VALUES ('20261009175916_GuestWaitingList', '10.0.9');
+END;
+
+IF NOT EXISTS(SELECT * FROM `__EFMigrationsHistory` WHERE `MigrationId` = '20261013223601_GuestTagsAndTables')
+BEGIN
+    ALTER TABLE `Guests` ADD `TableId` bigint NULL;
+END;
+
+IF NOT EXISTS(SELECT * FROM `__EFMigrationsHistory` WHERE `MigrationId` = '20261013223601_GuestTagsAndTables')
+BEGIN
+    CREATE TABLE `GuestTags` (
+        `Id` bigint NOT NULL AUTO_INCREMENT,
+        `InvitationId` bigint NOT NULL,
+        `Name` varchar(80) NOT NULL,
+        `Color` varchar(7) NOT NULL,
+        PRIMARY KEY (`Id`),
+        CONSTRAINT `FK_GuestTags_Invitations_InvitationId` FOREIGN KEY (`InvitationId`) REFERENCES `Invitations` (`Id`) ON DELETE CASCADE
+    );
+END;
+
+IF NOT EXISTS(SELECT * FROM `__EFMigrationsHistory` WHERE `MigrationId` = '20261013223601_GuestTagsAndTables')
+BEGIN
+    CREATE TABLE `SeatingTables` (
+        `Id` bigint NOT NULL AUTO_INCREMENT,
+        `InvitationId` bigint NOT NULL,
+        `Name` varchar(80) NOT NULL,
+        `Capacity` int NOT NULL,
+        PRIMARY KEY (`Id`),
+        CONSTRAINT `FK_SeatingTables_Invitations_InvitationId` FOREIGN KEY (`InvitationId`) REFERENCES `Invitations` (`Id`) ON DELETE CASCADE
+    );
+END;
+
+IF NOT EXISTS(SELECT * FROM `__EFMigrationsHistory` WHERE `MigrationId` = '20261013223601_GuestTagsAndTables')
+BEGIN
+    CREATE TABLE `GuestTagAssignments` (
+        `GuestId` bigint NOT NULL,
+        `TagId` bigint NOT NULL,
+        PRIMARY KEY (`GuestId`, `TagId`),
+        CONSTRAINT `FK_GuestTagAssignments_GuestTags_TagId` FOREIGN KEY (`TagId`) REFERENCES `GuestTags` (`Id`) ON DELETE CASCADE,
+        CONSTRAINT `FK_GuestTagAssignments_Guests_GuestId` FOREIGN KEY (`GuestId`) REFERENCES `Guests` (`Id`) ON DELETE CASCADE
+    );
+END;
+
+IF NOT EXISTS(SELECT * FROM `__EFMigrationsHistory` WHERE `MigrationId` = '20261013223601_GuestTagsAndTables')
+BEGIN
+    CREATE INDEX `IX_Guests_TableId` ON `Guests` (`TableId`);
+END;
+
+IF NOT EXISTS(SELECT * FROM `__EFMigrationsHistory` WHERE `MigrationId` = '20261013223601_GuestTagsAndTables')
+BEGIN
+    CREATE INDEX `IX_GuestTagAssignments_TagId` ON `GuestTagAssignments` (`TagId`);
+END;
+
+IF NOT EXISTS(SELECT * FROM `__EFMigrationsHistory` WHERE `MigrationId` = '20261013223601_GuestTagsAndTables')
+BEGIN
+    CREATE UNIQUE INDEX `IX_GuestTags_InvitationId_Name` ON `GuestTags` (`InvitationId`, `Name`);
+END;
+
+IF NOT EXISTS(SELECT * FROM `__EFMigrationsHistory` WHERE `MigrationId` = '20261013223601_GuestTagsAndTables')
+BEGIN
+    CREATE UNIQUE INDEX `IX_SeatingTables_InvitationId_Name` ON `SeatingTables` (`InvitationId`, `Name`);
+END;
+
+IF NOT EXISTS(SELECT * FROM `__EFMigrationsHistory` WHERE `MigrationId` = '20261013223601_GuestTagsAndTables')
+BEGIN
+    ALTER TABLE `Guests` ADD CONSTRAINT `FK_Guests_SeatingTables_TableId` FOREIGN KEY (`TableId`) REFERENCES `SeatingTables` (`Id`) ON DELETE SET NULL;
+END;
+
+IF NOT EXISTS(SELECT * FROM `__EFMigrationsHistory` WHERE `MigrationId` = '20261013223601_GuestTagsAndTables')
+BEGIN
+    INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+    VALUES ('20261013223601_GuestTagsAndTables', '10.0.9');
+END;
+
+IF NOT EXISTS(SELECT * FROM `__EFMigrationsHistory` WHERE `MigrationId` = '20261014010112_RsvpDietaryAndSong')
+BEGIN
+    ALTER TABLE `GuestResponses` ADD `DietaryRestrictions` varchar(500) NULL;
+END;
+
+IF NOT EXISTS(SELECT * FROM `__EFMigrationsHistory` WHERE `MigrationId` = '20261014010112_RsvpDietaryAndSong')
+BEGIN
+    ALTER TABLE `GuestResponses` ADD `SongRequest` varchar(200) NULL;
+END;
+
+IF NOT EXISTS(SELECT * FROM `__EFMigrationsHistory` WHERE `MigrationId` = '20261014010112_RsvpDietaryAndSong')
+BEGIN
+    INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+    VALUES ('20261014010112_RsvpDietaryAndSong', '10.0.9');
+END;
+
+IF NOT EXISTS(SELECT * FROM `__EFMigrationsHistory` WHERE `MigrationId` = '20261014022815_SectionTitleFontSize')
+BEGIN
+    ALTER TABLE `InvitationSections` ADD `TitleFontSize` int NULL;
+END;
+
+IF NOT EXISTS(SELECT * FROM `__EFMigrationsHistory` WHERE `MigrationId` = '20261014022815_SectionTitleFontSize')
+BEGIN
+    INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+    VALUES ('20261014022815_SectionTitleFontSize', '10.0.9');
+END;
+
 COMMIT;
 

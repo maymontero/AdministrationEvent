@@ -68,3 +68,25 @@ Antes de desplegar: usar HTTPS, respaldar la base, limitar intentos de acceso y 
 Abrir la carpeta que contiene `AdministrationEvent.csproj`, no solo un archivo `.cs`. Usar **Cmd + Shift + B** para compilar la web, **F5** con «Depurar web (.NET 10)» para iniciar el depurador, o la tarea «Ejecutar web». Las tareas de `.vscode` apuntan al proyecto completo. El comando «Run C# File» intenta ejecutar el archivo activo como programa independiente y no corresponde a controladores MVC. Desde la terminal también se puede usar `dotnet build AdministrationEvent.csproj` y `dotnet run --project AdministrationEvent.csproj`.
 
 La web local usa `http://localhost:5088` (panel: `/admin`). Se evita el puerto 5000 porque AirPlay de macOS puede ocuparlo y devolver un error 403. Tanto F5 como `dotnet run --project AdministrationEvent.csproj` usan el puerto 5088. Si quedó abierta una pestaña antigua con `localhost:5000`, abrir la dirección nueva después de reiniciar la aplicación.
+
+## Invitados y confirmaciones
+
+Desde `/admin`, abrir **Invitados y asistencia** en la invitación elegida. Cada invitación tiene su propia lista: las propuestas de diseño mantienen listas independientes hasta elegir cuál se enviará.
+
+- Cargar una persona, pareja o familia, su contacto opcional, cantidad de personas invitadas (1–10) y notas internas.
+- Separar lista fija y lista de espera, con filtros y botones para mover grupos entre ambas. La espera no suma en las personas confirmadas.
+- Editar, buscar y filtrar pendientes, confirmaciones, ausencias y archivados. Quitar archiva y permite recuperar, conservando las respuestas.
+- Al confirmar, elegir explícitamente el total de asistentes, incluyéndose y contando acompañantes sin nombre. «Pepita + uno» y «Pepita y Pepito» son 2 si seleccionan 2; no se intenta adivinar la cantidad por el texto.
+- Todos usan el mismo enlace público. La lista y los contactos no se muestran públicamente. Las notas internas tampoco.
+- El formulario guarda cada envío en `GuestResponses`. Si el nombre normalizado (sin diferencias de mayúsculas, tildes ni espacios repetidos) coincide con un único invitado activo de la lista fija, vincula su `GuestId`. No es una verificación de identidad. Homónimos y nombres diferentes quedan sin asociar y se revisan manualmente.
+- En **Respuestas recibidas**, asociar/desvincular cada envío. La última respuesta asociada por fecha UTC e ID define el estado actual. Las anteriores quedan como historial y no se suman dos veces. Las respuestas sin asociar o de invitados archivados o en espera no suman en los totales.
+- Se puede registrar una respuesta desde administración y revisar las cantidades que superen las invitadas. Los mensajes y la fecha de recepción se guardan en MySQL; las fechas se presentan en la zona horaria de la invitación.
+- Las pruebas del formulario desde la vista previa no se guardan. Los envíos de la invitación publicada sí.
+
+Aplicar las migraciones `GuestAdministration` y `GuestWaitingList` con `dotnet ef database update` antes de abrir el panel. Pruebas: `dotnet run --project Tests/DatabaseChecks/DatabaseChecks.csproj`; contra MySQL, agregar `-- --mysql` (usa una transacción revertida).
+
+## Etiquetas y mesas
+
+Desde **Invitados y asistencia → Etiquetas y mesas**, crear etiquetas con nombre y color y mesas con nombre y capacidad. Cada invitación mantiene su propia organización. En el editor de invitados se pueden seleccionar varias etiquetas y una mesa por grupo; la lista permite filtrar por etiqueta, mesa o sin mesa.
+
+El listado de mesas incluye los grupos asignados y permite moverlos o dejarlos sin mesa. Los lugares previstos usan la cantidad invitada para pendientes y la cantidad de la última respuesta para confirmados; las ausencias, los archivados y la lista de espera no ocupan lugares. Los acompañantes están incluidos en la cantidad del grupo y se sientan juntos. Se muestra un aviso al superar la capacidad, sin impedir reorganizar. Eliminar una mesa conserva sus invitados sin asignación; eliminar una etiqueta solo quita sus asociaciones. Aplicar la migración `GuestTagsAndTables` antes de usar estas opciones. No incluye plano visual por ahora.

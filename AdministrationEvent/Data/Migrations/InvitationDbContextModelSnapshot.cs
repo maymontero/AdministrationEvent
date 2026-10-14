@@ -146,6 +146,49 @@ namespace AdministrationEvent.Migrations
                     b.ToTable("FontResources");
                 });
 
+            modelBuilder.Entity("Application.Guest", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Contact")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<long>("InvitationId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("InvitedCount")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsWaitlisted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("varchar(120)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<long?>("TableId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TableId");
+
+                    b.HasIndex("InvitationId", "IsArchived");
+
+                    b.ToTable("Guests");
+                });
+
             modelBuilder.Entity("Application.GuestResponse", b =>
                 {
                     b.Property<long>("Id")
@@ -159,8 +202,15 @@ namespace AdministrationEvent.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("varchar(200)");
 
+                    b.Property<string>("DietaryRestrictions")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
                     b.Property<int>("GuestCount")
                         .HasColumnType("int");
+
+                    b.Property<long?>("GuestId")
+                        .HasColumnType("bigint");
 
                     b.Property<long>("InvitationId")
                         .HasColumnType("bigint");
@@ -174,14 +224,62 @@ namespace AdministrationEvent.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("varchar(500)");
 
+                    b.Property<string>("SongRequest")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
                     b.Property<DateTime>("SubmittedAtUtc")
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("GuestId");
+
                     b.HasIndex("InvitationId", "SubmittedAtUtc");
 
                     b.ToTable("GuestResponses");
+                });
+
+            modelBuilder.Entity("Application.GuestTag", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Color")
+                        .IsRequired()
+                        .HasMaxLength(7)
+                        .HasColumnType("varchar(7)");
+
+                    b.Property<long>("InvitationId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("varchar(80)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InvitationId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("GuestTags");
+                });
+
+            modelBuilder.Entity("Application.GuestTagAssignment", b =>
+                {
+                    b.Property<long>("GuestId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("TagId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("GuestId", "TagId");
+
+                    b.HasIndex("TagId");
+
+                    b.ToTable("GuestTagAssignments");
                 });
 
             modelBuilder.Entity("Application.ImageResource", b =>
@@ -321,6 +419,9 @@ namespace AdministrationEvent.Migrations
                         .HasMaxLength(120)
                         .HasColumnType("varchar(120)");
 
+                    b.Property<int?>("TitleFontSize")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("InvitationId", "Order");
@@ -416,6 +517,31 @@ namespace AdministrationEvent.Migrations
                     b.ToTable("RSVPConfigurations");
                 });
 
+            modelBuilder.Entity("Application.SeatingTable", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Capacity")
+                        .HasColumnType("int");
+
+                    b.Property<long>("InvitationId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("varchar(80)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InvitationId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("SeatingTables");
+                });
+
             modelBuilder.Entity("Application.AudioResource", b =>
                 {
                     b.HasOne("Application.InvitationTheme", "Theme")
@@ -474,11 +600,54 @@ namespace AdministrationEvent.Migrations
                     b.Navigation("Theme");
                 });
 
-            modelBuilder.Entity("Application.GuestResponse", b =>
+            modelBuilder.Entity("Application.Guest", b =>
                 {
                     b.HasOne("Application.Invitation", null)
                         .WithMany()
                         .HasForeignKey("InvitationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Application.SeatingTable", null)
+                        .WithMany()
+                        .HasForeignKey("TableId")
+                        .OnDelete(DeleteBehavior.SetNull);
+                });
+
+            modelBuilder.Entity("Application.GuestResponse", b =>
+                {
+                    b.HasOne("Application.Guest", null)
+                        .WithMany()
+                        .HasForeignKey("GuestId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Application.Invitation", null)
+                        .WithMany()
+                        .HasForeignKey("InvitationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Application.GuestTag", b =>
+                {
+                    b.HasOne("Application.Invitation", null)
+                        .WithMany()
+                        .HasForeignKey("InvitationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Application.GuestTagAssignment", b =>
+                {
+                    b.HasOne("Application.Guest", null)
+                        .WithMany()
+                        .HasForeignKey("GuestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Application.GuestTag", null)
+                        .WithMany()
+                        .HasForeignKey("TagId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -525,6 +694,15 @@ namespace AdministrationEvent.Migrations
                         .IsRequired();
 
                     b.Navigation("Invitation");
+                });
+
+            modelBuilder.Entity("Application.SeatingTable", b =>
+                {
+                    b.HasOne("Application.Invitation", null)
+                        .WithMany()
+                        .HasForeignKey("InvitationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Application.Event", b =>
