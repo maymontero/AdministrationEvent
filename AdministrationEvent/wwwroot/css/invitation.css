@@ -156,7 +156,7 @@
 .vineyard .invitation-section.celebration-backdrop .section-art,.vineyard .invitation-section.celebration-backdrop::after{mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.15) 10%,black 30%,black 65%,rgba(0,0,0,.35) 85%,transparent 100%)}
 .other-details-grid .detail-vignette{width:110px;height:110px;mask-image:radial-gradient(ellipse,black 35%,rgba(0,0,0,.75) 53%,transparent 75%)}
 
-.vineyard .other-details .gift-heading-art{display:block;width:clamp(170px,24vw,240px);height:auto;margin:0 auto 26px;mix-blend-mode:normal;mask-image:none}
+.vineyard .other-details .gift-heading-art{display:block;width:clamp(140px,20vw,190px);height:auto;margin:0 auto 22px;mix-blend-mode:normal;mask-image:none}
 .vineyard .other-details:has(.gift-heading-art)>h2{margin-bottom:30px}
 
 .invitation-spotify{display:block;border:0;border-radius:12px;width:100%;height:152px}
@@ -174,3 +174,9 @@
 @media(max-width:600px){.background-music-toggle{font-size:13px;padding:10px 12px}.invitation-song{margin-bottom:30px;padding:20px 12px}.invitation-footer,.relaxed-footer{padding-bottom:90px}}
 
 .song-status{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+
+/* Ceremonia: ilustración pequeña, sin título sobre los datos. */
+.vineyard .with-image .section-art:has(img[src*="sagrada-familia"]){width:clamp(140px,20vw,190px);margin-bottom:22px}
+.vineyard .invitation-section:has(img[src*="sagrada-familia"]) .section-copy>h2{display:none}
+.vineyard .invitation-section.with-image:has(img[src*="sagrada-familia"]){padding:25px 0 40px}
+.vineyard .invitation-section:has(img[src*="sagrada-familia"]) .section-copy{margin-top:0}
