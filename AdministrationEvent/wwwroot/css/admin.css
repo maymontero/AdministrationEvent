@@ -1,0 +1,21 @@
+@font-face{font-family:AdminHeading;src:url('/fonts/cormorantgaramond/CormorantGaramond.ttf');font-display:swap}
+@font-face{font-family:AdminBody;src:url('/fonts/jost/Jost.ttf');font-display:swap}
+.celebration-admin{--cream:#f8f0dc;--terracotta:#95513b;--olive:#737047;--gold:#f5df89;--ink:#463c30;background:radial-gradient(ellipse at 5% 0%,#f5df8930,transparent 45%),var(--cream);color:var(--ink);font-family:AdminBody,Arial,sans-serif}
+.celebration-admin h1,.celebration-admin h2,.celebration-admin .brand{font-family:AdminHeading,Georgia,serif;color:var(--terracotta)}
+.celebration-admin h1{font-size:clamp(2.6rem,6vw,4.6rem)}
+.celebration-admin .topbar{border-bottom:1px solid #73704730;background:#fffdf680;padding:24px 6%;flex-wrap:wrap}
+.celebration-admin .brand{font-size:34px;line-height:1.1}.celebration-admin .brand span{font-family:AdminBody,Arial,sans-serif;margin-top:9px;color:var(--olive);font-size:10px;letter-spacing:.2em}
+.admin-nav{display:flex;align-items:center;gap:22px;flex-wrap:wrap;font-size:15px}.admin-name{color:var(--olive);border-left:1px solid #73704740;padding-left:18px}
+.celebration-admin .panel{background:#fffdf7d9;border-color:#73704730;border-radius:20px;box-shadow:0 5px 24px #73704708}
+.celebration-admin .button{background:var(--olive);color:#fffdf7;border-radius:999px;padding:12px 24px}
+.celebration-admin .eyebrow{color:var(--olive);letter-spacing:.18em}.celebration-admin .login{max-width:540px;padding:38px;margin:25px auto}
+.celebration-admin input,.celebration-admin textarea,.celebration-admin select{background:#fffef9;border-color:#73704750;color:var(--ink)}
+.celebration-admin .page-heading>div>p{max-width:640px}.celebration-admin .success{background:#e6e6cc;color:#454b2c}
+.celebration-admin .site-footer{color:var(--olive)}.celebration-admin .cards h2{margin:14px 0}
+.account-layout{display:grid;grid-template-columns:minmax(280px,400px) minmax(0,1fr);gap:28px;align-items:start}.account-list{display:grid;gap:20px}.account-list h2{margin:12px 0}.account-hint{font-size:14px;color:var(--olive)}.account-list details{margin-top:10px}.account-list summary{cursor:pointer;color:var(--terracotta);margin-bottom:16px}
+@media(max-width:760px){.account-layout{grid-template-columns:1fr}.admin-nav{gap:14px;font-size:14px}.admin-name{border:0;padding:0;flex-basis:100%}.celebration-admin .login{padding:24px;margin:10px auto}.celebration-admin .shell{padding:28px 18px}.celebration-admin .topbar{padding:22px}.celebration-admin .button{min-height:44px}}
+.password-field{position:relative;margin-bottom:20px}
+.celebration-admin .password-field input{margin-bottom:0;padding-right:58px}
+.password-visibility{position:absolute;right:5px;top:50%;transform:translateY(-50%);display:flex;align-items:center;justify-content:center;width:44px;height:44px;padding:0;border:0;border-radius:8px;background:transparent;color:var(--olive);cursor:pointer}
+.password-visibility:hover{background:#73704712}
+.password-visibility:focus-visible{outline:2px solid var(--terracotta);outline-offset:1px}

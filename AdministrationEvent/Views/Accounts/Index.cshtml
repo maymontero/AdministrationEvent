@@ -1,0 +1,13 @@
+@model AccountPage
+@{ ViewData["Title"] = "Cuentas y accesos"; }
+<div class="page-heading"><div><span class="eyebrow">TU ADMINISTRACIÓN</span><h1>Cuentas y accesos</h1><p>Cada persona tiene su propio ingreso. Vos conservás el control de las cuentas.</p></div></div>
+@if(TempData["Success"] != null) { <p class="success" role="status">@TempData["Success"]</p> }
+@if(TempData["Error"] != null) { <p class="errors" role="alert">@TempData["Error"]</p> }
+<div class="account-layout"><section class="panel"><h2>Invitar a Chea</h2><form method="post" action="/admin/accounts/create">@Html.AntiForgeryToken()<div asp-validation-summary="All" class="errors"></div>
+<label for="account-name">Nombre</label><input id="account-name" name="DisplayName" value="@Model.Editor.DisplayName" maxlength="100" required />
+<label for="account-user">Usuario</label><input id="account-user" name="Username" value="@Model.Editor.Username" pattern="[a-zA-Z0-9._-]{3,40}" autocomplete="off" required />
+<label for="account-password">Contraseña inicial</label><input id="account-password" name="Password" type="password" minlength="12" maxlength="128" autocomplete="new-password" required />
+<p class="account-hint">Al menos 12 caracteres. Puede administrar todas las invitaciones y cambiar su contraseña.</p><button class="button">Crear cuenta</button></form></section>
+<section class="account-list">@foreach(var user in Model.Users) { <article class="panel"><span class="eyebrow">@(user.IsOwner ? "Administradora principal" : "Administración de invitaciones")</span><h2>@user.DisplayName</h2><p>@user.Username · @(user.IsActive ? "Activa" : "Desactivada")</p>
+@if(!user.IsOwner) { <form method="post" action="/admin/accounts/toggle/@user.Id">@Html.AntiForgeryToken()<button class="quiet">@(user.IsActive ? "Desactivar acceso" : "Activar acceso")</button></form><details><summary>Restablecer contraseña</summary><form method="post" action="/admin/accounts/reset/@user.Id">@Html.AntiForgeryToken()<label for="reset-@user.Id">Nueva contraseña</label><input id="reset-@user.Id" type="password" name="password" minlength="12" maxlength="128" autocomplete="new-password" required /><button class="button">Guardar contraseña</button></form></details> }
+</article> }</section></div>

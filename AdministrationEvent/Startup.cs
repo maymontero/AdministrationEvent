@@ -30,8 +30,19 @@ namespace AdministrationEvent
                 throw new InvalidOperationException("Configurá ConnectionStrings:Invitations con la conexión a MySQL. Consultá README.md.");
             services.AddDbContext<InvitationDbContext>(options => options.UseMySQL(connection));
             services.AddScoped<AdministrationEvent.Services.InvitationStore>();
+            services.AddScoped<AdministrationEvent.Services.AdminAccounts>();
+            services.AddAuthorization(options => options.AddPolicy("ManageAccounts", policy => policy.RequireRole("Owner")));
             services.AddAuthentication(Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme)
-                .AddCookie(options => { options.LoginPath = "/admin/login"; options.ExpireTimeSpan = TimeSpan.FromHours(8); options.Cookie.HttpOnly = true; options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Strict; });
+                .AddCookie(options => { options.LoginPath = "/admin/login"; options.AccessDeniedPath = "/admin/denied"; options.ExpireTimeSpan = TimeSpan.FromHours(8); options.Cookie.HttpOnly = true; options.Cookie.SecurePolicy = Configuration["ASPNETCORE_ENVIRONMENT"] == "Development" ? Microsoft.AspNetCore.Http.CookieSecurePolicy.SameAsRequest : Microsoft.AspNetCore.Http.CookieSecurePolicy.Always; options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Strict;
+                    options.Events.OnValidatePrincipal = async context => {
+                        var id = context.Principal.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                        var database = context.HttpContext.RequestServices.GetRequiredService<InvitationDbContext>();
+                        var user = long.TryParse(id, out var userId) ? await database.AdminUsers.AsNoTracking().SingleOrDefaultAsync(x => x.Id == userId) : null;
+                        if (user == null || !user.IsActive || user.SecurityStamp != context.Principal.FindFirst("stamp")?.Value) {
+                            context.RejectPrincipal();
+                            await Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.SignOutAsync(context.HttpContext);
+                        }
+                    }; });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Extensions.Configuration;
 using System.Linq;
 using System.Collections.Generic;
 using Microsoft.Data.Sqlite;
@@ -20,6 +21,25 @@ class DatabaseChecks
             connection.Open();
             var options = new DbContextOptionsBuilder<InvitationDbContext>().UseSqlite(connection).Options;
             using (var db = new InvitationDbContext(options)) db.Database.EnsureCreated();
+            using (var accountDb = new InvitationDbContext(options)) {
+                var configuration = new Microsoft.Extensions.Configuration.ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string,string> { ["Admin:Password"] = "Test-Owner-Password-2026" }).Build();
+                var accounts = new AdminAccounts(accountDb, configuration);
+                accounts.BootstrapOwner(); accounts.BootstrapOwner();
+                Check(accountDb.AdminUsers.Count() == 1, "Administradora se crea una sola vez");
+                var owner = accounts.Authenticate("ADMIN", "Test-Owner-Password-2026");
+                Check(owner != null && owner.IsOwner && owner.PasswordHash != "Test-Owner-Password-2026", "Administradora conserva acceso con hash");
+                Check(accounts.Create("chea", "Chea", "Chea-Test-Password-2026") == null, "Cuenta propia de Chea");
+                Check(accounts.Create("CHEA", "Duplicado", "Chea-Test-Password-2026") != null, "Nombre único sin distinguir mayúsculas");
+                var chea = accounts.Authenticate(" chea ", "Chea-Test-Password-2026");
+                Check(chea != null && !chea.IsOwner, "Chea administra invitaciones sin gestionar cuentas");
+                for (var attempt = 0; attempt < 5; attempt++) Check(accounts.Authenticate("chea", "incorrecta") == null, "Contraseña incorrecta rechazada");
+                Check(accounts.Authenticate("chea", "Chea-Test-Password-2026") == null, "Bloqueo temporal tras cinco intentos");
+                var oldStamp = chea.SecurityStamp;
+                accounts.SetPassword(chea, "Chea-New-Password-2026");
+                Check(chea.SecurityStamp != oldStamp && accounts.Authenticate("chea", "Chea-New-Password-2026") != null, "Restablecer contraseña revoca sesiones y desbloquea");
+                chea.IsActive = false; accountDb.SaveChanges();
+                Check(accounts.Authenticate("chea", "Chea-New-Password-2026") == null, "Cuenta desactivada no ingresa");
+            }
             var item = new InvitationConfiguration { Slug = "prueba", Date = new DateTime(2027,3,20,18,0,0), Sections = new List<InvitationSection> {
                 new InvitationSection { Title = "Primera", Content = "Ceremonia", TitleFontSize = 28 },
                 new InvitationSection { Title = "Oculta", Enabled = false }

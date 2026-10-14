@@ -1,4 +1,8 @@
-@{ ViewData["Title"] = "Acceso administrativo"; }
-<section class="panel login"><span class="eyebrow">TU ESPACIO</span><h1>Administrar invitaciones</h1><div asp-validation-summary="All" class="errors"></div>
-@if (!(bool)ViewData["Configured"]) { <p>Para habilitar el acceso, configurá la variable de entorno <code>Admin__Password</code> en el servidor y reiniciá la aplicación.</p> }
-else { <form method="post" action="/admin/login">@Html.AntiForgeryToken()<label for="password">Contraseña</label><input id="password" type="password" name="password" autocomplete="current-password" required /><button class="button">Ingresar →</button></form> }</section>
+@model AccountLogin
+@{ ViewData["Title"] = "Tu espacio"; }
+<section class="panel login"><span class="eyebrow">ZENIA &amp; DIEGO</span><h1>Tu espacio para celebrar</h1><p>Entrá con tu cuenta para preparar cada detalle.</p>
+@if(TempData["Success"] != null) { <p class="success" role="status">@TempData["Success"]</p> }
+<form method="post" action="/admin/login">@Html.AntiForgeryToken()<div asp-validation-summary="All" class="errors" role="alert"></div>
+<label for="username">Usuario</label><input id="username" name="Username" value="@Model.Username" autocomplete="username" required maxlength="80" />
+<label for="password">Contraseña</label><input id="password" type="password" name="Password" autocomplete="current-password" required maxlength="128" />
+<button class="button">Ingresar →</button></form></section>

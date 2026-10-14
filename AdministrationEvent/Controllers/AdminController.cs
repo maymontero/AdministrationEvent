@@ -25,14 +25,20 @@ namespace AdministrationEvent.Controllers
             if (store.Find(id) == null) return NotFound();
             return RedirectToAction("Index", "Guests", new { id });
         }
+        [HttpGet("denied")] public IActionResult Denied() { Response.StatusCode = 403; return View(); }
         [HttpGet("")] public IActionResult Index() => View(store.All());
-        [AllowAnonymous, HttpGet("login")] public IActionResult Login() { ViewData["Configured"] = !string.IsNullOrWhiteSpace(config["Admin:Password"]); return View(); }
+        [AllowAnonymous, HttpGet("login")] public IActionResult Login() => View(new AccountLogin());
         [AllowAnonymous, HttpPost("login"), ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(string password)
+        public async Task<IActionResult> Login(AccountLogin form, [FromServices] AdminAccounts accounts)
         {
-            var expected = config["Admin:Password"];
-            if (string.IsNullOrWhiteSpace(expected) || password != expected) { ModelState.AddModelError("", "No se pudo iniciar sesión. Verificá la contraseña y la configuración del administrador."); return Login(); }
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, "Administradora") }, CookieAuthenticationDefaults.AuthenticationScheme)));
+            if (!ModelState.IsValid) return View(form);
+            accounts.BootstrapOwner();
+            var user = accounts.Authenticate(form.Username, form.Password);
+            if (user == null) { ModelState.AddModelError("", "No pudimos iniciar sesión. Revisá tus datos o intentá más tarde."); return View(new AccountLogin { Username = form.Username }); }
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(new ClaimsIdentity(new[] {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), new Claim(ClaimTypes.Name, user.DisplayName),
+                new Claim(ClaimTypes.Role, user.IsOwner ? "Owner" : "Manager"), new Claim("stamp", user.SecurityStamp)
+            }, CookieAuthenticationDefaults.AuthenticationScheme)));
             return RedirectToAction(nameof(Index));
         }
         [HttpPost("logout"), ValidateAntiForgeryToken] public async Task<IActionResult> Logout() { await HttpContext.SignOutAsync(); return RedirectToAction(nameof(Login)); }

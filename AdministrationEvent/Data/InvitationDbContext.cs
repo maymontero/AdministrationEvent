@@ -9,6 +9,8 @@ public class InvitationDbContext : DbContext
     {
     }
 
+    public DbSet<AdminUser> AdminUsers => Set<AdminUser>();
+
     public DbSet<GuestResponse> GuestResponses => Set<GuestResponse>();
     public DbSet<GuestTag> GuestTags => Set<GuestTag>();
     public DbSet<SeatingTable> SeatingTables => Set<SeatingTable>();
@@ -39,6 +41,15 @@ public class InvitationDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        modelBuilder.Entity<AdminUser>(e => {
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Username).HasMaxLength(80).IsRequired();
+            e.Property(x => x.NormalizedUsername).HasMaxLength(80).IsRequired();
+            e.HasIndex(x => x.NormalizedUsername).IsUnique();
+            e.Property(x => x.DisplayName).HasMaxLength(100).IsRequired();
+            e.Property(x => x.PasswordHash).HasMaxLength(500).IsRequired();
+            e.Property(x => x.SecurityStamp).HasMaxLength(36).IsRequired();
+        });
 
         ConfigureInvitation(modelBuilder);
         modelBuilder.Entity<GuestTag>(e => {

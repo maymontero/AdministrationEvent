@@ -2,13 +2,12 @@
   const spotify = document.querySelector('[data-spotify-music]');
   if (spotify) {
     const button = spotify.querySelector('[data-spotify-toggle]');
-    const panel = spotify.querySelector('[data-spotify-panel]');
     const status = spotify.querySelector('[data-spotify-status]');
     let controller = null, ready = false, paused = true, pending = null;
     const clearPending = () => { if (pending) clearTimeout(pending); pending = null; };
     const fallback = () => {
-      clearPending(); button.disabled = false;
-      panel.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'center' });
+      clearPending(); button.disabled = !ready;
+      if (!ready) button.textContent = '♫ Spotify no disponible';
       status.textContent = 'Tocá Play en Spotify para escuchar.';
     };
     const update = isPaused => {
@@ -18,6 +17,16 @@
       status.textContent = paused ? 'Reproducción pausada' : 'Sonando en Spotify';
     };
     button.hidden = false;
+    button.disabled = true;
+    button.textContent = '♫ Cargando…';
+    const eagerLoad = () => {
+      spotify.querySelectorAll('iframe').forEach(frame => { frame.loading = 'eager'; });
+    };
+    // The API replaces the original embed; load its replacement even below the fold.
+    const observer = new MutationObserver(eagerLoad);
+    observer.observe(spotify, { childList: true, subtree: true });
+    eagerLoad();
+    pending = setTimeout(fallback, 20000);
     button.addEventListener('click', () => {
       if (!ready) { fallback(); return; }
       button.disabled = true;
@@ -30,7 +39,8 @@
           uri: 'spotify:track:' + spotify.dataset.track, width: '100%', height: 152, theme: 'dark'
         }, embed => {
           controller = embed;
-          embed.addListener('ready', () => { ready = true; });
+          eagerLoad();
+          embed.addListener('ready', () => { ready = true; observer.disconnect(); update(paused); });
           embed.addListener('playback_started', () => { update(false); });
           embed.addListener('playback_update', event => {
             if (typeof event.data?.isPaused === 'boolean' && !event.data.isBuffering) update(event.data.isPaused);

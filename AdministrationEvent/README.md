@@ -95,4 +95,14 @@ La música de la invitación se configura con `Theme.SpotifyTrackUrl` (por ejemp
 
 
 
-El botón flotante `♫ Reproducir` controla Spotify con su iFrame API y cambia a `♫ Pausar` según los eventos reales de reproducción, también cuando se usa Play en el panel. Si la API no responde o el navegador bloquea el inicio, el botón desplaza a la sección de la canción, al final, después del formulario de confirmación, donde está el reproductor oficial. `?spotifyTest=true` en la vista previa prueba Brindo sin guardar cambios.
+El botón flotante `♫ Reproducir` controla Spotify con su iFrame API y cambia a `♫ Pausar` según los eventos reales de reproducción, también cuando se usa Play en el panel. Si la API no responde o el navegador bloquea el inicio, el botón mantiene la posición de la página; el reproductor oficial queda al final, después del formulario de confirmación. `?spotifyTest=true` en la vista previa prueba Brindo sin guardar cambios.
+
+## Cuentas individuales y administración
+
+Aplicar la migración `AdminAccounts` con `dotnet ef database update` antes de desplegar esta versión. `Data/admin-accounts.sql` contiene solo la migración de cuentas, para una base que ya esté actualizada hasta `SectionTitleFontSize`.
+
+La primera entrada crea la cuenta principal `admin` usando la contraseña ya configurada en `Admin__Password`. Luego se guarda únicamente su hash; cambiar esa variable no cambia una contraseña existente. No hay cuentas ni contraseñas predefinidas para terceros. Las cookies del acceso compartido anterior se invalidan: ingresar nuevamente con usuario `admin` y la contraseña existente.
+
+La administradora puede ir a `/admin/accounts`, crear `chea` con nombre Chea y una contraseña de 12 a 128 caracteres, restablecer contraseñas y activar/desactivar cuentas. Chea puede administrar todas las invitaciones, invitados y respuestas, pero no gestionar usuarios. Cada persona puede cambiar su contraseña en `/admin/accounts/password`. Cambiar o restablecer contraseña o desactivar una cuenta revoca sus sesiones. Cinco intentos incorrectos bloquean temporalmente esa cuenta por 15 minutos.
+
+El panel y el ingreso usan la paleta de la tarjeta formal: crema `#f8f0dc`, terracota `#95513b`, oliva `#737047`, dorado `#f5df89` y texto `#463c30`, con Cormorant Garamond y Jost y navegación adaptada a celular.
