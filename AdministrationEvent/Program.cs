@@ -17,6 +17,18 @@ namespace AdministrationEvent
         {
             using (var host = CreateApplicationHostBuilder(args).Build())
             {
+                if (args.Contains("--create-save-date"))
+                {
+                    var index = Array.IndexOf(args, "--create-save-date");
+                    if (index + 1 >= args.Length || !Guid.TryParse(args[index + 1], out var sourceId)) throw new ArgumentException("Indicá el ID de la invitación original.");
+                    using (var scope = host.Services.CreateScope()) {
+                        var store = scope.ServiceProvider.GetRequiredService<Services.InvitationStore>();
+                        var error = store.CreateSaveTheDate(sourceId, out var invitation);
+                        if (error != null) throw new InvalidOperationException(error);
+                        Console.WriteLine("Save the date creado: " + invitation.Id);
+                    }
+                    return;
+                }
                 if (args.Contains("--import-invitations"))
                 {
                     using (var scope = host.Services.CreateScope())

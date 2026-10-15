@@ -22,6 +22,24 @@ namespace AdministrationEvent.Services
         public List<InvitationConfiguration> All() => Query().AsNoTracking().OrderBy(x => x.Title).ToList().Select(ToConfiguration).ToList();
         public InvitationConfiguration Find(Guid id) { var item = Query().AsNoTracking().SingleOrDefault(x => x.PublicId == id); return item == null ? null : ToConfiguration(item); }
         public InvitationConfiguration FindPublished(string slug) { var item = Query().AsNoTracking().SingleOrDefault(x => x.Slug == slug && x.IsPublished); return item == null ? null : ToConfiguration(item); }
+        public string CreateSaveTheDate(Guid sourceId, out InvitationConfiguration result)
+        {
+            result = Find(sourceId);
+            if (result == null) return "No encontramos la invitación original.";
+            var baseSlug = result.Slug.Substring(0, Math.Min(result.Slug.Length, 95)) + "-save-the-date";
+            var slug = baseSlug; var suffix = 2;
+            while (db.Invitations.Any(x => x.Slug == slug)) slug = baseSlug + "-" + suffix++;
+            result.Id = Guid.NewGuid();
+            result.Title = result.Hosts + " · Guardá esta fecha";
+            if (result.Title.Length > 120) result.Title = result.Title.Substring(0, 120);
+            result.Slug = slug; result.IsPublished = false;
+            result.Theme.Layout = "save-date";
+            if (string.IsNullOrEmpty(result.Theme.SpotifyTrackUrl)) result.Theme.SpotifyTrackUrl = "https://open.spotify.com/track/2TD8Bhc5hFPKh52lFJ2Ec5";
+            result.Message = "Nos casamos y queremos compartir este día con vos. Más adelante te enviaremos todos los detalles.";
+            result.HasConfirmedTime = false; result.ShowCountdown = false; result.RsvpEnabled = false;
+            foreach (var section in result.Sections) section.Enabled = false;
+            return Save(result);
+        }
         public string Save(InvitationConfiguration item)
         {
             var errors = new List<ValidationResult>();

@@ -106,3 +106,7 @@ La primera entrada crea la cuenta principal `admin` usando la contraseña ya con
 La administradora puede ir a `/admin/accounts`, crear `chea` con nombre Chea y una contraseña de 12 a 128 caracteres, restablecer contraseñas y activar/desactivar cuentas. Chea puede administrar todas las invitaciones, invitados y respuestas, pero no gestionar usuarios. Cada persona puede cambiar su contraseña en `/admin/accounts/password`. Cambiar o restablecer contraseña o desactivar una cuenta revoca sus sesiones. Cinco intentos incorrectos bloquean temporalmente esa cuenta por 15 minutos.
 
 El panel y el ingreso usan la paleta de la tarjeta formal: crema `#f8f0dc`, terracota `#95513b`, oliva `#737047`, dorado `#f5df89` y texto `#463c30`, con Cormorant Garamond y Jost y navegación adaptada a celular.
+
+## Guardá esta fecha
+
+En el panel, `Crear un Guardá esta fecha` duplica una invitación como borrador independiente, conserva fecha, portada, colores, fuentes y Spotify, oculta las secciones y desactiva RSVP y horario. Usa `Theme.Layout: "save-date"` y muestra el reproductor al final y un control de Play con notas musicales encima de Guardá esta fecha, sin botón flotante. La invitación completa se conserva sin modificaciones. No requiere migraciones nuevas. También puede crearse localmente con `dotnet run -- --create-save-date ID_ORIGINAL`.

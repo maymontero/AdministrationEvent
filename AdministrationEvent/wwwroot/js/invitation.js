@@ -1,24 +1,31 @@
 (() => {
   const spotify = document.querySelector('[data-spotify-music]');
   if (spotify) {
-    const button = spotify.querySelector('[data-spotify-toggle]');
+    const button = document.querySelector('[data-spotify-toggle]');
+    const label = button.querySelector('[data-spotify-label]');
+    const icon = button.querySelector('[data-play-symbol]');
+    const setLabel = text => {
+      if (label) label.textContent = text.replace(/^♫ /, ''); else button.textContent = text;
+      button.setAttribute('aria-label', text);
+    };
     const status = spotify.querySelector('[data-spotify-status]');
     let controller = null, ready = false, paused = true, pending = null;
     const clearPending = () => { if (pending) clearTimeout(pending); pending = null; };
     const fallback = () => {
       clearPending(); button.disabled = !ready;
-      if (!ready) button.textContent = '♫ Spotify no disponible';
+      if (!ready) setLabel('♫ Spotify no disponible');
       status.textContent = 'Tocá Play en Spotify para escuchar.';
     };
     const update = isPaused => {
       paused = isPaused; clearPending(); button.disabled = false;
-      button.textContent = paused ? '♫ Reproducir' : '♫ Pausar';
+      setLabel(paused ? '♫ Reproducir' : '♫ Pausar');
+      if (icon) icon.setAttribute('d', paused ? 'M19 14L34 24L19 34Z' : 'M17 14H22V34H17Z M27 14H32V34H27Z');
       button.setAttribute('aria-pressed', String(!paused));
       status.textContent = paused ? 'Reproducción pausada' : 'Sonando en Spotify';
     };
     button.hidden = false;
     button.disabled = true;
-    button.textContent = '♫ Cargando…';
+    setLabel('♫ Cargando…');
     const eagerLoad = () => {
       spotify.querySelectorAll('iframe').forEach(frame => { frame.loading = 'eager'; });
     };

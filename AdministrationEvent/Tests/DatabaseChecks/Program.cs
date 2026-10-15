@@ -50,6 +50,15 @@ class DatabaseChecks
             item.CoverImageUrl = "/images/zenia-diego/vineyard-watercolor.png";
             using (var db = new InvitationDbContext(options)) Check(new InvitationStore(db).Save(item) == null, "Crear invitación");
             using (var db = new InvitationDbContext(options)) {
+                var store = new InvitationStore(db);
+                Check(store.CreateSaveTheDate(item.Id, out var saveDate) == null, "Crear Save the date desde invitación");
+                Check(saveDate.Id != item.Id && !saveDate.IsPublished && !saveDate.RsvpEnabled && !saveDate.HasConfirmedTime && saveDate.Sections.All(x => !x.Enabled), "Save the date independiente y en borrador");
+                Check(saveDate.Date == item.Date && saveDate.Theme.SpotifyTrackUrl == item.Theme.SpotifyTrackUrl && store.Find(saveDate.Id).Theme.Layout == "save-date", "Fecha, música y diseño conservados");
+                Check(store.Find(item.Id).Theme.Layout == "vineyard" && store.Find(item.Id).RsvpEnabled, "Invitación original conservada");
+                Check(store.CreateSaveTheDate(item.Id, out var secondSaveDate) == null && secondSaveDate.Slug != saveDate.Slug, "Enlaces independientes al duplicar");
+                db.Invitations.RemoveRange(db.Invitations.Where(x => x.PublicId == saveDate.Id || x.PublicId == secondSaveDate.Id)); db.SaveChanges();
+            }
+            using (var db = new InvitationDbContext(options)) {
                 var store = new InvitationStore(db); var restored = store.Find(item.Id);
                 Check(restored.Sections[0].TitleFontSize == 28, "Tamaño de título por sección persistido");
                 Check(restored.Date == item.Date && restored.Sections.Count == 2 && !restored.Sections[1].Enabled, "Fecha y secciones persistidas");

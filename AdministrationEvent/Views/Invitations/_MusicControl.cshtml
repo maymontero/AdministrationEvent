@@ -1,0 +1,11 @@
+@model InvitationConfiguration
+@if(!string.IsNullOrEmpty(Model.Theme.SpotifyTrackUrl)) {
+<button class="hero-music save-date-music" data-spotify-toggle type="button" hidden aria-pressed="false" aria-label="Reproducir música">
+    <span class="hero-music-art" aria-hidden="true">
+        <img class="hero-music-notes" src="~/images/zenia-diego/notas-musicales-acuarela-transparente.png" asp-append-version="true" alt="" />
+        <svg viewBox="0 0 48 48" width="64" height="64" fill="none"><circle cx="24" cy="24" r="22" stroke="currentColor" stroke-width="1.3"/><path data-play-symbol d="M19 14L34 24L19 34Z" fill="currentColor"/></svg>
+        <img class="hero-music-notes" src="~/images/zenia-diego/notas-musicales-acuarela-transparente.png" asp-append-version="true" alt="" />
+    </span>
+    <span data-spotify-label>Reproducir</span>
+</button>
+}

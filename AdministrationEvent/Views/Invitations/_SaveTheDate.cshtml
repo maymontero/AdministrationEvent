@@ -1,0 +1,32 @@
+@model InvitationConfiguration
+@using System.Globalization
+@{
+    Layout = null;
+    var t = Model.Theme;
+    var headingFont = string.IsNullOrEmpty(t.HeadingFontUrl) ? t.HeadingFont : "InvitationHeading";
+    var bodyFont = string.IsNullOrEmpty(t.BodyFontUrl) ? t.BodyFont : "InvitationBody";
+    ViewData["MusicControlInHero"] = true;
+}
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>@Model.Title</title><link rel="icon" type="image/svg+xml" href="~/favicon-zd.svg" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" /><link rel="stylesheet" href="~/css/invitation.css" asp-append-version="true" /><link rel="stylesheet" href="~/css/save-date.css" asp-append-version="true" />
+<script src="~/js/invitation.js" asp-append-version="true" defer></script>
+<style>
+@if(!string.IsNullOrEmpty(t.HeadingFontUrl)) { <text>@@font-face {font-family:InvitationHeading;src:url('@t.HeadingFontUrl');font-display:swap;}</text> }
+@if(!string.IsNullOrEmpty(t.BodyFontUrl)) { <text>@@font-face {font-family:InvitationBody;src:url('@t.BodyFontUrl');font-display:swap;}</text> }
+</style></head>
+<body class="invitation save-the-date" style="--background:@t.Background;--ink:@t.Text;--accent:@t.Accent;--secondary:@t.Secondary;--heading:@headingFont;--body:@bodyFont;--size:@(t.FontSize)px;">
+@if(ViewData["Preview"] != null) { <div class="preview-banner">Vista previa · @(Model.IsPublished ? "Publicada" : "Borrador") <a href="/admin/edit/@Model.Id">Volver a configurar</a></div> }
+<main class="save-date-content">
+<section class="save-date-hero" aria-labelledby="save-date-names">
+@if(!string.IsNullOrEmpty(Model.CoverImageUrl)) { <img class="save-date-cover" src="@Model.CoverImageUrl" alt="" fetchpriority="high" /> }
+<div class="save-date-copy">
+<partial name="_MusicControl" model="Model" />
+<p class="save-date-label">Guardá esta fecha</p>
+<h1 id="save-date-names">@Model.Hosts</h1>
+@if(Model.Date.HasValue) { <p class="save-date-date">@Model.Date.Value.ToString("d 'de' MMMM 'de' yyyy", new CultureInfo("es-UY"))</p> }
+<p class="save-date-message">@Model.Message</p></div>
+</section>
+<partial name="_SpotifyMusic" model="Model" />
+</main></body></html>

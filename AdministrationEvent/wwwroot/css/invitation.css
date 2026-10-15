@@ -180,3 +180,213 @@
 .vineyard .invitation-section:has(img[src*="sagrada-familia"]) .section-copy>h2{display:none}
 .vineyard .invitation-section.with-image:has(img[src*="sagrada-familia"]){padding:25px 0 40px}
 .vineyard .invitation-section:has(img[src*="sagrada-familia"]) .section-copy{margin-top:0}
+
+/* Portada enviada por la novia: colores originales, sin velo oliva. */
+.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3"])::after{background:transparent}
+.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3"]) .cover{filter:none;object-position:center 35%}
+.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3"]) :is(h1,.event-date,.eyebrow,.ornament,.hero-link){color:var(--ink);text-shadow:none}
+.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3"]) h1{color:var(--accent)}
+
+/* La portada vertical conserva su encuadre; los datos quedan en el cielo. */
+.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3"]){width:min(100%,749px);min-height:0;aspect-ratio:749/1237;margin:0 auto;justify-content:flex-start;padding:clamp(24px,4vw,44px) 20px 45px}
+.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3"]) .cover{object-fit:contain;object-position:center top;mask-image:linear-gradient(to bottom,black 0%,black 91%,transparent 100%)}
+.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3"]) .ornament{font-size:28px;margin:0 0 12px}
+.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3"]) h1{font-size:clamp(3.2rem,8vw,6rem);line-height:1.05;margin:0 0 16px}
+.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3"]) .event-date{font-size:clamp(22px,3.3vw,30px);line-height:1.4;margin:14px 0;max-width:95%}
+.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3"]) .hero-link{font:18px/1.5 var(--body);letter-spacing:0;margin:14px 0 0;padding:8px 0;min-height:44px;border:0;border-radius:0;background:transparent;color:var(--ink)}
+@media(max-width:650px){.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3"]){padding:22px 12px 30px}.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3"]) .ornament{font-size:20px;margin-bottom:8px}.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3"]) h1{margin-bottom:8px}.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3"]) .hero-link{font-size:16px;margin-top:10px}}
+
+/* Bodega en acuarela: sin velo, encuadre vertical y texto sobre el cielo. */
+.vineyard .invitation-section.celebration-backdrop:has(img[src*="celebracion-bodega-novia-sin-velo-v2"]){width:min(100%,749px);min-height:0;aspect-ratio:848/1252;margin:35px auto 25px;align-items:center;justify-content:flex-start;padding:18px 24px 60px}
+.vineyard .celebration-backdrop:has(img[src*="celebracion-bodega-novia-sin-velo-v2"])::after{background:transparent}
+.vineyard .celebration-backdrop.with-image:has(img[src*="celebracion-bodega-novia-sin-velo-v2"]) .section-art img{object-fit:contain;object-position:center top;filter:none}
+.vineyard .invitation-section.celebration-backdrop:has(img[src*="celebracion-bodega-novia-sin-velo-v2"]) .section-art{mask-image:linear-gradient(to bottom,black 0%,black 94%,transparent 100%)}
+.vineyard .celebration-backdrop:has(img[src*="celebracion-bodega-novia-sin-velo-v2"]) .section-copy{padding:0 12px}
+.vineyard .celebration-backdrop:has(img[src*="celebracion-bodega-novia-sin-velo-v2"]) .section-copy :is(h2,.event-context,.event-venue,.event-address){color:var(--ink)}
+.vineyard .celebration-backdrop:has(img[src*="celebracion-bodega-novia-sin-velo-v2"]) .section-copy h2{color:var(--accent);margin:0 0 16px}
+.vineyard .celebration-backdrop:has(img[src*="celebracion-bodega-novia-sin-velo-v2"]) .section-copy .button{background:var(--secondary);color:var(--background);border:0}
+@media(max-width:650px){.vineyard .invitation-section.celebration-backdrop:has(img[src*="celebracion-bodega-novia-sin-velo-v2"]){padding:14px 12px 40px}.vineyard .celebration-backdrop:has(img[src*="celebracion-bodega-novia-sin-velo-v2"]) .section-copy{padding:0}}
+
+.vineyard .celebration-backdrop:has(img[src*="celebracion-bodega-novia-sin-velo-v2"]) .event-information p{margin:8px 0;line-height:1.4}
+
+/* PNG con alfa: conservar todos los bordes pintados y las salpicaduras. */
+.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3-transparente-v5"]){aspect-ratio:976/1612}
+.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3-transparente-v5"]) .cover{mask-image:none}
+.vineyard .invitation-section.celebration-backdrop:has(img[src*="celebracion-bodega-novia-sin-velo-v2-transparente-v4"]){aspect-ratio:1032/1524}
+.vineyard .invitation-section.celebration-backdrop:has(img[src*="celebracion-bodega-novia-sin-velo-v2-transparente-v4"]) .section-art{mask-image:none}
+
+/* Encabezado sobre el papel y acuarela debajo, sin superponer los datos. */
+.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3"]){aspect-ratio:auto;min-height:0;padding:45px 0 0;justify-content:flex-start}
+.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3"]) .cover{position:relative;inset:auto;z-index:0;width:100%;height:auto;margin:32px 0 0;object-fit:contain;mask-image:none}
+.vineyard .wedding-announcement{font:20px/1.4 var(--body);color:var(--secondary);margin:0 0 24px;letter-spacing:.04em}
+.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3"]) h1{padding:0 12px;margin:0 0 20px}
+.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3"]) .event-date{margin:8px 12px 0;color:var(--ink)}
+@media(max-width:650px){.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3"]){padding-top:30px}.vineyard .wedding-announcement{font-size:18px;margin-bottom:20px}}
+
+/* Boceto de la novia: control musical en el cielo y datos en papel crema. */
+.hero-music{display:inline-flex;flex-direction:column;align-items:center;gap:8px;border:0;background:transparent;color:var(--secondary);font:18px/1.3 var(--body);padding:8px;cursor:pointer}
+.hero-music-art{display:flex;align-items:center;justify-content:center;gap:12px}
+.hero-music-notes{display:block;width:clamp(72px,13vw,135px);height:auto;max-height:76px;object-fit:contain}
+.hero-music-art svg{flex:none}
+.hero-music:disabled{opacity:.65;cursor:wait}
+.hero-music:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:12px}
+.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3"]){display:block;position:relative;padding:0;aspect-ratio:976/1612;overflow:visible}
+.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3"]) .cover{position:absolute;inset:0;width:100%;height:100%;margin:0;z-index:-2;object-fit:contain;mask-image:none}
+.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3"]) .hero-music{position:absolute;top:7%;left:50%;transform:translateX(-50%);z-index:2;margin:0;white-space:nowrap}
+.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3"]) .hero-heading{position:absolute;top:28%;left:50%;transform:translateX(-50%);width:88%;max-width:650px;padding:22px 16px 20px;background:color-mix(in srgb,var(--background) 66%,transparent);border-radius:20px;color:var(--ink);z-index:1}
+.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3"]) .wedding-announcement{margin:0 0 16px;font-size:clamp(15px,2.5vw,20px)}
+.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3"]) h1{font-size:clamp(2.5rem,7.5vw,5.5rem);line-height:1.1;margin:0 0 16px;padding:0}
+.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3"]) .event-date{font-size:clamp(18px,3vw,27px);line-height:1.35;margin:0 auto}
+@media(max-width:650px){.hero-music{font-size:15px}.hero-music-art{gap:8px}.hero-music-art svg{width:48px;height:48px}.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3"]) .hero-heading{padding:16px 12px;border-radius:16px}.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3"]) h1{margin-bottom:12px}}
+
+.vineyard .wedding-announcement{text-transform:uppercase;font-weight:400}
+
+/* Cuenta regresiva y marco acuarelado de la ceremonia. */
+.vineyard .countdown-band :is(strong,span,p){font-family:var(--body);font-style:normal;font-weight:400}
+.vineyard .invitation-section.with-image:has(img[src*="sagrada-familia"]){position:relative;isolation:isolate;width:min(100%,680px);margin:20px auto 40px;padding:25px 28px 50px;box-sizing:border-box}
+.vineyard .invitation-section:has(img[src*="sagrada-familia"])::before{content:"";position:absolute;inset:100px 8px 8px;background:url('/images/zenia-diego/marco-ceremonia-acuarela.svg') center/100% 100% no-repeat;pointer-events:none;z-index:-1}
+.vineyard .invitation-section:has(img[src*="sagrada-familia"]) .section-copy{position:relative}
+@media(max-width:650px){.vineyard .invitation-section.with-image:has(img[src*="sagrada-familia"]){padding:25px 24px 40px}.vineyard .invitation-section:has(img[src*="sagrada-familia"])::before{inset:80px 6px 6px}}
+
+/* Cómo ir: pincelada oliva y la misma tipografía secundaria de la portada. */
+.vineyard .invitation-section .section-copy .button,
+.vineyard .celebration-backdrop:has(img[src*="celebracion-bodega-novia-sin-velo-v2"]) .section-copy .button{
+  position:relative;isolation:isolate;background:transparent;border:0;border-radius:0;
+  color:var(--background);font:400 17px/1.4 var(--body);letter-spacing:.015em;
+  text-transform:none;min-width:195px;min-height:52px;padding:17px 30px;box-shadow:none;
+}
+.vineyard .invitation-section .section-copy .button::before{
+  content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(ellipse at 18% 25%,#ffffff24,transparent 55%),radial-gradient(ellipse at 85% 80%,#ffffff1c,transparent 60%),var(--secondary);
+  border-radius:999px;box-shadow:0 0 5px 1px color-mix(in srgb,var(--secondary) 16%,transparent);
+  transition:filter .18s ease;
+}
+.vineyard .invitation-section .section-copy .button:hover{background:transparent;text-decoration:none}
+.vineyard .invitation-section .section-copy .button:hover::before{filter:brightness(.92)}
+.vineyard .invitation-section .section-copy .button svg{width:19px;height:23px;flex:none}
+@media(max-width:650px){.vineyard .invitation-section .section-copy .button{font-size:16px;min-width:180px;padding:16px 27px}}
+
+/* Originales: no modificar pigmentos ni aplicar velos mientras se prepara el recorte. */
+.vineyard .invitation-hero.has-cover:has(.cover[src$="portada-vinedo-novia-sin-velo-v3.jpg"]){aspect-ratio:749/1237}
+.vineyard .invitation-hero.has-cover .cover[src$="portada-vinedo-novia-sin-velo-v3.jpg"]{filter:none;mask-image:none;mix-blend-mode:normal}
+.vineyard .invitation-section.celebration-backdrop:has(img[src$="celebracion-bodega-novia-sin-velo-v2.jpg"]) .section-art{mask-image:none}
+.vineyard .celebration-backdrop.with-image .section-art img[src$="celebracion-bodega-novia-sin-velo-v2.jpg"]{filter:none;mix-blend-mode:normal;mask-image:none}
+
+/* Versiones transparentes sin el filtro global que enfriaba la pintura. */
+.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3-transparente-v5"]) .cover,
+.vineyard .celebration-backdrop.with-image:has(img[src*="celebracion-bodega-novia-sin-velo-v2-transparente-v4"]) .section-art img{
+  filter:none;
+  mix-blend-mode:normal;
+}
+
+/* Recortes por alfa sobre los originales: el color proviene del JPEG sin cambios. */
+.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3-original-colores-transparente"]){aspect-ratio:1152/2048}
+.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3-original-colores-transparente"]) .cover{mask-image:none;filter:none;mix-blend-mode:normal}
+.vineyard .invitation-section.celebration-backdrop:has(img[src*="celebracion-bodega-novia-sin-velo-v2-original-colores-transparente"]) .section-art{mask-image:none}
+.vineyard .celebration-backdrop.with-image:has(img[src*="celebracion-bodega-novia-sin-velo-v2-original-colores-transparente"]) .section-art img{mask-image:none;filter:none;mix-blend-mode:normal}
+
+
+/* Portada: controles y datos un poco más arriba, sobre una placa crema legible. */
+.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3-original-colores-transparente"]) .hero-music{top:2.5%}
+.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3-original-colores-transparente"]) .hero-heading{top:22%;background:var(--background);}
+
+
+/* Ajuste solicitado: fecha sin hora y nombres directamente sobre el cielo. */
+.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3-original-colores-transparente"]) .hero-music{top:1.5%}
+.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3-original-colores-transparente"]) .hero-heading{top:14%;background:transparent;padding:0 16px;border-radius:0}
+.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3-original-colores-transparente"]) .hero-heading :is(h1,.wedding-announcement,.event-date,.message){text-shadow:0 1px 5px color-mix(in srgb,var(--background) 42%,transparent)}
+
+/* Bodega: datos en el cielo y navegación después de la ilustración. */
+.vineyard .invitation-section.celebration-backdrop:has(img[src*="celebracion-bodega-novia-sin-velo-v2-original-colores-transparente"]){display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto;align-items:start;justify-content:initial;gap:0;width:min(100%,848px);aspect-ratio:auto;min-height:0;margin:30px auto 40px;padding:0;overflow:visible;background:transparent}
+.vineyard .invitation-section.celebration-backdrop:has(img[src*="celebracion-bodega-novia-sin-velo-v2-original-colores-transparente"])::after{display:none}
+.vineyard .celebration-backdrop:has(img[src*="celebracion-bodega-novia-sin-velo-v2-original-colores-transparente"]) .section-art{position:relative;inset:auto;grid-column:1;grid-row:1;z-index:0;width:100%;height:auto;aspect-ratio:848/1252;margin:0}
+.vineyard .celebration-backdrop:has(img[src*="celebracion-bodega-novia-sin-velo-v2-original-colores-transparente"]) .section-art img{display:block;width:100%;height:auto;max-height:none;object-fit:contain;object-position:center top}
+.vineyard .celebration-backdrop:has(img[src*="celebracion-bodega-novia-sin-velo-v2-original-colores-transparente"]) .section-copy{display:contents}
+.vineyard .celebration-backdrop:has(img[src*="celebracion-bodega-novia-sin-velo-v2-original-colores-transparente"]) .section-copy h2{grid-column:1;grid-row:1;z-index:1;align-self:start;justify-self:center;width:90%;margin:5% auto 0;padding:0;color:var(--accent);font-family:var(--body);font-size:clamp(20px,4vw,30px);font-weight:400;text-shadow:0 1px 5px color-mix(in srgb,var(--background) 65%,transparent)}
+.vineyard .celebration-backdrop:has(img[src*="celebracion-bodega-novia-sin-velo-v2-original-colores-transparente"]) .event-information{grid-column:1;grid-row:1;z-index:1;align-self:start;justify-self:center;width:min(90%,650px);margin-top:13%;padding:0 12px;color:var(--ink);text-shadow:0 1px 5px color-mix(in srgb,var(--background) 78%,transparent)}
+.vineyard .celebration-backdrop:has(img[src*="celebracion-bodega-novia-sin-velo-v2-original-colores-transparente"]) .section-copy .button{grid-column:1;grid-row:2;z-index:1;justify-self:center;align-self:start;margin:18px 0 0;color:var(--background)}
+@media(max-width:650px){.vineyard .celebration-backdrop:has(img[src*="celebracion-bodega-novia-sin-velo-v2-original-colores-transparente"]) .section-copy h2{margin-top:4%;font-size:20px}.vineyard .celebration-backdrop:has(img[src*="celebracion-bodega-novia-sin-velo-v2-original-colores-transparente"]) .event-information{margin-top:13%;width:94%}}
+
+.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3-original-colores-transparente"]) .hero-music{font-size:16px;gap:5px;padding:5px}
+.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3-original-colores-transparente"]) .hero-music-notes{width:clamp(58px,10vw,108px);max-height:62px}
+.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3-original-colores-transparente"]) .hero-music-art svg{width:56px;height:56px}
+@media(max-width:650px){.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3-original-colores-transparente"]) .hero-music{font-size:14px}.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3-original-colores-transparente"]) .hero-music-notes{width:58px;max-height:48px}.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3-original-colores-transparente"]) .hero-music-art svg{width:48px;height:48px}}
+
+/* Leve descenso conjunto del reproductor y el título en la portada. */
+.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3-original-colores-transparente"]) .hero-music{top:3%}
+.vineyard .invitation-hero.has-cover:has(.cover[src*="portada-vinedo-novia-sin-velo-v3-original-colores-transparente"]) .hero-heading{top:15.5%}
+
+@font-face{font-family:InvitationPreviousHeading;src:url('/fonts/cormorantgaramond/CormorantGaramond.ttf') format('truetype');font-display:swap}
+/* Seña y Diego conserva Apple Juice; los demás títulos vuelven a Cormorant Garamond. */
+.invitation h2,.invitation h3,.vineyard .section-copy .event-venue{font-family:InvitationPreviousHeading,Georgia,serif}
+
+/* La hora de la ceremonia se apoya en la abertura del borde inferior. */
+.vineyard .invitation-section.with-image:has(img[src*="sagrada-familia"]){position:relative;overflow:visible}
+.vineyard .invitation-section:has(img[src*="sagrada-familia"]) .section-copy{position:static}
+.vineyard .invitation-section:has(img[src*="sagrada-familia"]) .section-copy>h2{display:block;position:relative;z-index:1;margin:0 0 14px;font-family:InvitationPreviousHeading,Georgia,serif;font-size:clamp(30px,4.8vw,40px);font-weight:700;line-height:1.2}
+.vineyard .ceremony-section>.ceremony-time{position:absolute;left:50%;top:calc(100% - 12px);transform:translate(-50%,-50%);z-index:2;display:flex;flex-direction:column;align-items:center;width:max-content;margin:0;padding:0 16px;background:var(--background);color:var(--ink);font-family:InvitationPreviousHeading,Georgia,serif;font-size:24px;line-height:1.15;text-align:center}
+.vineyard .ceremony-time span{display:block;font-family:inherit}
+.vineyard .ceremony-time span+span{font-size:17px;letter-spacing:.05em}
+.vineyard .invitation-section:has(img[src*="sagrada-familia"]) .event-information .event-venue{font-family:InvitationPreviousHeading,Georgia,serif;font-size:clamp(1.25rem,2.2vw,1.6rem);line-height:1.3;margin:10px 0 14px}
+.vineyard .celebration-backdrop .section-copy>h2{font-family:InvitationPreviousHeading,Georgia,serif;font-weight:400}
+@font-face{font-family:InvitationAppleJuice;src:url('/fonts/applejuice/Applejuice.ttf') format('truetype');font-display:swap}
+@media(max-width:650px){.vineyard .ceremony-section>.ceremony-time{font-size:22px}}
+
+/* Más aire dentro del marco, conservando la hora sobre su borde inferior. */
+.vineyard .invitation-section.with-image.ceremony-section{padding-top:40px;padding-bottom:95px;margin-bottom:65px}
+.vineyard .ceremony-section .section-art{margin-bottom:38px}
+.vineyard .ceremony-section .section-copy>h2{margin-bottom:25px}
+.vineyard .ceremony-section .section-copy .button{margin-top:24px}
+/* Original horizontal: pigmentos intactos y borde orgánico por máscara. */
+.vineyard .invitation-section.celebration-backdrop.celebration-landscape{display:grid;grid-template-columns:minmax(0,1fr);gap:0;min-height:0;aspect-ratio:auto;width:min(100%,848px);margin:35px auto 45px;padding:0;overflow:visible;background:transparent}
+.vineyard .celebration-landscape::after{display:none}
+.vineyard .celebration-landscape .section-copy{display:contents}
+.vineyard .celebration-landscape .section-copy>h2{grid-row:1;grid-column:1;margin:0 0 22px;font-family:InvitationPreviousHeading,Georgia,serif;color:var(--accent);font-size:clamp(32px,4.8vw,42px);font-weight:700}
+.vineyard .celebration-landscape .event-information{grid-row:2;grid-column:1;margin:0 auto 12px;width:min(90%,620px)}
+.vineyard .celebration-landscape .section-copy .event-information p{color:var(--ink)}
+.vineyard .celebration-landscape .section-copy .event-venue{font-family:InvitationPreviousHeading,Georgia,serif;font-size:clamp(24px,3vw,32px)}
+.vineyard .celebration-landscape .section-art{position:relative;inset:auto;grid-row:3;grid-column:1;z-index:0;width:100%;height:auto;max-width:none;margin:0;mask-image:url('/images/zenia-diego/borde-acuarela-horizontal.svg');mask-size:100% 100%;mask-repeat:no-repeat}
+.vineyard .celebration-landscape.with-image .section-art img{display:block;width:100%;height:auto;max-height:none;object-fit:contain;filter:none;mix-blend-mode:normal;mask-image:none}
+.vineyard .celebration-landscape .section-copy .button{grid-row:4;grid-column:1;justify-self:center;margin-top:24px;color:var(--background)}
+
+/* Revisión de ceremonia, regalos y detalles de lectura. */
+.vineyard .invitation-section.with-image.ceremony-section{padding-top:55px;padding-bottom:140px;margin-bottom:85px}
+.vineyard .ceremony-section .section-art{margin-bottom:55px}
+.vineyard .ceremony-section .section-copy>h2{margin-bottom:34px}
+.vineyard .ceremony-section .event-information .event-venue{margin-bottom:26px}
+.vineyard .ceremony-section .section-copy .button{margin-top:38px}
+.vineyard .ceremony-section>.ceremony-time{font-size:34px}
+.vineyard .ceremony-time span+span{font-size:23px}
+.vineyard .celebration-landscape .section-copy .event-venue{font-size:clamp(1.25rem,2.2vw,1.6rem);font-weight:400;line-height:1.3;color:var(--accent)}
+.vineyard .other-details{position:relative;isolation:isolate;box-sizing:border-box;width:min(100%,680px);margin:35px auto 65px;padding:35px 35px 65px;background:transparent}
+.vineyard .other-details::before{content:"";position:absolute;inset:105px 8px 12px;z-index:-1;background:url('/images/zenia-diego/marco-regalos-acuarela.svg') center/100% 100% no-repeat;pointer-events:none}
+.vineyard .other-details .gift-heading-art{display:block;width:175px;height:auto;margin:0 auto 35px}
+.vineyard .other-details>h2{font-family:InvitationPreviousHeading,Georgia,serif;font-size:clamp(32px,4.8vw,42px)!important;font-weight:700;letter-spacing:0;margin:0 0 28px}
+.vineyard .other-details .other-details-grid{grid-template-columns:1fr}
+.vineyard .other-details .other-details-grid p{font-size:20px;color:var(--ink);line-height:1.8}
+.invitation-song .song-ornament.song-notes{display:block;width:90px;height:auto;max-height:65px;object-fit:contain;margin:0 auto 20px}
+@media(max-width:650px){.vineyard .invitation-section.with-image.ceremony-section{padding-bottom:125px}.vineyard .ceremony-section>.ceremony-time{font-size:31px}.vineyard .ceremony-time span+span{font-size:22px}.vineyard .other-details{padding:30px 25px 55px}}
+
+.vineyard .celebration-landscape .section-art{mask-image:none}
+/* Superar las reglas anteriores del marco también en pantallas pequeñas. */
+.vineyard .invitation-section.with-image.ceremony-section:has(img[src*="sagrada-familia"]){padding:55px 28px 140px;margin-bottom:85px}
+.vineyard .ceremony-section .section-art:has(img[src*="sagrada-familia"]){margin-bottom:55px}
+.vineyard .ceremony-section:has(img[src*="sagrada-familia"]) .section-copy>h2{margin-bottom:34px}
+.vineyard .celebration-landscape .section-copy .event-information .event-venue{color:var(--accent)}
+@media(max-width:650px){.vineyard .invitation-section.with-image.ceremony-section:has(img[src*="sagrada-familia"]){padding:50px 24px 125px}}
+
+.vineyard .rsvp-intro h2{font-weight:700;font-size:clamp(2.6rem,6.3vw,4.2rem)}
+.vineyard .invitation-song h2{font-weight:700;font-size:clamp(31px,5.4vw,42px)}
+
+/* Bodega vertical: conservar el cielo pintado y ubicar allí los datos. */
+.vineyard .celebration-landscape.celebration-portrait{grid-template-rows:auto auto;width:min(100%,720px)}
+.vineyard .celebration-landscape.celebration-portrait .section-art{grid-row:1;grid-column:1;align-self:start;margin:0}
+.vineyard .celebration-landscape.celebration-portrait .section-copy>h2{grid-row:1;grid-column:1;z-index:1;align-self:start;justify-self:center;width:90%;margin:8% auto 0;text-align:center}
+.vineyard .celebration-landscape.celebration-portrait .event-information{grid-row:1;grid-column:1;z-index:1;align-self:start;justify-self:center;width:86%;margin:20% auto 0;text-align:center}
+.vineyard .celebration-landscape.celebration-portrait .section-copy .event-information p{margin:10px 0;line-height:1.4}
+.vineyard .celebration-landscape.celebration-portrait .section-copy .button{grid-row:2;grid-column:1;margin:24px 0 0;justify-self:center}
+@media(max-width:650px){.vineyard .celebration-landscape.celebration-portrait .event-information{margin-top:21%;width:90%}.vineyard .celebration-landscape.celebration-portrait .section-copy .event-information p{font-size:16px}.vineyard .celebration-landscape.celebration-portrait .section-copy .event-information .event-venue{font-size:20px}}
+/* Nombres de los lugares con más presencia y puntual en la tipografía secundaria. */
+.vineyard .invitation-section.ceremony-section:has(img[src*="sagrada-familia"]) .event-information .event-venue,
+.vineyard .celebration-landscape.celebration-portrait .section-copy .event-information .event-venue{font-size:clamp(23px,2.6vw,29px);font-weight:400}
+.vineyard .ceremony-section .ceremony-time span+span{font-family:InvitationPreviousHeading,Georgia,serif;font-weight:400;letter-spacing:.05em}

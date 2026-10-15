@@ -42,6 +42,12 @@ namespace AdministrationEvent.Controllers
             return RedirectToAction(nameof(Index));
         }
         [HttpPost("logout"), ValidateAntiForgeryToken] public async Task<IActionResult> Logout() { await HttpContext.SignOutAsync(); return RedirectToAction(nameof(Login)); }
+        [HttpPost("save-date/{id:guid}"), ValidateAntiForgeryToken]
+        public IActionResult SaveDate(Guid id) {
+            var error = store.CreateSaveTheDate(id, out var invitation);
+            if (error != null) { TempData["Error"] = error; return RedirectToAction(nameof(Index)); }
+            return RedirectToAction(nameof(Edit), new { id = invitation.Id });
+        }
         [HttpGet("new")] public IActionResult Create() { ViewData["New"] = true; return View("Edit", new InvitationEditor { Id = Guid.NewGuid(), ConfigurationJson = JsonSerializer.Serialize(new InvitationConfiguration(), InvitationStore.JsonOptions) }); }
         [HttpGet("edit/{id:guid}")]
         public IActionResult Edit(Guid id) { var item = store.Find(id); return item == null ? (IActionResult)NotFound() : View(new InvitationEditor { Id = id, ConfigurationJson = JsonSerializer.Serialize(item, InvitationStore.JsonOptions) }); }
