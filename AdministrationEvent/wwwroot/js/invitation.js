@@ -73,21 +73,29 @@
       const now = new Date();
       const parts = Object.fromEntries(formatter.formatToParts(now).map(p => [p.type, p.value]));
       const today = Date.UTC(Number(parts.year), Number(parts.month) - 1, Number(parts.day));
-      const remaining = Math.max(0, confirmed ? target - now.getTime() : targetDay - today);
+      const hasTargetTime = Number.isFinite(target);
+      const remaining = Math.max(0, confirmed && hasTargetTime ? target - now.getTime() : targetDay - today);
       if (daysOnly && remaining === 0) {
-        countdown.hidden = true;
         const section = countdown.closest('.relaxed-countdown, .countdown-band');
-        const intro = section.querySelector('.countdown-intro, .eyebrow');
-        if (intro) intro.textContent = 'Gracias por acompañarnos';
-        section.querySelector('[data-countdown-caption]').textContent = 'Gracias por compartir con nosotros este día tan especial.';
+        const caption = section?.querySelector('[data-countdown-caption]');
+        const intro = section?.querySelector('.countdown-intro, .eyebrow');
+        if (caption) {
+          countdown.hidden = true;
+          if (intro) intro.textContent = 'Gracias por acompañarnos';
+          caption.textContent = 'Gracias por compartir con nosotros este día tan especial.';
+        }
         return;
       }
-      countdown.querySelector('[data-days]').textContent = Math.floor(remaining / 86400000);
+      const days = countdown.querySelector('[data-days]');
+      if (days) days.textContent = Math.floor(remaining / 86400000);
       if (confirmed) {
-        countdown.querySelector('[data-hours]').textContent = String(Math.floor(remaining / 3600000) % 24).padStart(2, '0');
-        countdown.querySelector('[data-minutes]').textContent = String(Math.floor(remaining / 60000) % 60).padStart(2, '0');
+        const hours = countdown.querySelector('[data-hours]');
+        const minutes = countdown.querySelector('[data-minutes]');
+        if (hours) hours.textContent = String(Math.floor(remaining / 3600000) % 24).padStart(2, '0');
+        if (minutes) minutes.textContent = String(Math.floor(remaining / 60000) % 60).padStart(2, '0');
       }
-      if (remaining === 0) document.querySelector('[data-countdown-caption]').textContent = today > targetDay ? 'Un día para recordar siempre' : '¡Llegó el día de celebrar!';
+      const caption = document.querySelector('[data-countdown-caption]');
+      if (remaining === 0 && caption) caption.textContent = today > targetDay ? 'Un día para recordar siempre' : '¡Llegó el día de celebrar!';
     };
     tick(); setInterval(tick, 60000);
   }

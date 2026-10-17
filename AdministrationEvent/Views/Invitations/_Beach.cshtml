@@ -1,4 +1,5 @@
 @model InvitationConfiguration
+@using System.Globalization
 @{
     Layout = null;
     var t = Model.Theme;
@@ -55,6 +56,15 @@ index++;
 else { <p class="playlist-pending">La playlist está en camino.</p> }
 <img src="/images/despedida/tragos-dibujo.png" alt="Cinco copas dibujadas con trazos finos de colores" loading="lazy" />
 </section>
+@if(Model.ShowCountdown && Model.Date.HasValue) {
+<section class="beach-countdown beach-countdown-final" aria-label="Cuenta regresiva">
+<p>Ya falta poquito</p>
+<div class="countdown" data-days-only="@(!Model.HasConfirmedTime).ToString().ToLowerInvariant()" data-date="@Model.Date.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)" data-zone="@Model.TimeZone" data-confirmed="@Model.HasConfirmedTime.ToString().ToLowerInvariant()" data-target="@(new DateTimeOffset(DateTime.SpecifyKind(Model.Date.Value, DateTimeKind.Unspecified), TimeZoneInfo.FindSystemTimeZoneById(Model.TimeZone).GetUtcOffset(DateTime.SpecifyKind(Model.Date.Value, DateTimeKind.Unspecified))).ToString("o", CultureInfo.InvariantCulture))">
+<div><strong data-days>—</strong><span>días</span></div>
+@if(Model.HasConfirmedTime) { <div><strong data-hours>—</strong><span>horas</span></div><div><strong data-minutes>—</strong><span>minutos</span></div> }
+</div>
+</section>
+}
 <footer><p>Con amor, tus amigas</p><a href="#inicio">Volver arriba ↑</a></footer>
 </main>
 </body></html>
