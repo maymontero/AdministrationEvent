@@ -17,7 +17,7 @@
 @if(!string.IsNullOrEmpty(t.BodyFontUrl)) { <text>@@font-face {font-family:InvitationBody;src:url('@t.BodyFontUrl');font-display:swap;}</text> }
 </style></head>
 <body class="invitation save-the-date" style="--background:@t.Background;--ink:@t.Text;--accent:@t.Accent;--secondary:@t.Secondary;--heading:@headingFont;--body:@bodyFont;--size:@(t.FontSize)px;">
-@if(ViewData["Preview"] != null) { <div class="preview-banner">Vista previa · @(Model.IsPublished ? "Publicada" : "Borrador") <a href="/admin/edit/@Model.Id">Volver a configurar</a></div> }
+@if(ViewData["Preview"] != null) { <div class="preview-banner">Vista previa · @(Model.IsPublished ? "Publicada" : "Borrador") @if(User.IsInRole("Owner")) { <a href="/admin/edit/@Model.Id">Volver a configurar</a> } else { <a href="/mis-invitaciones">Mis invitaciones</a> }</div> }
 <main class="save-date-content">
 <section class="save-date-hero" aria-labelledby="save-date-names">
 @if(!string.IsNullOrEmpty(Model.CoverImageUrl)) { <img class="save-date-cover" src="@Model.CoverImageUrl" alt="" fetchpriority="high" /> }

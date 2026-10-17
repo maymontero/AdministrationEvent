@@ -14,7 +14,7 @@ namespace AdministrationEvent.Services
             if (user == null) return false;
             if (user.IsOwner) return true;
             return db.InvitationAccesses.Any(a => a.UserId == userId &&
-                db.Invitations.Any(i => i.Id == a.InvitationId && i.PublicId == invitationId && i.IsPublished) &&
+                db.Invitations.Any(i => i.Id == a.InvitationId && i.PublicId == invitationId) &&
                 (a.AvailableFromUtc == null || a.AvailableFromUtc <= utcNow));
         }
     }

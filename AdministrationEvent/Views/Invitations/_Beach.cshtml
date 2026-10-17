@@ -15,7 +15,7 @@
 <script src="~/js/invitation.js" asp-append-version="true" defer></script>
 </head>
 <body class="beach" style="--paper:@t.Background;--ink:@t.Text;--coral:@t.Accent;--sea:@t.Secondary;--butter:@t.Highlight">
-@if(ViewData["Preview"] != null) { <aside class="preview-banner">Vista previa · @(Model.IsPublished ? "Publicada" : "Borrador") <a href="/admin/edit/@Model.Id">Volver a configurar</a></aside> }
+@if(ViewData["Preview"] != null) { <aside class="preview-banner">Vista previa · @(Model.IsPublished ? "Publicada" : "Borrador") @if(User.IsInRole("Owner")) { <a href="/admin/edit/@Model.Id">Volver a configurar</a> } else { <a href="/mis-invitaciones">Mis invitaciones</a> }</aside> }
 <main>
 <header class="beach-hero" id="inicio">
 @if(!string.IsNullOrEmpty(t.SpotifyTrackUrl)) {

@@ -26,7 +26,7 @@
 @if(!string.IsNullOrEmpty(t.BodyFontUrl)) { <text>@@font-face { font-family: InvitationBody; src: url('@t.BodyFontUrl'); font-display: swap; }</text> }
 </style></head>
 <body class="invitation @(vineyard ? "vineyard" : "classic")" style="--background:@t.Background;--ink:@t.Text;--accent:@t.Accent;--secondary:@t.Secondary;--highlight:@t.Highlight;--heading:@headingFont;--body:@bodyFont;--radius:@(t.CornerRadius)px;--size:@(t.FontSize)px;--width:@(t.ContentWidth)px;">
-@if(preview) { <div class="preview-banner">Vista previa · @(Model.IsPublished ? "Publicada" : "Borrador") <a href="/admin/edit/@Model.Id">Volver a configurar</a></div> }
+@if(preview) { <div class="preview-banner">Vista previa · @(Model.IsPublished ? "Publicada" : "Borrador") @if(User.IsInRole("Owner")) { <a href="/admin/edit/@Model.Id">Volver a configurar</a> } else { <a href="/mis-invitaciones">Mis invitaciones</a> }</div> }
 @if(vineyard) { <nav class="wedding-nav" aria-label="Secciones de la invitación"><a class="nav-signature" href="#inicio">@Model.Hosts</a><div><a href="#detalles">El encuentro</a>@if(Model.RsvpEnabled) { <a href="#asistencia">Confirmar asistencia</a> }</div></nav> }
 <main class="invitation-content" id="inicio">
 <section class="invitation-hero @(vineyard && !string.IsNullOrEmpty(Model.CoverImageUrl) ? "has-cover" : "")">

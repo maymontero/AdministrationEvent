@@ -21,28 +21,36 @@ class DatabaseChecks
         var principal = Principal(viewer.Id); var permissions = new InvitationPermissions(db); var now = DateTime.UtcNow;
         var http = new DefaultHttpContext { User = principal };
         var controller = new InvitationsController(store, db) { ControllerContext = new ControllerContext { HttpContext = http } };
-        Check(controller.Show(invitation.Slug) is NotFoundResult, "URL directa sin permiso no revela invitación");
-        Check(controller.Respond(invitation.Slug, new RsvpForm { Name = "Sin acceso", Attending = true, GuestCount = 1 }) is NotFoundResult, "RSVP sin permiso rechazado");
         http.User = new System.Security.Claims.ClaimsPrincipal(new System.Security.Claims.ClaimsIdentity());
-        Check(controller.Show(invitation.Slug) is ChallengeResult, "Visitante anónimo debe iniciar sesión");
+        Check(controller.Show(invitation.Slug) is ViewResult, "Publicada se abre sin cuenta ni permiso");
+        controller.TempData = new TempDataDictionary(http, new MemoryTempDataProvider());
+        var responses = db.GuestResponses.Count();
+        Check(controller.Respond(invitation.Slug, new RsvpForm { Name = "Público", Attending = true, GuestCount = 1 }) is RedirectResult && db.GuestResponses.Count() == responses + 1, "RSVP público no requiere cuenta");
+        db.GuestResponses.Remove(db.GuestResponses.Single(x => x.Name == "Público")); db.SaveChanges();
+        invitation.IsPublished = false; Check(store.Save(invitation) == null, "Preparar borrador para compartir");
+        Check(controller.Show(invitation.Slug) is NotFoundResult, "Borrador no se abre por enlace público");
+        Check(controller.Preview(invitation.Id) is ChallengeResult, "Vista previa requiere sesión");
         http.User = principal;
+        Check(controller.Preview(invitation.Id) is NotFoundResult, "Sin permiso no se puede ver borrador");
+        Check(controller.PreviewResponse(invitation.Id, new RsvpForm()) is NotFoundResult, "Sin permiso no se puede probar RSVP de borrador");
         var access = new Application.InvitationAccess { UserId = viewer.Id, InvitationId = db.Invitations.Single(x => x.PublicId == invitation.Id).Id, AvailableFromUtc = now.AddHours(1) };
         db.InvitationAccesses.Add(access); db.SaveChanges();
         Check(!permissions.CanView(principal, invitation.Id, now), "Permiso futuro no habilita antes de tiempo");
         Check(permissions.CanView(principal, invitation.Id, now.AddHours(1)), "Permiso se habilita en la fecha exacta");
         access.AvailableFromUtc = null; db.SaveChanges();
-        Check(controller.Show(invitation.Slug) is ViewResult, "Permiso inmediato permite lectura");
-        var other = new InvitationConfiguration { Slug = "privada-" + Guid.NewGuid().ToString("N"), IsPublished = true };
-        Check(store.Save(other) == null && controller.Show(other.Slug) is NotFoundResult, "Acceso a una invitación no habilita otras");
+        Check(controller.Preview(invitation.Id) is ViewResult, "Permiso permite ver borrador");
+        var other = new InvitationConfiguration { Slug = "privada-" + Guid.NewGuid().ToString("N"), IsPublished = false };
+        Check(store.Save(other) == null && controller.Preview(other.Id) is NotFoundResult, "Permiso no habilita otros borradores");
         Check(permissions.CanView(Principal(db.AdminUsers.First(x => x.IsOwner).Id), other.Id, now), "Administradora puede ver todas");
         viewer.IsActive = false; db.SaveChanges();
         Check(!permissions.CanView(principal, invitation.Id, now), "Desactivar cuenta bloquea permiso existente");
         viewer.IsActive = true; db.InvitationAccesses.Remove(access); db.SaveChanges();
-        Check(controller.Show(invitation.Slug) is NotFoundResult, "Revocación se aplica a sesión existente");
+        Check(controller.Preview(invitation.Id) is NotFoundResult, "Revocar permiso bloquea vista previa");
+        invitation.IsPublished = true; Check(store.Save(invitation) == null, "Restaurar publicada");
+        Check(controller.Show(invitation.Slug) is ViewResult, "Publicada permanece pública sin permiso");
         db.AdminUsers.Remove(viewer); db.Invitations.Remove(db.Invitations.Single(x => x.PublicId == other.Id)); db.SaveChanges();
         foreach (var type in new[] { typeof(AdminController), typeof(GuestsController) })
-            Check(type.GetCustomAttributes(typeof(Microsoft.AspNetCore.Authorization.AuthorizeAttribute), true).Cast<Microsoft.AspNetCore.Authorization.AuthorizeAttribute>().Any(a => a.Roles == "Owner"), "Panel de administración restringido a Owner");
-        Check(typeof(InvitationsController).GetMethod("Preview").GetCustomAttributes(typeof(Microsoft.AspNetCore.Authorization.AuthorizeAttribute), true).Cast<Microsoft.AspNetCore.Authorization.AuthorizeAttribute>().Any(a => a.Roles == "Owner"), "Vista previa restringida a Owner");
+            Check(type.GetCustomAttributes(typeof(Microsoft.AspNetCore.Authorization.AuthorizeAttribute), true).Cast<Microsoft.AspNetCore.Authorization.AuthorizeAttribute>().Any(a => a.Roles == "Owner"), "Administración solo Owner");
     }
     static void Main(string[] args)
     {

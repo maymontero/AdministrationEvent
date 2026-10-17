@@ -12,7 +12,7 @@ namespace AdministrationEvent.Controllers
         public IActionResult Index([FromServices] InvitationStore store, [FromServices] InvitationPermissions permissions)
         {
             var now = DateTime.UtcNow;
-            return View(store.All().Where(i => i.IsPublished && permissions.CanView(User, i.Id, now)).ToList());
+            return View(store.All().Where(i => permissions.CanView(User, i.Id, now)).ToList());
         }
     }
 }

@@ -7,10 +7,10 @@
 <label for="account-name">Nombre</label><input id="account-name" name="DisplayName" value="@Model.Editor.DisplayName" maxlength="100" required />
 <label for="account-user">Usuario</label><input id="account-user" name="Username" value="@Model.Editor.Username" pattern="[a-zA-Z0-9._-]{3,40}" autocomplete="off" required />
 <label for="account-password">Contraseña inicial</label><input id="account-password" name="Password" type="password" minlength="12" maxlength="128" autocomplete="new-password" required />
-<p class="account-hint">Al menos 12 caracteres. Solo verá las invitaciones que le habilites.</p><button class="button">Crear cuenta</button></form></section>
+<p class="account-hint">Al menos 12 caracteres. Podrá ver los borradores que le habilites. Las invitaciones publicadas tienen acceso público.</p><button class="button">Crear cuenta</button></form></section>
 <section class="account-list">@foreach(var user in Model.Users) { <article class="panel"><span class="eyebrow">@(user.IsOwner ? "Administradora principal" : "Acceso a invitaciones")</span><h2>@user.DisplayName</h2><p>@user.Username · @(user.IsActive ? "Activa" : "Desactivada")</p>
 @if(!user.IsOwner) {
-<h3>Invitaciones permitidas</h3><p class="account-hint">Sin marcar: sin acceso. Una fecha futura habilita el acceso automáticamente (hora de Uruguay). Los borradores siguen ocultos.</p>
+<h3>Vistas previas permitidas</h3><p class="account-hint">Estos permisos permiten ver borradores sin editarlos. Una fecha futura habilita la vista previa automáticamente (hora de Uruguay). Las invitaciones publicadas se abren con el enlace, sin iniciar sesión.</p>
 @foreach(var invitation in Model.Invitations) {
     var access = Model.Accesses.FirstOrDefault(x => x.UserId == user.Id && x.InvitationId == invitation.Id);
     var localDate = access?.AvailableFromUtc is System.DateTime utc ? System.TimeZoneInfo.ConvertTimeFromUtc(System.DateTime.SpecifyKind(utc, System.DateTimeKind.Utc), System.TimeZoneInfo.FindSystemTimeZoneById("America/Montevideo")).ToString("yyyy-MM-ddTHH:mm") : "";
