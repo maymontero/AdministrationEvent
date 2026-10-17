@@ -1,8 +1,8 @@
 @model AccountLogin
 @{ ViewData["Title"] = "Tu espacio"; }
-<section class="panel login"><span class="eyebrow">ZENIA &amp; DIEGO</span><h1>Tu espacio para celebrar</h1><p>Entrá con tu cuenta para preparar cada detalle.</p>
+<section class="panel login"><span class="eyebrow">ZENIA &amp; DIEGO</span><h1>Tu espacio para celebrar</h1><p>Entrá con tu cuenta para ver tus invitaciones.</p>
 @if(TempData["Success"] != null) { <p class="success" role="status">@TempData["Success"]</p> }
-<form method="post" action="/admin/login">@Html.AntiForgeryToken()<div asp-validation-summary="All" class="errors" role="alert"></div>
+<form method="post" action="/admin/login">@Html.AntiForgeryToken()<input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" /><div asp-validation-summary="All" class="errors" role="alert"></div>
 <label for="username">Usuario</label><input id="username" name="Username" value="@Model.Username" autocomplete="username" required maxlength="80" />
 <label for="password">Contraseña</label><input id="password" type="password" name="Password" autocomplete="current-password" required maxlength="128" />
 <button class="button">Ingresar →</button></form></section>

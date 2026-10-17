@@ -1,13 +1,14 @@
 @model InvitationConfiguration
 @{
     string trackId = null;
+    var resourceType = "track";
     if (Uri.TryCreate(Model.Theme.SpotifyTrackUrl, UriKind.Absolute, out var uri) && uri.Scheme == "https" && uri.Host == "open.spotify.com" && string.IsNullOrEmpty(uri.UserInfo)) {
-        var match = System.Text.RegularExpressions.Regex.Match(uri.AbsolutePath, "^/(?:embed/)?track/([a-zA-Z0-9]{22})/?$");
-        if (match.Success) trackId = match.Groups[1].Value;
+        var match = System.Text.RegularExpressions.Regex.Match(uri.AbsolutePath, "^/(?:embed/)?(track|playlist)/([a-zA-Z0-9]{22})/?$");
+        if (match.Success) { resourceType = match.Groups[1].Value; trackId = match.Groups[2].Value; }
     }
 }
 @if(trackId != null) {
-<section class="invitation-song" id="cancion" data-spotify-music data-track="@trackId" aria-label="Música de la invitación">
+<section class="invitation-song" id="cancion" data-spotify-music data-track="@trackId" data-spotify-uri="spotify:@(resourceType):@(trackId)" data-player-height="@(resourceType == "playlist" && ViewData["CompactMusic"] == null ? 352 : 152)" aria-label="Música de la invitación">
     @if(ViewData["MusicControlInHero"] == null) {
     <div class="background-music">
         <button class="background-music-toggle" data-spotify-toggle type="button" hidden aria-pressed="false">♫ Reproducir</button>
@@ -20,7 +21,7 @@
     }
     <div class="song-player" data-spotify-panel>
         <div data-spotify-embed>
-            <iframe class="invitation-spotify" src="https://open.spotify.com/embed/track/@(trackId)?utm_source=generator&amp;theme=0" width="100%" height="152" title="Música de la invitación en Spotify" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="eager" allowfullscreen></iframe>
+            <iframe class="invitation-spotify" src="https://open.spotify.com/embed/@(resourceType)/@(trackId)?utm_source=generator&amp;theme=0" width="100%" height="@(resourceType == "playlist" && ViewData["CompactMusic"] == null ? 352 : 152)" title="Música de la invitación en Spotify" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="eager" allowfullscreen></iframe>
         </div>
         <p class="visually-hidden song-status" data-spotify-status role="status" aria-live="polite"></p>
     </div>

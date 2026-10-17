@@ -9,12 +9,13 @@ using AdministrationEvent.Services;
 namespace AdministrationEvent.Controllers
 {
     [Authorize, Route("admin/accounts")]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class AccountsController : Controller
     {
         private readonly InvitationDbContext db;
         private readonly AdminAccounts accounts;
         public AccountsController(InvitationDbContext db, AdminAccounts accounts) { this.db = db; this.accounts = accounts; }
-        private AccountPage Page(CreateAccount editor = null) => new() { Users = db.AdminUsers.OrderBy(x => x.DisplayName).ToList(), Editor = editor ?? new() };
+        private AccountPage Page(CreateAccount editor = null) => new() { Users = db.AdminUsers.OrderBy(x => x.DisplayName).ToList(), Editor = editor ?? new(), Invitations = db.Invitations.OrderBy(x => x.Title).Select(x => new InvitationChoice { Id = x.Id, Title = x.Title, IsPublished = x.IsPublished }).ToList(), Accesses = db.InvitationAccesses.ToList() };
         [Authorize(Policy = "ManageAccounts"), HttpGet("")] public IActionResult Index() => View(Page());
         [Authorize(Policy = "ManageAccounts"), HttpPost("create"), ValidateAntiForgeryToken]
         public IActionResult Create(CreateAccount editor) {
@@ -34,6 +35,18 @@ namespace AdministrationEvent.Controllers
             if (password == null || password.Length < 12 || password.Length > 128) TempData["Error"] = "La contraseña debe tener entre 12 y 128 caracteres.";
             else { accounts.SetPassword(user, password); TempData["Success"] = "Contraseña actualizada. Las sesiones anteriores se cerrarán."; }
             return RedirectToAction(nameof(Index));
+        }
+        [Authorize(Policy = "ManageAccounts"), HttpPost("access/{id:long}"), ValidateAntiForgeryToken]
+        public IActionResult Access(long id, long invitationId, bool enabled, DateTime? availableFrom)
+        {
+            var user = db.AdminUsers.SingleOrDefault(x => x.Id == id && !x.IsOwner);
+            if (user == null || !db.Invitations.Any(x => x.Id == invitationId)) return NotFound();
+            if (!ModelState.IsValid) { TempData["Error"] = "Revisá la fecha de habilitación."; return RedirectToAction(nameof(Index)); }
+            DateTime? utc = availableFrom.HasValue ? TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(availableFrom.Value, DateTimeKind.Unspecified), TimeZoneInfo.FindSystemTimeZoneById("America/Montevideo")) : null;
+            var access = db.InvitationAccesses.SingleOrDefault(x => x.UserId == id && x.InvitationId == invitationId);
+            if (!enabled) { if (access != null) db.InvitationAccesses.Remove(access); }
+            else { if (access == null) { access = new Application.InvitationAccess { UserId = id, InvitationId = invitationId }; db.InvitationAccesses.Add(access); } access.AvailableFromUtc = utc; }
+            db.SaveChanges(); TempData["Success"] = "Permiso actualizado."; return RedirectToAction(nameof(Index));
         }
         [HttpGet("password")] public IActionResult Password() => View(new ChangeAccountPassword());
         [HttpPost("password"), ValidateAntiForgeryToken]

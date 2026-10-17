@@ -9,7 +9,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AdministrationEvent.Controllers
 {
-    [Authorize, Route("admin/guests/{id:guid}")]
+    [Authorize(Roles = "Owner"), Route("admin/guests/{id:guid}")]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class GuestsController : Controller
     {
         private readonly InvitationDbContext db;

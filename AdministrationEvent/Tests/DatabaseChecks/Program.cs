@@ -13,6 +13,37 @@ using AdministrationEvent.Services;
 class DatabaseChecks
 {
     static void Check(bool condition, string message) { if (!condition) throw new Exception(message); }
+    static System.Security.Claims.ClaimsPrincipal Principal(long id) => new(new System.Security.Claims.ClaimsIdentity(new[] { new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, id.ToString()) }, "test"));
+    static void CheckPermissions(InvitationDbContext db, InvitationStore store, InvitationConfiguration invitation)
+    {
+        var viewer = new Application.AdminUser { Username = "viewer-test", NormalizedUsername = "VIEWER-TEST", DisplayName = "Amiga" };
+        db.AdminUsers.Add(viewer); db.SaveChanges();
+        var principal = Principal(viewer.Id); var permissions = new InvitationPermissions(db); var now = DateTime.UtcNow;
+        var http = new DefaultHttpContext { User = principal };
+        var controller = new InvitationsController(store, db) { ControllerContext = new ControllerContext { HttpContext = http } };
+        Check(controller.Show(invitation.Slug) is NotFoundResult, "URL directa sin permiso no revela invitación");
+        Check(controller.Respond(invitation.Slug, new RsvpForm { Name = "Sin acceso", Attending = true, GuestCount = 1 }) is NotFoundResult, "RSVP sin permiso rechazado");
+        http.User = new System.Security.Claims.ClaimsPrincipal(new System.Security.Claims.ClaimsIdentity());
+        Check(controller.Show(invitation.Slug) is ChallengeResult, "Visitante anónimo debe iniciar sesión");
+        http.User = principal;
+        var access = new Application.InvitationAccess { UserId = viewer.Id, InvitationId = db.Invitations.Single(x => x.PublicId == invitation.Id).Id, AvailableFromUtc = now.AddHours(1) };
+        db.InvitationAccesses.Add(access); db.SaveChanges();
+        Check(!permissions.CanView(principal, invitation.Id, now), "Permiso futuro no habilita antes de tiempo");
+        Check(permissions.CanView(principal, invitation.Id, now.AddHours(1)), "Permiso se habilita en la fecha exacta");
+        access.AvailableFromUtc = null; db.SaveChanges();
+        Check(controller.Show(invitation.Slug) is ViewResult, "Permiso inmediato permite lectura");
+        var other = new InvitationConfiguration { Slug = "privada-" + Guid.NewGuid().ToString("N"), IsPublished = true };
+        Check(store.Save(other) == null && controller.Show(other.Slug) is NotFoundResult, "Acceso a una invitación no habilita otras");
+        Check(permissions.CanView(Principal(db.AdminUsers.First(x => x.IsOwner).Id), other.Id, now), "Administradora puede ver todas");
+        viewer.IsActive = false; db.SaveChanges();
+        Check(!permissions.CanView(principal, invitation.Id, now), "Desactivar cuenta bloquea permiso existente");
+        viewer.IsActive = true; db.InvitationAccesses.Remove(access); db.SaveChanges();
+        Check(controller.Show(invitation.Slug) is NotFoundResult, "Revocación se aplica a sesión existente");
+        db.AdminUsers.Remove(viewer); db.Invitations.Remove(db.Invitations.Single(x => x.PublicId == other.Id)); db.SaveChanges();
+        foreach (var type in new[] { typeof(AdminController), typeof(GuestsController) })
+            Check(type.GetCustomAttributes(typeof(Microsoft.AspNetCore.Authorization.AuthorizeAttribute), true).Cast<Microsoft.AspNetCore.Authorization.AuthorizeAttribute>().Any(a => a.Roles == "Owner"), "Panel de administración restringido a Owner");
+        Check(typeof(InvitationsController).GetMethod("Preview").GetCustomAttributes(typeof(Microsoft.AspNetCore.Authorization.AuthorizeAttribute), true).Cast<Microsoft.AspNetCore.Authorization.AuthorizeAttribute>().Any(a => a.Roles == "Owner"), "Vista previa restringida a Owner");
+    }
     static void Main(string[] args)
     {
         if (Array.IndexOf(args, "--mysql") >= 0) { CheckMySql(); return; }
@@ -64,6 +95,10 @@ class DatabaseChecks
                 Check(restored.Date == item.Date && restored.Sections.Count == 2 && !restored.Sections[1].Enabled, "Fecha y secciones persistidas");
                 Check(restored.Theme.HeadingFontUrl == item.Theme.HeadingFontUrl, "Fuente persistida");
                 Check(restored.Theme.SpotifyTrackUrl == item.Theme.SpotifyTrackUrl, "Canción Spotify persistida");
+                restored.Theme.SpotifyTrackUrl = "https://open.spotify.com/playlist/37i9dQZF1DZ06evO3eIivx?si=test";
+                Check(store.Save(restored) == null && store.Find(item.Id).Theme.SpotifyTrackUrl == restored.Theme.SpotifyTrackUrl, "Playlist Spotify persistida");
+                restored.Theme.SpotifyTrackUrl = "https://open.spotify.com/embed/playlist/37i9dQZF1DZ06evO3eIivx";
+                Check(store.Save(restored) == null, "Aceptar embed de playlist");
                 restored.Theme.SpotifyTrackUrl = "https://example.com/track/2TD8Bhc5hFPKh52lFJ2Ec5";
                 Check(store.Save(restored) != null, "Rechazar enlaces ajenos a Spotify");
                 restored.Theme.SpotifyTrackUrl = "";
@@ -78,6 +113,7 @@ class DatabaseChecks
                 var store = new InvitationStore(db); var restored = store.FindPublished(item.Slug);
                 Check(restored != null && restored.Theme.Accent == "#123456" && restored.Theme.Layout == "relaxed", "Publicación y tema actualizado");
                 Check(restored.Sections.Count == 1 && restored.Sections[0].Title == "Nueva primera", "Sin secciones obsoletas");
+                CheckPermissions(db, store, restored);
                 CheckRsvp(db, store, restored);
                 CheckGuests(db, store, restored);
                 CheckOrganization(db, store, restored);
@@ -102,6 +138,7 @@ class DatabaseChecks
     static void CheckRsvp(InvitationDbContext db, InvitationStore store, InvitationConfiguration invitation)
     {
         var http = new DefaultHttpContext();
+        http.User = Principal(db.AdminUsers.First(x => x.IsOwner).Id);
         var controller = new InvitationsController(store, db) { ControllerContext = new ControllerContext { HttpContext = http }, TempData = new TempDataDictionary(http, new MemoryTempDataProvider()) };
         var initial = db.GuestResponses.CountAsync().Result;
         Check(controller.Respond(invitation.Slug, new RsvpForm { Name = " Prueba asistencia ", Attending = true, GuestCount = 2, DietaryRestrictions = " Sin gluten ", SongRequest = " Brindo · Benja Torres " }) is RedirectResult, "Formulario: confirmación válida");
@@ -118,6 +155,7 @@ class DatabaseChecks
     static void CheckGuests(InvitationDbContext db, InvitationStore store, InvitationConfiguration invitation)
     {
         var http = new DefaultHttpContext();
+        http.User = Principal(db.AdminUsers.First(x => x.IsOwner).Id);
         var controller = new GuestsController(db, store) { ControllerContext = new ControllerContext { HttpContext = http }, TempData = new TempDataDictionary(http, new MemoryTempDataProvider()) };
         Check(controller.Save(invitation.Id, new GuestEditor { Name = " María   Pérez ", InvitedCount = 2 }) is RedirectToActionResult, "Invitado: crear");
         var entityId = db.Invitations.Single(x => x.PublicId == invitation.Id).Id;
@@ -171,6 +209,7 @@ class DatabaseChecks
     static void CheckOrganization(InvitationDbContext db, InvitationStore store, InvitationConfiguration invitation)
     {
         var http = new DefaultHttpContext();
+        http.User = Principal(db.AdminUsers.First(x => x.IsOwner).Id);
         GuestsController Controller() => new GuestsController(db, store) { ControllerContext = new ControllerContext { HttpContext = http }, TempData = new TempDataDictionary(http, new MemoryTempDataProvider()) };
         Check(typeof(GuestsController).GetMethod("Save").GetParameters()[0].GetCustomAttributes(typeof(Microsoft.AspNetCore.Mvc.FromRouteAttribute), false).Length == 1, "Guardar: ID de invitación se toma de la ruta, no del ID del invitado");
         var controller = Controller(); var entityId = db.Invitations.Single(x => x.PublicId == invitation.Id).Id;
@@ -222,7 +261,8 @@ class DatabaseChecks
             Check(store.Save(restored) == null, "MySQL: actualizar");
             var published = store.FindPublished(item.Slug);
             Check(published.ShowCountdown && !published.HasConfirmedTime && published.Theme.Layout == "relaxed" && published.RsvpEnabled, "MySQL: opciones de diseño persistidas");
-            CheckRsvp(db, store, published);
+            CheckPermissions(db, store, published);
+                CheckRsvp(db, store, published);
             CheckGuests(db, store, published);
             CheckOrganization(db, store, published);
             Check(published.Theme.Accent == "#123456" && published.Sections.Count == 1 && published.Sections[0].Title == "Nueva primera", "MySQL: tema y secciones actualizados");

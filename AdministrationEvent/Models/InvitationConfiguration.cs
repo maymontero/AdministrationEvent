@@ -23,9 +23,9 @@ namespace AdministrationEvent.Models
     }
     public class InvitationTheme
     {
-        [StringLength(2000), RegularExpression(@"^$|^https://open\.spotify\.com/(?:embed/)?track/[a-zA-Z0-9]{22}/?(?:\?[^\s]*)?$")]
+        [StringLength(2000), RegularExpression(@"^$|^https://open\.spotify\.com/(?:embed/)?(?:track|playlist)/[a-zA-Z0-9]{22}/?(?:\?[^\s]*)?$")]
         public string SpotifyTrackUrl { get; set; } = "";
-        [Required, RegularExpression("^(classic|vineyard|relaxed|save-date)$")] public string Layout { get; set; } = "classic";
+        [Required, RegularExpression("^(classic|vineyard|vineyard-archive|relaxed|save-date|beach)$")] public string Layout { get; set; } = "classic";
         [Required, RegularExpression("^#[0-9a-fA-F]{6}$")] public string Secondary { get; set; } = "#76805e";
         [Required, RegularExpression("^#[0-9a-fA-F]{6}$")] public string Highlight { get; set; } = "#eee3bd";
         [Required, RegularExpression("^#[0-9a-fA-F]{6}$")] public string Background { get; set; } = "#f9f5ee";

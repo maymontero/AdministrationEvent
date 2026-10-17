@@ -10,15 +10,18 @@ namespace AdministrationEvent.Models
     }
     public class CreateAccount
     {
-        [Required, RegularExpression("^[a-zA-Z0-9._-]{3,40}$")] public string Username { get; set; } = "chea";
-        [Required, StringLength(100)] public string DisplayName { get; set; } = "Chea";
+        [Required, RegularExpression("^[a-zA-Z0-9._-]{3,40}$")] public string Username { get; set; } = "";
+        [Required, StringLength(100)] public string DisplayName { get; set; } = "";
         [Required, StringLength(128, MinimumLength = 12)] public string Password { get; set; } = "";
     }
     public class AccountPage
     {
         public List<AdminUser> Users { get; set; } = new();
+        public List<InvitationChoice> Invitations { get; set; } = new();
+        public List<InvitationAccess> Accesses { get; set; } = new();
         public CreateAccount Editor { get; set; } = new();
     }
+    public class InvitationChoice { public long Id { get; set; } public string Title { get; set; } public bool IsPublished { get; set; } }
     public class ChangeAccountPassword
     {
         [Required, StringLength(128)] public string CurrentPassword { get; set; } = "";

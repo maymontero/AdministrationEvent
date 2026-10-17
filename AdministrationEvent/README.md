@@ -103,10 +103,44 @@ Aplicar la migración `AdminAccounts` con `dotnet ef database update` antes de d
 
 La primera entrada crea la cuenta principal `admin` usando la contraseña ya configurada en `Admin__Password`. Luego se guarda únicamente su hash; cambiar esa variable no cambia una contraseña existente. No hay cuentas ni contraseñas predefinidas para terceros. Las cookies del acceso compartido anterior se invalidan: ingresar nuevamente con usuario `admin` y la contraseña existente.
 
-La administradora puede ir a `/admin/accounts`, crear `chea` con nombre Chea y una contraseña de 12 a 128 caracteres, restablecer contraseñas y activar/desactivar cuentas. Chea puede administrar todas las invitaciones, invitados y respuestas, pero no gestionar usuarios. Cada persona puede cambiar su contraseña en `/admin/accounts/password`. Cambiar o restablecer contraseña o desactivar una cuenta revoca sus sesiones. Cinco intentos incorrectos bloquean temporalmente esa cuenta por 15 minutos.
+La administradora puede ir a `/admin/accounts`, crear `chea` con nombre Chea y una contraseña de 12 a 128 caracteres, restablecer contraseñas y activar/desactivar cuentas. Las cuentas nuevas solo pueden leer las invitaciones que la administradora les habilite; no pueden administrar invitaciones, invitados ni respuestas. Cada persona puede cambiar su contraseña en `/admin/accounts/password`. Cambiar o restablecer contraseña o desactivar una cuenta revoca sus sesiones. Cinco intentos incorrectos bloquean temporalmente esa cuenta por 15 minutos.
 
 El panel y el ingreso usan la paleta de la tarjeta formal: crema `#f8f0dc`, terracota `#95513b`, oliva `#737047`, dorado `#f5df89` y texto `#463c30`, con Cormorant Garamond y Jost y navegación adaptada a celular.
 
 ## Guardá esta fecha
 
 En el panel, `Crear un Guardá esta fecha` duplica una invitación como borrador independiente, conserva fecha, portada, colores, fuentes y Spotify, oculta las secciones y desactiva RSVP y horario. Usa `Theme.Layout: "save-date"` y muestra el reproductor al final y un control de Play con notas musicales encima de Guardá esta fecha, sin botón flotante. La invitación completa se conserva sin modificaciones. No requiere migraciones nuevas. También puede crearse localmente con `dotnet run -- --create-save-date ID_ORIGINAL`.
+
+## Despedida · edición playa
+
+El panel incluye **Despedida · edición playa**, que abre una invitación nueva con el diseño `beach`, dibujos simples independientes y secciones editables. Empieza como borrador, sin RSVP y sin destino. Las fechas iniciales son del 24 de febrero al 3 de marzo de 2027; los horarios quedan por confirmar en el texto de la primera sección. Cambiar Hosts para personalizar el título.
+
+Para guardar el borrador inicial desde la terminal: `dotnet run -- --create-beach`. Si ya existe el slug `despedida-sorpresa`, conserva su contenido y devuelve su ID. La vista previa usa `/admin/preview/ID`. No requiere migraciones.
+
+La despedida muestra un control musical al inicio y una sección final con los tragos dibujados. Configurar `Theme.SpotifyTrackUrl` con el enlace HTTPS de una canción o playlist de Spotify (también acepta enlaces embed). El nombre del campo se conserva por compatibilidad. Sin enlace, Play lleva a la sección y muestra “La playlist está en camino.”; al configurarlo, el control alterna reproducir/pausar según los eventos de Spotify y queda disponible el reproductor oficial al final.
+
+### Permisos por invitación
+
+Aplicar `dotnet ef database update` (migración `InvitationPermissions`). Todas las invitaciones publicadas requieren iniciar sesión y un permiso por persona; no se conceden permisos automáticamente a cuentas existentes. La administradora principal conserva todos los accesos y es la única que puede editar, ver borradores, invitados y gestionar cuentas. Las demás cuentas son de lectura, incluso si tenían una sesión anterior de administración.
+
+En `/admin/accounts`, crear una cuenta y marcar las invitaciones que puede ver. Guardar cada permiso. Sin fecha, el acceso es inmediato; con fecha, se activa automáticamente en hora de Uruguay (`America/Montevideo`). Desmarcar y guardar revoca el permiso en la siguiente solicitud. Las personas ingresan por `/admin/login` y encuentran su lista en `/mis-invitaciones`; una invitación aún no habilitada no aparece. Se conservan las URLs `/invitacion/slug`. Los borradores nunca aparecen en la lista. Los archivos decorativos estáticos no son documentos privados y siguen siendo públicos.
+
+### Respaldo de la grabación del 14 de octubre
+
+`Theme.Layout: "vineyard-archive"` aísla la plantilla y los estilos históricos de `852a1c7` de los cambios de la invitación actual. Usa `_VineyardArchive`, `_RsvpArchive` y `vineyard-archive.css`. El JSON local `App_Data/DesignBackups/zenia-diego-reconstruida-grabacion-20261014.json` reconstruye el contenido visible en la grabación aportada (no es un volcado exacto recuperado de la base). Las imágenes originales se conservaron; los mapas son enlaces de búsqueda reconstruidos porque el video no muestra sus URLs. Se guarda como borrador separado sin permisos para otras cuentas.
+
+### Actualizar la base de producción desde una terminal local (Bash)
+
+La imagen de producción solo incluye el runtime y no ejecuta migraciones automáticamente. Desde el checkout actualizado y con el SDK .NET 10 instalado:
+
+```bash
+git pull --ff-only origin master
+dotnet tool restore
+dotnet restore
+read -r -s -p 'Conexión MySQL de producción: ' invitation_prod_connection
+printf '\n'
+ConnectionStrings__Invitations="$invitation_prod_connection" dotnet ef database update
+unset invitation_prod_connection
+```
+
+Usar la conexión externa de MySQL si se ejecuta fuera del hosting (una dirección privada interna del proveedor no es accesible desde la computadora). El comando aplica solo migraciones pendientes, incluida `InvitationPermissions`. Respaldar la base antes de aplicarlas. Como alternativa para una base que ya tenga `AdminAccounts`, ejecutar una sola vez `Data/invitation-permissions.sql` con el cliente MySQL; no combinar ambas vías para la misma migración. Las configuraciones e invitaciones guardadas en la base local no se copian con Git ni con las migraciones.

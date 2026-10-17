@@ -43,7 +43,7 @@
     window.onSpotifyIframeApiReady = api => {
       try {
         api.createController(spotify.querySelector('[data-spotify-embed]'), {
-          uri: 'spotify:track:' + spotify.dataset.track, width: '100%', height: 152, theme: 'dark'
+          uri: spotify.dataset.spotifyUri || 'spotify:track:' + spotify.dataset.track, width: '100%', height: Number(spotify.dataset.playerHeight) || 152, theme: 'dark'
         }, embed => {
           controller = embed;
           eagerLoad();

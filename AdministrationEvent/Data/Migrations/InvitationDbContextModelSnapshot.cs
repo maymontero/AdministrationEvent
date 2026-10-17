@@ -434,6 +434,24 @@ namespace AdministrationEvent.Migrations
                     b.ToTable("Invitations");
                 });
 
+            modelBuilder.Entity("Application.InvitationAccess", b =>
+                {
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("InvitationId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("AvailableFromUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("UserId", "InvitationId");
+
+                    b.HasIndex("InvitationId");
+
+                    b.ToTable("InvitationAccesses");
+                });
+
             modelBuilder.Entity("Application.InvitationSection", b =>
                 {
                     b.Property<long>("Id")
@@ -712,6 +730,21 @@ namespace AdministrationEvent.Migrations
                         .IsRequired();
 
                     b.Navigation("Theme");
+                });
+
+            modelBuilder.Entity("Application.InvitationAccess", b =>
+                {
+                    b.HasOne("Application.Invitation", null)
+                        .WithMany()
+                        .HasForeignKey("InvitationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Application.AdminUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Application.InvitationSection", b =>

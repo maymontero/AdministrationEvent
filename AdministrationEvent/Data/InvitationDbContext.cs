@@ -9,6 +9,8 @@ public class InvitationDbContext : DbContext
     {
     }
 
+    public DbSet<InvitationAccess> InvitationAccesses => Set<InvitationAccess>();
+
     public DbSet<AdminUser> AdminUsers => Set<AdminUser>();
 
     public DbSet<GuestResponse> GuestResponses => Set<GuestResponse>();
@@ -51,6 +53,11 @@ public class InvitationDbContext : DbContext
             e.Property(x => x.SecurityStamp).HasMaxLength(36).IsRequired();
         });
 
+        modelBuilder.Entity<InvitationAccess>(e => {
+            e.HasKey(x => new { x.UserId, x.InvitationId });
+            e.HasOne<AdminUser>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne<Invitation>().WithMany().HasForeignKey(x => x.InvitationId).OnDelete(DeleteBehavior.Cascade);
+        });
         ConfigureInvitation(modelBuilder);
         modelBuilder.Entity<GuestTag>(e => {
             e.HasKey(x => x.Id); e.Property(x => x.Name).HasMaxLength(80).IsRequired(); e.Property(x => x.Color).HasMaxLength(7).IsRequired();

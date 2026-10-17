@@ -31,6 +31,7 @@ namespace AdministrationEvent
             services.AddDbContext<InvitationDbContext>(options => options.UseMySQL(connection));
             services.AddScoped<AdministrationEvent.Services.InvitationStore>();
             services.AddScoped<AdministrationEvent.Services.AdminAccounts>();
+            services.AddScoped<AdministrationEvent.Services.InvitationPermissions>();
             services.AddAuthorization(options => options.AddPolicy("ManageAccounts", policy => policy.RequireRole("Owner")));
             services.AddAuthentication(Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options => { options.LoginPath = "/admin/login"; options.AccessDeniedPath = "/admin/denied"; options.ExpireTimeSpan = TimeSpan.FromHours(8); options.Cookie.HttpOnly = true; options.Cookie.SecurePolicy = Configuration["ASPNETCORE_ENVIRONMENT"] == "Development" ? Microsoft.AspNetCore.Http.CookieSecurePolicy.SameAsRequest : Microsoft.AspNetCore.Http.CookieSecurePolicy.Always; options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Strict;
@@ -41,6 +42,11 @@ namespace AdministrationEvent
                         if (user == null || !user.IsActive || user.SecurityStamp != context.Principal.FindFirst("stamp")?.Value) {
                             context.RejectPrincipal();
                             await Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.SignOutAsync(context.HttpContext);
+                        }
+                        else {
+                            var identity = (System.Security.Claims.ClaimsIdentity)context.Principal.Identity;
+                            foreach (var role in identity.FindAll(System.Security.Claims.ClaimTypes.Role).ToList()) identity.RemoveClaim(role);
+                            identity.AddClaim(new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Role, user.IsOwner ? "Owner" : "Viewer"));
                         }
                     }; });
         }

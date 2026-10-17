@@ -15,7 +15,7 @@
     var blocks = Model.Sections.Where(x => x.Enabled && (!vineyard || !(detailTitles.Contains(x.Title) || (x.ImageUrl == "/images/zenia-diego/regalos-acuarela.png" || x.ImageUrl == "/images/zenia-diego/regalos-estilo-sagrada-familia-v2.png")))).ToList();
     var form = ViewData["RsvpForm"] as RsvpForm ?? new RsvpForm();
 }
-@if(t.Layout == "save-date") { <partial name="_SaveTheDate" model="Model" /> } else if(t.Layout == "relaxed") { <partial name="_Relaxed" model="Model" /> } else {
+@if(t.Layout == "vineyard-archive") { <partial name="_VineyardArchive" model="Model" /> } else if(t.Layout == "beach") { <partial name="_Beach" model="Model" /> } else if(t.Layout == "save-date") { <partial name="_SaveTheDate" model="Model" /> } else if(t.Layout == "relaxed") { <partial name="_Relaxed" model="Model" /> } else {
 <!DOCTYPE html>
 <html lang="es"><head><link rel="icon" type="image/svg+xml" href="~/favicon-zd.svg" asp-append-version="true" /><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>@Model.Title</title>
 <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />

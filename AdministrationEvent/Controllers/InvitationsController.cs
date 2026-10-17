@@ -7,6 +7,7 @@ using AdministrationEvent.Models;
 using Application;
 namespace AdministrationEvent.Controllers
 {
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class InvitationsController : Controller
     {
         private readonly InvitationStore store;
@@ -17,7 +18,9 @@ namespace AdministrationEvent.Controllers
         public IActionResult Show(string slug)
         {
             var invitation = store.FindPublished(slug);
-            return invitation == null ? (IActionResult)NotFound() : View(invitation);
+            if (invitation == null) return NotFound();
+            var denied = CheckAccess(invitation.Id);
+            return denied ?? View(invitation);
         }
 
 
@@ -26,15 +29,22 @@ namespace AdministrationEvent.Controllers
         {
             var invitation = store.FindPublished(slug);
             if (invitation == null || !invitation.RsvpEnabled) return NotFound();
-            return HandleResponse(invitation, form, false);
+            var denied = CheckAccess(invitation.Id);
+            return denied ?? HandleResponse(invitation, form, false);
         }
 
-        [Authorize, HttpPost("admin/preview/{id:guid}/asistencia"), ValidateAntiForgeryToken]
+        [Authorize(Roles = "Owner"), HttpPost("admin/preview/{id:guid}/asistencia"), ValidateAntiForgeryToken]
         public IActionResult PreviewResponse(Guid id, RsvpForm form)
         {
             var invitation = store.Find(id);
             if (invitation == null || !invitation.RsvpEnabled) return NotFound();
             return HandleResponse(invitation, form, true);
+        }
+
+        private IActionResult CheckAccess(Guid id)
+        {
+            if (User.Identity?.IsAuthenticated != true) return Challenge();
+            return new InvitationPermissions(db).CanView(User, id, DateTime.UtcNow) ? null : NotFound();
         }
 
         private IActionResult HandleResponse(InvitationConfiguration invitation, RsvpForm form, bool preview)
@@ -62,7 +72,7 @@ namespace AdministrationEvent.Controllers
             return Redirect((preview ? "/admin/preview/" + invitation.Id : "/invitacion/" + invitation.Slug) + "#asistencia");
         }
 
-        [Authorize, HttpGet("admin/preview/{id:guid}")]
+        [Authorize(Roles = "Owner"), HttpGet("admin/preview/{id:guid}")]
         public IActionResult Preview(Guid id, bool spotifyTest = false)
         {
             var invitation = store.Find(id);

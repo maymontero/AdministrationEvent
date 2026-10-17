@@ -1,0 +1,59 @@
+@model InvitationConfiguration
+@{
+    Layout = null;
+    var t = Model.Theme;
+    ViewData["MusicControlInHero"] = true;
+    ViewData["CompactMusic"] = true;
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Despedida Chea</title>
+<link rel="icon" type="image/svg+xml" href="~/images/despedida/favicon-z.svg" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/beach.css" asp-append-version="true" />
+<script src="~/js/invitation.js" asp-append-version="true" defer></script>
+</head>
+<body class="beach" style="--paper:@t.Background;--ink:@t.Text;--coral:@t.Accent;--sea:@t.Secondary;--butter:@t.Highlight">
+@if(ViewData["Preview"] != null) { <aside class="preview-banner">Vista previa · @(Model.IsPublished ? "Publicada" : "Borrador") <a href="/admin/edit/@Model.Id">Volver a configurar</a></aside> }
+<main>
+<header class="beach-hero" id="inicio">
+@if(!string.IsNullOrEmpty(t.SpotifyTrackUrl)) {
+<button class="beach-music-control" data-spotify-toggle type="button" hidden aria-pressed="false" aria-label="Reproducir música">
+<span aria-hidden="true">♪</span><svg viewBox="0 0 48 48" width="44" height="44" aria-hidden="true"><circle cx="24" cy="24" r="21" fill="none" stroke="currentColor" stroke-width="1.3"/><path data-play-symbol d="M19 14L34 24L19 34Z" fill="currentColor"/></svg><span data-spotify-label class="music-label-hidden">Play</span><span aria-hidden="true">♫</span>
+</button>
+} else {
+<a class="beach-music-control" href="#musica" aria-label="Ver la playlist de la invitación"><span aria-hidden="true">♪</span><svg viewBox="0 0 48 48" width="44" height="44" aria-hidden="true"><circle cx="24" cy="24" r="21" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M19 14L34 24L19 34Z" fill="currentColor"/></svg><span class="music-label-hidden">Play</span><span aria-hidden="true">♫</span></a>
+}
+<h1>@foreach(var line in Model.Hosts.Split('\n', StringSplitOptions.RemoveEmptyEntries)) { <span>@line</span> }</h1>
+@if(!string.IsNullOrEmpty(Model.CoverImageUrl)) { <img class="beach-art" src="@Model.CoverImageUrl" alt="Bikini coral y velo de novia colgados de una cuerdita" fetchpriority="high" /> }
+<a class="discover" href="#planes">@Model.Message</a>
+</header>
+<div id="planes" class="beach-sections">
+@{ var index = 0; }
+@foreach(var block in Model.Sections.Where(s => s.Enabled)) {
+var smallArt = index % 4 == 0 || index % 4 == 3;
+var scenicPlan = block.Title == "El plan" && !string.IsNullOrEmpty(block.ImageUrl);
+<section class="beach-section section-@(index % 4) @(scenicPlan ? "plan-backdrop" : "")" aria-labelledby="beach-title-@index">
+@if(smallArt && !string.IsNullOrEmpty(block.ImageUrl)) { <img class="section-art" src="@block.ImageUrl" alt="" loading="lazy" /> }
+@if(index % 4 == 3) { <span class="section-note handwritten" aria-hidden="true">shhh…</span> }
+<h2 id="beach-title-@index" style="@(block.TitleFontSize.HasValue ? $"font-size:{block.TitleFontSize.Value}px" : null)">@block.Title</h2>
+@if(block.Title == "Reservate estos días") {
+var scheduleLines = block.Content.Split('\n');
+<p>@foreach(var scheduleLine in scheduleLines) { if(scheduleLine.Contains("aeropuerto", StringComparison.OrdinalIgnoreCase)) { <small class="airport-note">@scheduleLine</small> } else { <span class="schedule-line">@scheduleLine</span> } }</p>
+} else { <p>@block.Content</p> }
+@if(!smallArt && !string.IsNullOrEmpty(block.ImageUrl)) { <img class="@(scenicPlan ? "plan-background" : "section-art")" src="@block.ImageUrl" alt="@(scenicPlan ? "Cinco sillitas de playa frente al mar, con una sombrilla" : "")" loading="lazy" /> }
+@if(!string.IsNullOrEmpty(block.LinkUrl)) { <a class="beach-button" href="@block.LinkUrl" target="_blank" rel="noopener noreferrer">@block.LinkLabel ↗</a> }
+</section>
+index++;
+}
+</div>
+@if(Model.RsvpEnabled) { <partial name="_Rsvp" model="Model" /> }
+<section class="cheers beach-playlist" id="musica" aria-labelledby="playlist-title"><h2 id="playlist-title">De fiesta por todo lo que se viene</h2>
+@if(!string.IsNullOrEmpty(t.SpotifyTrackUrl)) { <partial name="_SpotifyMusic" model="Model" /> }
+else { <p class="playlist-pending">La playlist está en camino.</p> }
+<img src="/images/despedida/tragos-dibujo.png" alt="Cinco copas dibujadas con trazos finos de colores" loading="lazy" />
+</section>
+<footer><p>Con amor, tus amigas</p><a href="#inicio">Volver arriba ↑</a></footer>
+</main>
+</body></html>

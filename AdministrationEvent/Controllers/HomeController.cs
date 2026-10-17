@@ -20,7 +20,7 @@ namespace AdministrationEvent.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            return User.Identity?.IsAuthenticated == true ? Redirect(User.IsInRole("Owner") ? "/admin" : "/mis-invitaciones") : View();
         }
 
         public IActionResult Privacy()

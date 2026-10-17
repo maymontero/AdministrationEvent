@@ -17,6 +17,20 @@ namespace AdministrationEvent
         {
             using (var host = CreateApplicationHostBuilder(args).Build())
             {
+                if (args.Contains("--create-beach"))
+                {
+                    using (var scope = host.Services.CreateScope())
+                    {
+                        var store = scope.ServiceProvider.GetRequiredService<Services.InvitationStore>();
+                        var existing = store.All().FirstOrDefault(x => x.Slug == "despedida-sorpresa");
+                        if (existing != null) { Console.WriteLine("La despedida ya existe: " + existing.Id); return; }
+                        var invitation = Services.BeachInvitation.Create();
+                        var error = store.Save(invitation);
+                        if (error != null) throw new InvalidOperationException(error);
+                        Console.WriteLine("Despedida creada como borrador: " + invitation.Id);
+                    }
+                    return;
+                }
                 if (args.Contains("--create-save-date"))
                 {
                     var index = Array.IndexOf(args, "--create-save-date");

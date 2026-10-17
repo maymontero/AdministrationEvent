@@ -13,7 +13,8 @@ using AdministrationEvent.Models;
 using AdministrationEvent.Services;
 namespace AdministrationEvent.Controllers
 {
-    [Authorize, Route("admin")]
+    [Authorize(Roles = "Owner"), Route("admin")]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class AdminController : Controller
     {
         private readonly InvitationStore store;
@@ -25,28 +26,35 @@ namespace AdministrationEvent.Controllers
             if (store.Find(id) == null) return NotFound();
             return RedirectToAction("Index", "Guests", new { id });
         }
-        [HttpGet("denied")] public IActionResult Denied() { Response.StatusCode = 403; return View(); }
+        [AllowAnonymous, HttpGet("denied")] public IActionResult Denied() { Response.StatusCode = 403; return View(); }
         [HttpGet("")] public IActionResult Index() => View(store.All());
-        [AllowAnonymous, HttpGet("login")] public IActionResult Login() => View(new AccountLogin());
+        [AllowAnonymous, HttpGet("login")] public IActionResult Login(string returnUrl = null) { ViewData["ReturnUrl"] = Url.IsLocalUrl(returnUrl) ? returnUrl : ""; return View(new AccountLogin()); }
         [AllowAnonymous, HttpPost("login"), ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(AccountLogin form, [FromServices] AdminAccounts accounts)
+        public async Task<IActionResult> Login(AccountLogin form, string returnUrl, [FromServices] AdminAccounts accounts)
         {
+            ViewData["ReturnUrl"] = Url.IsLocalUrl(returnUrl) ? returnUrl : "";
             if (!ModelState.IsValid) return View(form);
             accounts.BootstrapOwner();
             var user = accounts.Authenticate(form.Username, form.Password);
             if (user == null) { ModelState.AddModelError("", "No pudimos iniciar sesión. Revisá tus datos o intentá más tarde."); return View(new AccountLogin { Username = form.Username }); }
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(new ClaimsIdentity(new[] {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), new Claim(ClaimTypes.Name, user.DisplayName),
-                new Claim(ClaimTypes.Role, user.IsOwner ? "Owner" : "Manager"), new Claim("stamp", user.SecurityStamp)
+                new Claim(ClaimTypes.Role, user.IsOwner ? "Owner" : "Viewer"), new Claim("stamp", user.SecurityStamp)
             }, CookieAuthenticationDefaults.AuthenticationScheme)));
-            return RedirectToAction(nameof(Index));
+            return Url.IsLocalUrl(returnUrl) ? LocalRedirect(returnUrl) : Redirect(user.IsOwner ? "/admin" : "/mis-invitaciones");
         }
-        [HttpPost("logout"), ValidateAntiForgeryToken] public async Task<IActionResult> Logout() { await HttpContext.SignOutAsync(); return RedirectToAction(nameof(Login)); }
+        [AllowAnonymous, HttpPost("logout"), ValidateAntiForgeryToken] public async Task<IActionResult> Logout() { await HttpContext.SignOutAsync(); return RedirectToAction(nameof(Login)); }
         [HttpPost("save-date/{id:guid}"), ValidateAntiForgeryToken]
         public IActionResult SaveDate(Guid id) {
             var error = store.CreateSaveTheDate(id, out var invitation);
             if (error != null) { TempData["Error"] = error; return RedirectToAction(nameof(Index)); }
             return RedirectToAction(nameof(Edit), new { id = invitation.Id });
+        }
+        [HttpGet("new-beach")]
+        public IActionResult CreateBeach() {
+            var invitation = BeachInvitation.Create();
+            ViewData["New"] = true;
+            return View("Edit", new InvitationEditor { Id = invitation.Id, ConfigurationJson = JsonSerializer.Serialize(invitation, InvitationStore.JsonOptions) });
         }
         [HttpGet("new")] public IActionResult Create() { ViewData["New"] = true; return View("Edit", new InvitationEditor { Id = Guid.NewGuid(), ConfigurationJson = JsonSerializer.Serialize(new InvitationConfiguration(), InvitationStore.JsonOptions) }); }
         [HttpGet("edit/{id:guid}")]
