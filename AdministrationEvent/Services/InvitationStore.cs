@@ -22,7 +22,7 @@ namespace AdministrationEvent.Services
         public List<InvitationConfiguration> All() => Query().AsNoTracking().OrderBy(x => x.Title).ToList().Select(ToConfiguration).ToList();
         public InvitationConfiguration Find(Guid id) { var item = Query().AsNoTracking().SingleOrDefault(x => x.PublicId == id); return item == null ? null : ToConfiguration(item); }
         public InvitationConfiguration FindPublished(string slug) { var item = Query().AsNoTracking().SingleOrDefault(x => x.Slug == slug && x.IsPublished); return item == null ? null : ToConfiguration(item); }
-        public string CreateSaveTheDate(Guid sourceId, out InvitationConfiguration result)
+        public string CreateSaveTheDate(Guid sourceId, out InvitationConfiguration result, bool persist = true)
         {
             result = Find(sourceId);
             if (result == null) return "No encontramos la invitación original.";
@@ -38,7 +38,15 @@ namespace AdministrationEvent.Services
             result.Message = "Nos casamos y queremos compartir este día con vos. Más adelante te enviaremos todos los detalles.";
             result.HasConfirmedTime = false; result.ShowCountdown = false; result.RsvpEnabled = false;
             foreach (var section in result.Sections) section.Enabled = false;
-            return Save(result);
+            return persist ? Save(result) : null;
+        }
+        public bool Delete(Guid id)
+        {
+            var invitation = db.Invitations.SingleOrDefault(x => x.PublicId == id);
+            if (invitation == null) return false;
+            db.Invitations.Remove(invitation);
+            db.SaveChanges();
+            return true;
         }
         public string Save(InvitationConfiguration item)
         {
@@ -77,7 +85,7 @@ namespace AdministrationEvent.Services
             entity.Sections = item.Sections.Select((s, index) => new Domain.InvitationSection { Order = index, Enabled = s.Enabled, Title = s.Title, TitleFontSize = s.TitleFontSize, Content = s.Content, ImageUrl = s.ImageUrl, LinkLabel = s.LinkLabel, LinkUrl = s.LinkUrl }).ToList();
             try { db.SaveChanges(); }
             catch (DbUpdateException error) when (error.InnerException is MySqlException mysql && mysql.Number == 1062)
-            { return "Ese enlace ya pertenece a otra invitación."; }
+            { db.ChangeTracker.Clear(); return "Ese enlace ya pertenece a otra invitación."; }
             return null;
         }
         private static bool IsHttpsOrEmpty(string url) => string.IsNullOrEmpty(url) || (Uri.TryCreate(url, UriKind.Absolute, out var uri) && uri.Scheme == "https" && string.IsNullOrEmpty(uri.UserInfo));

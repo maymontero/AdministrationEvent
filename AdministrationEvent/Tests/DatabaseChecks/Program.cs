@@ -52,6 +52,24 @@ class DatabaseChecks
         foreach (var type in new[] { typeof(AdminController), typeof(GuestsController) })
             Check(type.GetCustomAttributes(typeof(Microsoft.AspNetCore.Authorization.AuthorizeAttribute), true).Cast<Microsoft.AspNetCore.Authorization.AuthorizeAttribute>().Any(a => a.Roles == "Owner"), "Administración solo Owner");
     }
+    static void CheckLifecycle(InvitationDbContext db, InvitationStore store, InvitationConfiguration source)
+    {
+        var initial = db.Invitations.Count();
+        Check(store.CreateSaveTheDate(source.Id, out var draft, persist: false) == null, "Preparar copia sin guardarla");
+        Check(db.Invitations.Count() == initial && store.Find(draft.Id) == null, "Abrir editor no crea una invitación");
+        draft.Slug = source.Slug;
+        Check(store.Save(draft) != null && db.Invitations.Count() == initial && store.Find(draft.Id) == null, "Error por enlace repetido no crea copia");
+        draft.Slug = "lifecycle-" + Guid.NewGuid().ToString("N");
+        Check(store.Save(draft) == null && store.Save(draft) == null && db.Invitations.Count() == initial + 1, "Repetir guardado del mismo formulario no duplica");
+        var entityId = db.Invitations.Single(x => x.PublicId == draft.Id).Id;
+        db.Guests.Add(new Application.Guest { InvitationId = entityId, Name = "Invitado temporal" });
+        db.GuestResponses.Add(new Application.GuestResponse { InvitationId = entityId, Name = "Respuesta temporal", Attending = true, GuestCount = 1, SubmittedAtUtc = DateTime.UtcNow });
+        db.InvitationAccesses.Add(new Application.InvitationAccess { InvitationId = entityId, UserId = db.AdminUsers.First(x => x.IsOwner).Id });
+        db.SaveChanges();
+        Check(store.Delete(draft.Id), "Eliminar invitación existente");
+        Check(store.Find(draft.Id) == null && !db.Guests.Any(x => x.InvitationId == entityId) && !db.GuestResponses.Any(x => x.InvitationId == entityId) && !db.InvitationAccesses.Any(x => x.InvitationId == entityId), "Eliminación limpia invitados, respuestas y permisos");
+        Check(store.Find(source.Id) != null && !store.Delete(draft.Id), "Eliminar no afecta otras invitaciones y no repite eliminación");
+    }
     static void Main(string[] args)
     {
         if (Array.IndexOf(args, "--mysql") >= 0) { CheckMySql(); return; }
@@ -121,6 +139,7 @@ class DatabaseChecks
                 var store = new InvitationStore(db); var restored = store.FindPublished(item.Slug);
                 Check(restored != null && restored.Theme.Accent == "#123456" && restored.Theme.Layout == "relaxed", "Publicación y tema actualizado");
                 Check(restored.Sections.Count == 1 && restored.Sections[0].Title == "Nueva primera", "Sin secciones obsoletas");
+                CheckLifecycle(db, store, restored);
                 CheckPermissions(db, store, restored);
                 CheckRsvp(db, store, restored);
                 CheckGuests(db, store, restored);
@@ -269,6 +288,7 @@ class DatabaseChecks
             Check(store.Save(restored) == null, "MySQL: actualizar");
             var published = store.FindPublished(item.Slug);
             Check(published.ShowCountdown && !published.HasConfirmedTime && published.Theme.Layout == "relaxed" && published.RsvpEnabled, "MySQL: opciones de diseño persistidas");
+            CheckLifecycle(db, store, published);
             CheckPermissions(db, store, published);
                 CheckRsvp(db, store, published);
             CheckGuests(db, store, published);

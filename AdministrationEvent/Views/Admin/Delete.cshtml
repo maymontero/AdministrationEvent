@@ -1,0 +1,7 @@
+@model InvitationConfiguration
+@{ ViewData["Title"] = "Eliminar invitación"; }
+<section class="panel login"><h1>Eliminar invitación</h1><h2>@Model.Title</h2>
+<p>Se eliminarán esta invitación, sus invitados, respuestas, mesas, etiquetas y permisos de acceso. Esta acción no se puede deshacer. Las otras invitaciones se conservan.</p>
+<form method="post" action="/admin/delete/@Model.Id">@Html.AntiForgeryToken()<div asp-validation-summary="All" class="errors" role="alert"></div>
+<label for="confirmation">Escribí ELIMINAR para confirmar</label><input id="confirmation" name="confirmation" required pattern="ELIMINAR" autocomplete="off" />
+<button class="button" data-save-once>Eliminar definitivamente</button> <a href="/admin">Cancelar</a></form></section>

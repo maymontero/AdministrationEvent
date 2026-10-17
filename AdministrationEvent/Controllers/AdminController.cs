@@ -46,9 +46,23 @@ namespace AdministrationEvent.Controllers
         [AllowAnonymous, HttpPost("logout"), ValidateAntiForgeryToken] public async Task<IActionResult> Logout() { await HttpContext.SignOutAsync(); return RedirectToAction(nameof(Login)); }
         [HttpPost("save-date/{id:guid}"), ValidateAntiForgeryToken]
         public IActionResult SaveDate(Guid id) {
-            var error = store.CreateSaveTheDate(id, out var invitation);
+            var error = store.CreateSaveTheDate(id, out var invitation, persist: false);
             if (error != null) { TempData["Error"] = error; return RedirectToAction(nameof(Index)); }
-            return RedirectToAction(nameof(Edit), new { id = invitation.Id });
+            ViewData["New"] = true;
+            return View("Edit", new InvitationEditor { Id = invitation.Id, ConfigurationJson = JsonSerializer.Serialize(invitation, InvitationStore.JsonOptions) });
+        }
+        [HttpGet("delete/{id:guid}")]
+        public IActionResult Delete(Guid id) {
+            var invitation = store.Find(id);
+            if (invitation == null) return NotFound();
+            return View(invitation);
+        }
+        [HttpPost("delete/{id:guid}"), ValidateAntiForgeryToken]
+        public IActionResult DeleteConfirmed(Guid id, string confirmation) {
+            if (confirmation != "ELIMINAR") { ModelState.AddModelError("", "Escribí ELIMINAR para confirmar."); return Delete(id); }
+            if (!store.Delete(id)) return NotFound();
+            TempData["Success"] = "Invitación eliminada.";
+            return RedirectToAction(nameof(Index));
         }
         [HttpGet("new-beach")]
         public IActionResult CreateBeach() {
@@ -56,13 +70,14 @@ namespace AdministrationEvent.Controllers
             ViewData["New"] = true;
             return View("Edit", new InvitationEditor { Id = invitation.Id, ConfigurationJson = JsonSerializer.Serialize(invitation, InvitationStore.JsonOptions) });
         }
-        [HttpGet("new")] public IActionResult Create() { ViewData["New"] = true; return View("Edit", new InvitationEditor { Id = Guid.NewGuid(), ConfigurationJson = JsonSerializer.Serialize(new InvitationConfiguration(), InvitationStore.JsonOptions) }); }
+        [HttpGet("new")] public IActionResult Create() { var invitation = new InvitationConfiguration(); ViewData["New"] = true; return View("Edit", new InvitationEditor { Id = invitation.Id, ConfigurationJson = JsonSerializer.Serialize(invitation, InvitationStore.JsonOptions) }); }
         [HttpGet("edit/{id:guid}")]
         public IActionResult Edit(Guid id) { var item = store.Find(id); return item == null ? (IActionResult)NotFound() : View(new InvitationEditor { Id = id, ConfigurationJson = JsonSerializer.Serialize(item, InvitationStore.JsonOptions) }); }
         [HttpPost("edit/{id:guid}"), ValidateAntiForgeryToken]
         public IActionResult Edit(Guid id, InvitationEditor editor)
         {
             editor.Id = id;
+            if (store.Find(id) == null) ViewData["New"] = true;
             if (ModelState.IsValid)
             {
                 try {

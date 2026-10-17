@@ -28,3 +28,18 @@
     wrapper.appendChild(button);
   });
 })();
+
+// Avoid duplicate requests while a save is in progress, without losing edited JSON.
+document.querySelectorAll('form:has([data-save-once]),form[action*="/save-date/"]').forEach(form => {
+  form.addEventListener('submit', event => {
+    if (form.dataset.submitting === 'true') { event.preventDefault(); return; }
+    form.dataset.submitting = 'true';
+    form.querySelectorAll('button[type="submit"],button:not([type])').forEach(button => { button.disabled = true; });
+  });
+});
+window.addEventListener('pageshow', () => {
+  document.querySelectorAll('form[data-submitting]').forEach(form => {
+    delete form.dataset.submitting;
+    form.querySelectorAll('button').forEach(button => { button.disabled = false; });
+  });
+});

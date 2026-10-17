@@ -144,3 +144,6 @@ unset invitation_prod_connection
 ```
 
 Usar la conexión externa de MySQL si se ejecuta fuera del hosting (una dirección privada interna del proveedor no es accesible desde la computadora). El comando aplica solo migraciones pendientes, incluida `InvitationPermissions`. Respaldar la base antes de aplicarlas. Como alternativa para una base que ya tenga `AdminAccounts`, ejecutar una sola vez `Data/invitation-permissions.sql` con el cliente MySQL; no combinar ambas vías para la misma migración. Las configuraciones e invitaciones guardadas en la base local no se copian con Git ni con las migraciones.
+
+
+Las copias Guardá esta fecha abiertas desde el panel no se guardan hasta confirmar el editor. Un error de validación no crea la invitación y el mismo formulario conserva su ID al reintentarlo. La administradora puede eliminar invitaciones desde el panel con confirmación escrita; se eliminan también sus invitados, respuestas, mesas, etiquetas y permisos. Las operaciones de administración requieren el rol Owner; las vistas previas requieren sesión y permiso por invitación.
