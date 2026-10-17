@@ -74,13 +74,13 @@ namespace AdministrationEvent.Controllers
         public IActionResult Assets(Guid invitationId)
         {
             var invitation = store.Find(invitationId);
-            if (invitation == null) return NotFound();
+            var collection = AssetCollectionFor(invitation, invitationId);
             var webRoot = environment.WebRootPath;
             var imagesRoot = Path.Combine(webRoot, "images");
             var fontsRoot = Path.Combine(webRoot, "fonts");
             var imageExtensions = new[] { ".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg" };
             var fontExtensions = new[] { ".ttf", ".otf", ".woff", ".woff2" };
-            var collections = new[] { "shared", invitation.AssetCollection }.Where(x => !string.IsNullOrWhiteSpace(x)).Distinct().ToList();
+            var collections = new[] { "shared", collection }.Where(x => !string.IsNullOrWhiteSpace(x)).Distinct().ToList();
             var images = collections.SelectMany(collection => {
                 var root = Path.Combine(imagesRoot, collection);
                 return Directory.Exists(root) ? Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories) : Enumerable.Empty<string>();
@@ -92,15 +92,24 @@ namespace AdministrationEvent.Controllers
         public async Task<IActionResult> UploadAsset(Guid invitationId, IFormFile file)
         {
             var invitation = store.Find(invitationId);
-            if (invitation == null) return NotFound();
+            var collection = AssetCollectionFor(invitation, invitationId);
             if (file == null || file.Length == 0 || file.Length > 10 * 1024 * 1024) return BadRequest(new { error = "Elegí una imagen de hasta 10 MB." });
             var extensions = new[] { ".png", ".jpg", ".jpeg", ".webp", ".gif" };
             var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
             if (!extensions.Contains(extension) || !file.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase)) return BadRequest(new { error = "Solo se permiten imágenes PNG, JPG, WebP o GIF." });
-            var folder = Path.Combine(environment.WebRootPath, "images", invitation.AssetCollection); Directory.CreateDirectory(folder);
+            var folder = Path.Combine(environment.WebRootPath, "images", collection); Directory.CreateDirectory(folder);
             var fileName = Guid.NewGuid().ToString("N") + extension;
             await using (var stream = System.IO.File.Create(Path.Combine(folder, fileName))) await file.CopyToAsync(stream);
-            return Json(new { url = "/images/" + invitation.AssetCollection + "/" + fileName });
+            return Json(new { url = "/images/" + collection + "/" + fileName });
+        }
+
+        private static string AssetCollectionFor(InvitationConfiguration invitation, Guid invitationId)
+        {
+            if (invitation != null) return invitation.AssetCollection;
+            // Una invitación nueva ya recibe un ID y una colección única desde el editor.
+            // Así puede elegir fuentes y subir imágenes antes de su primer guardado, sin ver
+            // imágenes privadas de otras tarjetas.
+            return "invitacion-" + invitationId.ToString("N");
         }
         [HttpPost("edit/{id:guid}"), ValidateAntiForgeryToken]
         public IActionResult Edit(Guid id, InvitationEditor editor)

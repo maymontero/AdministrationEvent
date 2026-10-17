@@ -84,7 +84,15 @@
   });
   form.addEventListener('submit', () => { syncOrder(); source.value = JSON.stringify(config); advanced.value = JSON.stringify(config, null, 2); });
   const escape = value => String(value).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
-  const loadAssets = async () => assets ||= await fetch(`/admin/assets?invitationId=${encodeURIComponent(config.Id)}`, { headers: { Accept: 'application/json' } }).then(response => response.json());
+  const loadAssets = async () => {
+    if (assets) return assets;
+    const query = new URLSearchParams({ invitationId: config.Id });
+    const response = await fetch(`/admin/assets?${query}`, { headers: { Accept: 'application/json' } });
+    if (!response.ok) throw new Error(`La biblioteca devolvió ${response.status}.`);
+    assets = await response.json();
+    return assets;
+  };
+  const showAssetError = () => window.alert('No pudimos cargar la biblioteca de imágenes y tipografías. Verificá que las migraciones de la aplicación estén aplicadas y volvé a intentar.');
   const setAsset = (url, fontTarget) => {
     if (fontTarget) {
       const family = `InvitationAsset${fontTarget === 'heading' ? 'Heading' : 'Body'}`;
@@ -96,18 +104,24 @@
     assetDialog.close();
   };
   const openImages = async input => {
-    activeAssetInput = input; const library = await loadAssets();
-    assetDialog.querySelector('[data-asset-title]').textContent = 'Elegir una imagen';
-    assetContent.innerHTML = `<div class="asset-grid">${library.images.map(url => `<button type="button" data-asset-url="${escape(url)}"><img src="${escape(url)}" alt=""><span>${escape(url.split('/').pop())}</span></button>`).join('')}</div>`;
-    assetContent.querySelectorAll('[data-asset-url]').forEach(button => button.addEventListener('click', () => setAsset(button.dataset.assetUrl)));
-    assetDialog.showModal();
+    try {
+      activeAssetInput = input; const library = await loadAssets();
+      assetDialog.dataset.assetKind = 'image';
+      assetDialog.querySelector('[data-asset-title]').textContent = 'Elegir una imagen';
+      assetContent.innerHTML = `<div class="asset-grid">${library.images.map(url => `<button type="button" data-asset-url="${escape(url)}"><img src="${escape(url)}" alt=""><span>${escape(url.split('/').pop())}</span></button>`).join('')}</div>`;
+      assetContent.querySelectorAll('[data-asset-url]').forEach(button => button.addEventListener('click', () => setAsset(button.dataset.assetUrl)));
+      assetDialog.showModal();
+    } catch { showAssetError(); }
   };
   const openFonts = async target => {
-    const library = await loadAssets();
-    assetDialog.querySelector('[data-asset-title]').textContent = 'Elegir una tipografía';
-    assetContent.innerHTML = `<div class="font-grid">${library.fonts.map((font, index) => `<button type="button" data-font-url="${escape(font.url)}" data-font-name="${escape(font.name)}"><style>@font-face{font-family:AssetPreview${index};src:url('${escape(font.url)}')}</style><span style="font-family:AssetPreview${index},serif">Nos casamos</span><small>${escape(font.name)}</small></button>`).join('')}</div>`;
-    assetContent.querySelectorAll('[data-font-url]').forEach(button => button.addEventListener('click', () => setAsset(button.dataset.fontUrl, target)));
-    assetDialog.showModal();
+    try {
+      const library = await loadAssets();
+      assetDialog.dataset.assetKind = 'font';
+      assetDialog.querySelector('[data-asset-title]').textContent = 'Elegir una tipografía';
+      assetContent.innerHTML = `<div class="font-grid">${library.fonts.map((font, index) => `<button type="button" data-font-url="${escape(font.url)}" data-font-name="${escape(font.name)}"><style>@font-face{font-family:AssetPreview${index};src:url('${escape(font.url)}')}</style><span style="font-family:AssetPreview${index},serif">Nos casamos</span><small>${escape(font.name)}</small></button>`).join('')}</div>`;
+      assetContent.querySelectorAll('[data-font-url]').forEach(button => button.addEventListener('click', () => setAsset(button.dataset.fontUrl, target)));
+      assetDialog.showModal();
+    } catch { showAssetError(); }
   };
   form.addEventListener('click', event => {
     const image = event.target.closest('[data-image-target]'); if (image) { openImages(image.closest('label').querySelector('input')); return; }
