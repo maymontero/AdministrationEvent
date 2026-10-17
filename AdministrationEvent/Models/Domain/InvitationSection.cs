@@ -3,6 +3,7 @@ namespace Application
 {
     public class InvitationSection
     {
+        public string DisplayMode { get; set; } = "standard";
         public int? TitleFontSize { get; set; }
         public long Id { get; set; }
         public long InvitationId { get; set; }

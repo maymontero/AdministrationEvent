@@ -1,0 +1,19 @@
+@model InvitationConfiguration
+@using System.Globalization
+@{
+    Layout = null;
+    var t = Model.Theme;
+    var preview = ViewData["Preview"] != null;
+    var headingFont = string.IsNullOrEmpty(t.HeadingFontUrl) ? t.HeadingFont : "InvitationHeading";
+    var bodyFont = string.IsNullOrEmpty(t.BodyFontUrl) ? t.BodyFont : "InvitationBody";
+    var culture = new CultureInfo("es-UY");
+}
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>@Model.Title</title>
+<link rel="stylesheet" href="~/css/site.css" asp-append-version="true"><link rel="stylesheet" href="~/css/custom-invitation.css" asp-append-version="true"><script src="~/js/invitation.js" asp-append-version="true" defer></script>
+<style>@if(!string.IsNullOrEmpty(t.HeadingFontUrl)) { <text>@@font-face{font-family:InvitationHeading;src:url('@t.HeadingFontUrl');font-display:swap;}</text> } @if(!string.IsNullOrEmpty(t.BodyFontUrl)) { <text>@@font-face{font-family:InvitationBody;src:url('@t.BodyFontUrl');font-display:swap;}</text> }</style></head>
+<body class="custom-invitation" style="--background:@t.Background;--ink:@t.Text;--accent:@t.Accent;--secondary:@t.Secondary;--highlight:@t.Highlight;--heading:@headingFont;--body:@bodyFont;--radius:@(t.CornerRadius)px;--size:@(t.FontSize)px;--width:@(t.ContentWidth)px;">
+@if(preview) { <aside class="preview-banner">Vista previa · @(Model.IsPublished ? "Publicada" : "Borrador") <a href="/admin/edit/@Model.Id">Volver a configurar</a></aside> }
+<main id="inicio"><header class="custom-hero @(string.IsNullOrEmpty(Model.CoverImageUrl) ? "without-cover" : "")"><div><p>@Model.EventType</p><h1>@Model.Hosts</h1>@if(!string.IsNullOrWhiteSpace(Model.Message)) { <div class="message">@Model.Message</div> } @if(Model.Date.HasValue) { <time datetime="@Model.Date.Value.ToString("yyyy-MM-ddTHH:mm")">@Model.Date.Value.ToString(Model.HasConfirmedTime ? "dddd d 'de' MMMM 'de' yyyy · HH:mm" : "dddd d 'de' MMMM 'de' yyyy", culture)</time> }</div>@if(!string.IsNullOrEmpty(Model.CoverImageUrl)) { <img src="@Model.CoverImageUrl" alt="@Model.Title" fetchpriority="high"> }</header>
+@if(Model.ShowCountdown && Model.Date.HasValue) { <section class="custom-countdown"><div class="countdown" data-days-only="@(!Model.HasConfirmedTime).ToString().ToLowerInvariant()" data-date="@Model.Date.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)" data-zone="@Model.TimeZone" data-confirmed="@Model.HasConfirmedTime.ToString().ToLowerInvariant()"><div><strong data-days>—</strong><span>días</span></div><div><strong data-hours>—</strong><span>horas</span></div></div></section> }
+<div class="custom-sections">@foreach(var block in Model.Sections.Where(x => x.Enabled)) { var mode = block.DisplayMode ?? "standard"; <section class="custom-section mode-@mode">@if(mode == "backdrop" && !string.IsNullOrEmpty(block.ImageUrl)) { <img class="background-art" src="@block.ImageUrl" alt="" loading="lazy"> }<div class="section-content">@if(mode == "art-above" && !string.IsNullOrEmpty(block.ImageUrl)) { <img class="above-art" src="@block.ImageUrl" alt="" loading="lazy"> }<h2 style="@(block.TitleFontSize.HasValue ? $"font-size:{block.TitleFontSize.Value}px" : null)">@block.Title</h2><p>@block.Content</p>@if(mode == "standard" && !string.IsNullOrEmpty(block.ImageUrl)) { <img class="standard-art" src="@block.ImageUrl" alt="@block.Title" loading="lazy"> }@if(!string.IsNullOrEmpty(block.LinkUrl)) { <a href="@block.LinkUrl" target="_blank" rel="noopener noreferrer">@block.LinkLabel ↗</a> }</div></section> }</div>
+@if(Model.RsvpEnabled) { <partial name="_Rsvp" model="Model" /> }<partial name="_SpotifyMusic" model="Model" /><footer>@Model.Hosts</footer></main></body></html>

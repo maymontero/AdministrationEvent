@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using AdministrationEvent.Services;
@@ -14,21 +15,58 @@ namespace AdministrationEvent.Controllers
         private readonly InvitationDbContext db;
         public InvitationsController(InvitationStore store, InvitationDbContext db) { this.store = store; this.db = db; }
 
-        [HttpGet("invitacion/{slug}")]
+        [HttpGet("{slug:regex(^[[a-z0-9]]+(?:-[[a-z0-9]]+)*$)}")]
         public IActionResult Show(string slug)
         {
             var invitation = store.FindPublished(slug);
-            if (invitation == null) return NotFound();
+            if (invitation == null || invitation.SharingMode != "public") return NotFound();
+            ViewData["PublicPath"] = "/" + invitation.Slug;
             return View(invitation);
         }
 
+        // Conserva los enlaces anteriores para quienes los hayan guardado, pero la URL
+        // visible y canónica de las invitaciones públicas es /{slug}.
+        [HttpGet("invitacion/{slug}")]
+        public IActionResult LegacyShow(string slug)
+        {
+            var invitation = store.FindPublished(slug);
+            return invitation != null && invitation.SharingMode == "public"
+                ? RedirectPermanent("/" + invitation.Slug)
+                : NotFound();
+        }
 
-        [HttpPost("invitacion/{slug}/asistencia"), ValidateAntiForgeryToken]
+        [HttpGet("{slug:regex(^[[a-z0-9]]+(?:-[[a-z0-9]]+)*$)}/acceso/{key}")]
+        public IActionResult Shared(string slug, string key)
+        {
+            var invitation = store.FindPublished(slug);
+            if (!IsValidShareKey(key) || invitation == null || invitation.SharingMode != "link" || !string.Equals(invitation.ShareKey, key, StringComparison.Ordinal)) return NotFound();
+            ViewData["PublicPath"] = "/" + invitation.Slug + "/acceso/" + key;
+            return View("Show", invitation);
+        }
+
+
+        [HttpPost("{slug:regex(^[[a-z0-9]]+(?:-[[a-z0-9]]+)*$)}/asistencia"), ValidateAntiForgeryToken]
         public IActionResult Respond(string slug, RsvpForm form)
         {
             var invitation = store.FindPublished(slug);
-            if (invitation == null || !invitation.RsvpEnabled) return NotFound();
-            return HandleResponse(invitation, form, false);
+            if (invitation == null || invitation.SharingMode != "public" || !invitation.RsvpEnabled) return NotFound();
+            return HandleResponse(invitation, form, false, "/" + slug);
+        }
+
+        [HttpPost("invitacion/{slug}/asistencia"), ValidateAntiForgeryToken]
+        public IActionResult LegacyRespond(string slug, RsvpForm form)
+        {
+            var invitation = store.FindPublished(slug);
+            if (invitation == null || invitation.SharingMode != "public" || !invitation.RsvpEnabled) return NotFound();
+            return HandleResponse(invitation, form, false, "/" + slug);
+        }
+
+        [HttpPost("{slug:regex(^[[a-z0-9]]+(?:-[[a-z0-9]]+)*$)}/acceso/{key}/asistencia"), ValidateAntiForgeryToken]
+        public IActionResult SharedRespond(string slug, string key, RsvpForm form)
+        {
+            var invitation = store.FindPublished(slug);
+            if (!IsValidShareKey(key) || invitation == null || invitation.SharingMode != "link" || !string.Equals(invitation.ShareKey, key, StringComparison.Ordinal) || !invitation.RsvpEnabled) return NotFound();
+            return HandleResponse(invitation, form, false, "/" + slug + "/acceso/" + key);
         }
 
         [Authorize, HttpPost("admin/preview/{id:guid}/asistencia"), ValidateAntiForgeryToken]
@@ -37,7 +75,7 @@ namespace AdministrationEvent.Controllers
             var invitation = store.Find(id);
             if (invitation == null || !invitation.RsvpEnabled) return NotFound();
             var denied = CheckAccess(invitation.Id);
-            return denied ?? HandleResponse(invitation, form, true);
+            return denied ?? HandleResponse(invitation, form, true, "/admin/preview/" + invitation.Id);
         }
 
         private IActionResult CheckAccess(Guid id)
@@ -46,7 +84,9 @@ namespace AdministrationEvent.Controllers
             return new InvitationPermissions(db).CanView(User, id, DateTime.UtcNow) ? null : NotFound();
         }
 
-        private IActionResult HandleResponse(InvitationConfiguration invitation, RsvpForm form, bool preview)
+        private static bool IsValidShareKey(string key) => !string.IsNullOrWhiteSpace(key) && Regex.IsMatch(key, "^[a-f0-9]{48}$");
+
+        private IActionResult HandleResponse(InvitationConfiguration invitation, RsvpForm form, bool preview, string returnPath)
         {
             if (string.IsNullOrWhiteSpace(form.Name)) ModelState.AddModelError("Name", "Ingresá tu nombre.");
             if (form.Attending == true && (!form.GuestCount.HasValue || form.GuestCount < 1 || form.GuestCount > 10))
@@ -54,6 +94,7 @@ namespace AdministrationEvent.Controllers
             if (!ModelState.IsValid)
             {
                 if (preview) ViewData["Preview"] = true;
+                ViewData["PublicPath"] = returnPath;
                 ViewData["RsvpForm"] = form;
                 return View("Show", invitation);
             }
@@ -68,7 +109,7 @@ namespace AdministrationEvent.Controllers
                 db.SaveChanges();
             }
             TempData["RsvpSuccess"] = preview ? "¡El formulario funciona! Esta prueba no se guardó porque estás en vista previa." : "¡Gracias! Recibimos tu respuesta.";
-            return Redirect((preview ? "/admin/preview/" + invitation.Id : "/invitacion/" + invitation.Slug) + "#asistencia");
+            return Redirect(returnPath + "#asistencia");
         }
 
         [Authorize, HttpGet("admin/preview/{id:guid}")]

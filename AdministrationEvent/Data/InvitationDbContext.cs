@@ -102,6 +102,7 @@ public class InvitationDbContext : DbContext
         modelBuilder.Entity<Location>().Property(x => x.Longitude).HasColumnType("decimal(10,7)");
         modelBuilder.Entity<InvitationSection>(entity => {
             entity.HasKey(x => x.Id);
+            entity.Property(x => x.DisplayMode).HasMaxLength(20).HasDefaultValue("standard");
             entity.Property(x => x.Title).HasMaxLength(120).IsRequired();
             entity.Property(x => x.Content).HasMaxLength(5000).HasColumnType("longtext");
             entity.Property(x => x.ImageUrl).HasMaxLength(2000);
@@ -124,6 +125,10 @@ public class InvitationDbContext : DbContext
             entity.Property(x => x.Hosts).HasMaxLength(200);
             entity.Property(x => x.Message).HasMaxLength(2000);
             entity.Property(x => x.CoverImageUrl).HasMaxLength(2000);
+            entity.Property(x => x.AssetCollection).HasMaxLength(120).HasDefaultValue("shared");
+            entity.Property(x => x.SharingMode).HasMaxLength(10).HasDefaultValue("public");
+            entity.Property(x => x.ShareKey).HasMaxLength(48);
+            entity.HasIndex(x => x.ShareKey).IsUnique();
 
             entity.Property(x => x.Title)
                 .HasMaxLength(250)
@@ -179,7 +184,7 @@ public class InvitationDbContext : DbContext
         {
             entity.HasKey(x => x.Id);
 
-            entity.Property(x => x.Layout).HasMaxLength(20).HasDefaultValue("classic");
+            entity.Property(x => x.Layout).HasMaxLength(20).HasDefaultValue("custom");
             entity.HasOne(x => x.Invitation)
                 .WithOne(x => x.Theme)
                 .HasForeignKey<InvitationTheme>(

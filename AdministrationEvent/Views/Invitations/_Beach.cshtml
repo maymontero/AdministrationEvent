@@ -32,8 +32,9 @@
 <div id="planes" class="beach-sections">
 @{ var index = 0; }
 @foreach(var block in Model.Sections.Where(s => s.Enabled)) {
-var smallArt = index % 4 == 0 || index % 4 == 3;
-var scenicPlan = block.Title == "El plan" && !string.IsNullOrEmpty(block.ImageUrl);
+var displayMode = string.IsNullOrEmpty(block.DisplayMode) ? "standard" : block.DisplayMode;
+var smallArt = displayMode == "art-above";
+var scenicPlan = displayMode == "backdrop" && !string.IsNullOrEmpty(block.ImageUrl);
 <section class="beach-section section-@(index % 4) @(scenicPlan ? "plan-backdrop" : "")" aria-labelledby="beach-title-@index">
 @if(smallArt && !string.IsNullOrEmpty(block.ImageUrl)) { <img class="section-art" src="@block.ImageUrl" alt="" loading="lazy" /> }
 @if(index % 4 == 3) { <span class="section-note handwritten" aria-hidden="true">shhh…</span> }

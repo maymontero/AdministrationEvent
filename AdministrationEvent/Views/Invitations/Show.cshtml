@@ -6,7 +6,10 @@
     var t = Model.Theme;
     var vineyard = t.Layout == "vineyard";
     var preview = ViewData["Preview"] != null;
-    if (vineyard && !string.IsNullOrEmpty(t.SpotifyTrackUrl)) ViewData["MusicControlInHero"] = true;
+    if (vineyard && !string.IsNullOrEmpty(t.SpotifyTrackUrl)) {
+        ViewData["MusicControlInHero"] = true;
+    }
+
     var headingFont = string.IsNullOrEmpty(t.HeadingFontUrl) ? t.HeadingFont : "InvitationHeading";
     var bodyFont = string.IsNullOrEmpty(t.BodyFontUrl) ? t.BodyFont : "InvitationBody";
     var culture = new CultureInfo("es-UY");
@@ -15,7 +18,17 @@
     var blocks = Model.Sections.Where(x => x.Enabled && (!vineyard || !(detailTitles.Contains(x.Title) || (x.ImageUrl == "/images/zenia-diego/regalos-acuarela.png" || x.ImageUrl == "/images/zenia-diego/regalos-estilo-sagrada-familia-v2.png")))).ToList();
     var form = ViewData["RsvpForm"] as RsvpForm ?? new RsvpForm();
 }
-@if(t.Layout == "vineyard-archive") { <partial name="_VineyardArchive" model="Model" /> } else if(t.Layout == "beach") { <partial name="_Beach" model="Model" /> } else if(t.Layout == "save-date") { <partial name="_SaveTheDate" model="Model" /> } else if(t.Layout == "relaxed") { <partial name="_Relaxed" model="Model" /> } else {
+@if(t.Layout == "vineyard-archive") {
+    <partial name="_VineyardArchive" model="Model" />
+} else if(t.Layout == "beach") {
+    <partial name="_Beach" model="Model" />
+} else if(t.Layout == "save-date") {
+    <partial name="_SaveTheDate" model="Model" />
+} else if(t.Layout == "relaxed") {
+    <partial name="_Relaxed" model="Model" />
+} else if(t.Layout == "custom") {
+    <partial name="_Custom" model="Model" />
+} else {
 <!DOCTYPE html>
 <html lang="es"><head><link rel="icon" type="image/svg+xml" href="~/favicon-zd.svg" asp-append-version="true" /><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>@Model.Title</title>
 <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
@@ -26,8 +39,23 @@
 @if(!string.IsNullOrEmpty(t.BodyFontUrl)) { <text>@@font-face { font-family: InvitationBody; src: url('@t.BodyFontUrl'); font-display: swap; }</text> }
 </style></head>
 <body class="invitation @(vineyard ? "vineyard" : "classic")" style="--background:@t.Background;--ink:@t.Text;--accent:@t.Accent;--secondary:@t.Secondary;--highlight:@t.Highlight;--heading:@headingFont;--body:@bodyFont;--radius:@(t.CornerRadius)px;--size:@(t.FontSize)px;--width:@(t.ContentWidth)px;">
-@if(preview) { <div class="preview-banner">Vista previa · @(Model.IsPublished ? "Publicada" : "Borrador") @if(User.IsInRole("Owner")) { <a href="/admin/edit/@Model.Id">Volver a configurar</a> } else { <a href="/mis-invitaciones">Mis invitaciones</a> }</div> }
-@if(vineyard) { <nav class="wedding-nav" aria-label="Secciones de la invitación"><a class="nav-signature" href="#inicio">@Model.Hosts</a><div><a href="#detalles">El encuentro</a>@if(Model.RsvpEnabled) { <a href="#asistencia">Confirmar asistencia</a> }</div></nav> }
+
+@if(preview) {
+    <div class="preview-banner">Vista previa · @(Model.IsPublished ? "Publicada" : "Borrador")
+        @if(User.IsInRole("Owner")) {
+            <a href="/admin/edit/@Model.Id">Volver a configurar</a> }
+        else { <a href="/mis-invitaciones">Mis invitaciones</a> }</div> }
+
+@if(vineyard) {
+    <nav class="wedding-nav" aria-label="Secciones de la invitación">
+        <a class="nav-signature" href="#inicio">@Model.Hosts</a>
+        <div>
+            <a href="#detalles">El encuentro</a>
+            @if(Model.RsvpEnabled) { <a href="#asistencia">Confirmar asistencia</a> }
+        </div>
+    </nav>
+}
+
 <main class="invitation-content" id="inicio">
 <section class="invitation-hero @(vineyard && !string.IsNullOrEmpty(Model.CoverImageUrl) ? "has-cover" : "")">
 @if(vineyard) { <partial name="_MusicControl" model="Model" /> }

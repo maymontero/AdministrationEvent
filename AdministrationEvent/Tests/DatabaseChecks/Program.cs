@@ -48,6 +48,12 @@ class DatabaseChecks
         Check(controller.Preview(invitation.Id) is NotFoundResult, "Revocar permiso bloquea vista previa");
         invitation.IsPublished = true; Check(store.Save(invitation) == null, "Restaurar publicada");
         Check(controller.Show(invitation.Slug) is ViewResult, "Publicada permanece pública sin permiso");
+        invitation.SharingMode = "link"; invitation.ShareKey = "";
+        Check(store.Save(invitation) == null, "Publicar con enlace privado");
+        var privateLink = store.Find(invitation.Id);
+        Check(privateLink.ShareKey?.Length == 48 && controller.Show(privateLink.Slug) is NotFoundResult && controller.Shared(privateLink.Slug, privateLink.ShareKey) is ViewResult, "Enlace privado solo abre con su clave");
+        invitation.SharingMode = "public"; invitation.ShareKey = "";
+        Check(store.Save(invitation) == null && controller.Show(invitation.Slug) is ViewResult, "Volver a acceso público elimina la clave privada");
         db.AdminUsers.Remove(viewer); db.Invitations.Remove(db.Invitations.Single(x => x.PublicId == other.Id)); db.SaveChanges();
         foreach (var type in new[] { typeof(AdminController), typeof(GuestsController) })
             Check(type.GetCustomAttributes(typeof(Microsoft.AspNetCore.Authorization.AuthorizeAttribute), true).Cast<Microsoft.AspNetCore.Authorization.AuthorizeAttribute>().Any(a => a.Roles == "Owner"), "Administración solo Owner");
@@ -97,8 +103,8 @@ class DatabaseChecks
                 chea.IsActive = false; accountDb.SaveChanges();
                 Check(accounts.Authenticate("chea", "Chea-New-Password-2026") == null, "Cuenta desactivada no ingresa");
             }
-            var item = new InvitationConfiguration { Slug = "prueba", Date = new DateTime(2027,3,20,18,0,0), Sections = new List<InvitationSection> {
-                new InvitationSection { Title = "Primera", Content = "Ceremonia", TitleFontSize = 28 },
+            var item = new InvitationConfiguration { Slug = "prueba", AssetCollection = "prueba-privada", Date = new DateTime(2027,3,20,18,0,0), Sections = new List<InvitationSection> {
+                new InvitationSection { Title = "Primera", Content = "Ceremonia", TitleFontSize = 28, DisplayMode = "art-above" },
                 new InvitationSection { Title = "Oculta", Enabled = false }
             }};
             item.Theme.HeadingFontUrl = "/fonts/test.woff2";
@@ -118,6 +124,8 @@ class DatabaseChecks
             using (var db = new InvitationDbContext(options)) {
                 var store = new InvitationStore(db); var restored = store.Find(item.Id);
                 Check(restored.Sections[0].TitleFontSize == 28, "Tamaño de título por sección persistido");
+                Check(restored.Sections[0].DisplayMode == "art-above", "Tratamiento visual por sección persistido");
+                Check(restored.AssetCollection == "prueba-privada", "Colección privada de imágenes persistida");
                 Check(restored.Date == item.Date && restored.Sections.Count == 2 && !restored.Sections[1].Enabled, "Fecha y secciones persistidas");
                 Check(restored.Theme.HeadingFontUrl == item.Theme.HeadingFontUrl, "Fuente persistida");
                 Check(restored.Theme.SpotifyTrackUrl == item.Theme.SpotifyTrackUrl, "Canción Spotify persistida");
@@ -129,7 +137,9 @@ class DatabaseChecks
                 Check(store.Save(restored) != null, "Rechazar enlaces ajenos a Spotify");
                 restored.Theme.SpotifyTrackUrl = "";
                 Check(store.Save(restored) == null && store.Find(item.Id).Theme.SpotifyTrackUrl == "", "Quitar música guardada");
-                Check(restored.Theme.Layout == "vineyard" && restored.ShowCountdown && !restored.HasConfirmedTime && restored.RsvpEnabled && restored.TimeZone == "America/Montevideo", "Opciones de diseño persistidas");
+                restored.Theme.Layout = "custom";
+                Check(store.Save(restored) == null && store.Find(item.Id).Theme.Layout == "custom", "Vista libre persistida");
+                Check(restored.Theme.Layout == "custom" && restored.ShowCountdown && !restored.HasConfirmedTime && restored.RsvpEnabled && restored.TimeZone == "America/Montevideo", "Opciones de diseño persistidas");
                 Check(store.FindPublished(item.Slug) == null, "Borrador privado");
                 restored.IsPublished = true; restored.Theme.Accent = "#123456"; restored.Theme.Layout = "relaxed";
                 restored.Sections.RemoveAt(0); restored.Sections[0].Title = "Nueva primera";
@@ -270,8 +280,8 @@ class DatabaseChecks
         using (var transaction = db.Database.BeginTransaction())
         {
             var store = new InvitationStore(db);
-            var item = new InvitationConfiguration { Title = "Verificación temporal", Slug = "verificacion-" + Guid.NewGuid().ToString("N"), Date = new DateTime(2027,3,20,18,0,0), Sections = new List<InvitationSection> {
-                new InvitationSection { Title = "Ceremonia", Content = "Primera sección" },
+            var item = new InvitationConfiguration { Title = "Verificación temporal", Slug = "verificacion-" + Guid.NewGuid().ToString("N"), AssetCollection = "prueba-mysql", Date = new DateTime(2027,3,20,18,0,0), Sections = new List<InvitationSection> {
+                new InvitationSection { Title = "Ceremonia", Content = "Primera sección", DisplayMode = "backdrop" },
                 new InvitationSection { Title = "Oculta", Enabled = false }
             }};
             item.Theme.HeadingFontUrl = "/fonts/test.woff2";
@@ -281,6 +291,8 @@ class DatabaseChecks
             Check(store.Save(item) == null, "MySQL: crear invitación");
             var restored = store.Find(item.Id);
             Check(restored != null && restored.Date == item.Date && restored.Sections.Count == 2 && !restored.Sections[1].Enabled, "MySQL: leer fecha y secciones");
+            Check(restored.Sections[0].DisplayMode == "backdrop", "MySQL: tratamiento visual por sección");
+            Check(restored.AssetCollection == "prueba-mysql", "MySQL: colección privada de imágenes");
             Check(restored.Theme.HeadingFontUrl == item.Theme.HeadingFontUrl, "MySQL: fuente persistida");
             Check(store.FindPublished(item.Slug) == null, "MySQL: borrador privado");
             restored.IsPublished = true; restored.Theme.Accent = "#123456"; restored.Theme.Layout = "relaxed";

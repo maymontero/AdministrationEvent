@@ -30,6 +30,7 @@ namespace AdministrationEvent.Services
             var slug = baseSlug; var suffix = 2;
             while (db.Invitations.Any(x => x.Slug == slug)) slug = baseSlug + "-" + suffix++;
             result.Id = Guid.NewGuid();
+            result.AssetCollection = "invitacion-" + result.Id.ToString("N");
             result.Title = result.Hosts + " · Guardá esta fecha";
             if (result.Title.Length > 120) result.Title = result.Title.Substring(0, 120);
             result.Slug = slug; result.IsPublished = false;
@@ -63,10 +64,11 @@ namespace AdministrationEvent.Services
             if (db.Invitations.Any(x => x.Slug == item.Slug && x.PublicId != item.Id)) return "Ese enlace ya pertenece a otra invitación.";
             var entity = Query().SingleOrDefault(x => x.PublicId == item.Id);
             if (entity == null) { entity = new Domain.Invitation { PublicId = item.Id }; db.Invitations.Add(entity); }
-            entity.Title = item.Title; entity.Slug = item.Slug; entity.IsPublished = item.IsPublished;
+            entity.Title = item.Title; entity.Slug = item.Slug; entity.IsPublished = item.IsPublished; entity.SharingMode = item.SharingMode;
+            entity.ShareKey = item.IsPublished && item.SharingMode == "link" ? (string.IsNullOrWhiteSpace(item.ShareKey) ? Convert.ToHexString(System.Security.Cryptography.RandomNumberGenerator.GetBytes(24)).ToLowerInvariant() : item.ShareKey) : null;
             entity.HasConfirmedTime = item.HasConfirmedTime; entity.ShowCountdown = item.ShowCountdown; entity.RsvpEnabled = item.RsvpEnabled; entity.TimeZone = item.TimeZone;
             entity.EventType = item.EventType; entity.Hosts = item.Hosts; entity.Date = item.Date;
-            entity.Message = item.Message; entity.CoverImageUrl = item.CoverImageUrl;
+            entity.Message = item.Message; entity.CoverImageUrl = item.CoverImageUrl; entity.AssetCollection = string.IsNullOrWhiteSpace(item.AssetCollection) ? "shared" : item.AssetCollection;
             if (entity.Theme == null) entity.Theme = new Domain.InvitationTheme();
             var theme = entity.Theme;
             theme.Layout = item.Theme.Layout;
@@ -82,7 +84,7 @@ namespace AdministrationEvent.Services
             SetFont(theme, "heading", item.Theme.HeadingFont, item.Theme.HeadingFontUrl);
             SetFont(theme, "body", item.Theme.BodyFont, item.Theme.BodyFontUrl);
             db.InvitationSections.RemoveRange(entity.Sections);
-            entity.Sections = item.Sections.Select((s, index) => new Domain.InvitationSection { Order = index, Enabled = s.Enabled, Title = s.Title, TitleFontSize = s.TitleFontSize, Content = s.Content, ImageUrl = s.ImageUrl, LinkLabel = s.LinkLabel, LinkUrl = s.LinkUrl }).ToList();
+            entity.Sections = item.Sections.Select((s, index) => new Domain.InvitationSection { Order = index, DisplayMode = s.DisplayMode, Enabled = s.Enabled, Title = s.Title, TitleFontSize = s.TitleFontSize, Content = s.Content, ImageUrl = s.ImageUrl, LinkLabel = s.LinkLabel, LinkUrl = s.LinkUrl }).ToList();
             try { db.SaveChanges(); }
             catch (DbUpdateException error) when (error.InnerException is MySqlException mysql && mysql.Number == 1062)
             { db.ChangeTracker.Clear(); return "Ese enlace ya pertenece a otra invitación."; }
@@ -96,7 +98,7 @@ namespace AdministrationEvent.Services
         { var font = theme.Fonts.SingleOrDefault(x => x.Key == key); if (font == null) { font = new Domain.FontResource { Key = key }; theme.Fonts.Add(font); } font.FontFamily = family; font.Url = url; }
         private static InvitationConfiguration ToConfiguration(Domain.Invitation entity)
         {
-            var result = new InvitationConfiguration { Id = entity.PublicId, Title = entity.Title, Slug = entity.Slug, IsPublished = entity.IsPublished, EventType = entity.EventType, Hosts = entity.Hosts, Date = entity.Date, HasConfirmedTime = entity.HasConfirmedTime, ShowCountdown = entity.ShowCountdown, RsvpEnabled = entity.RsvpEnabled, TimeZone = entity.TimeZone, Message = entity.Message, CoverImageUrl = entity.CoverImageUrl };
+            var result = new InvitationConfiguration { Id = entity.PublicId, Title = entity.Title, Slug = entity.Slug, IsPublished = entity.IsPublished, SharingMode = entity.SharingMode, ShareKey = entity.ShareKey ?? "", EventType = entity.EventType, Hosts = entity.Hosts, Date = entity.Date, HasConfirmedTime = entity.HasConfirmedTime, ShowCountdown = entity.ShowCountdown, RsvpEnabled = entity.RsvpEnabled, TimeZone = entity.TimeZone, Message = entity.Message, CoverImageUrl = entity.CoverImageUrl, AssetCollection = string.IsNullOrWhiteSpace(entity.AssetCollection) ? CollectionFromAssets(entity) : entity.AssetCollection };
             if (entity.Theme != null) {
                 var theme = entity.Theme;
                 result.Theme.Layout = theme.Layout;
@@ -112,8 +114,14 @@ namespace AdministrationEvent.Services
                 result.Theme.BodyFontUrl = theme.Fonts.SingleOrDefault(x => x.Key == "body")?.Url;
                 result.Theme.CornerRadius = theme.CornerRadius; result.Theme.FontSize = theme.FontSize; result.Theme.ContentWidth = theme.ContentWidth;
             }
-            result.Sections = entity.Sections.OrderBy(s => s.Order).Select(s => new InvitationSection { Enabled = s.Enabled, Title = s.Title, TitleFontSize = s.TitleFontSize, Content = s.Content, ImageUrl = s.ImageUrl, LinkLabel = s.LinkLabel, LinkUrl = s.LinkUrl }).ToList();
+            result.Sections = entity.Sections.OrderBy(s => s.Order).Select(s => new InvitationSection { DisplayMode = s.DisplayMode, Enabled = s.Enabled, Title = s.Title, TitleFontSize = s.TitleFontSize, Content = s.Content, ImageUrl = s.ImageUrl, LinkLabel = s.LinkLabel, LinkUrl = s.LinkUrl }).ToList();
             return result;
+        }
+        private static string CollectionFromAssets(Domain.Invitation item)
+        {
+            var asset = new[] { item.CoverImageUrl }.Concat(item.Sections.Select(x => x.ImageUrl)).FirstOrDefault(x => !string.IsNullOrWhiteSpace(x));
+            var segments = (asset ?? "").Split('/', StringSplitOptions.RemoveEmptyEntries);
+            return segments.Length >= 2 && segments[0] == "images" && System.Text.RegularExpressions.Regex.IsMatch(segments[1], "^[a-z0-9-]+$") ? segments[1] : "shared";
         }
     }
 }

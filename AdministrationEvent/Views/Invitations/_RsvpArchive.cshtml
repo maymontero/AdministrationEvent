@@ -4,7 +4,7 @@
 <div class="rsvp-intro"><span class="eyebrow">El mejor regalo es encontrarnos</span><h2>Contamos con vos</h2><p>Nos encantará compartir este día con vos.<br />Dejanos tu respuesta para preparar cada detalle.</p></div>
 @if(TempData["RsvpSuccess"] != null) { <p class="rsvp-success" role="status">@TempData["RsvpSuccess"]</p> }
 @if(preview) { <p class="preview-note">Podés probar el formulario. Las pruebas de esta vista previa no se guardan.</p> }
-<form class="rsvp-form" method="post" action="@(preview ? "/admin/preview/" + Model.Id : "/invitacion/" + Model.Slug)/asistencia">
+<form class="rsvp-form" method="post" action="@(preview ? "/admin/preview/" + Model.Id : (ViewData["PublicPath"] as string ?? "/" + Model.Slug))/asistencia">
 @Html.AntiForgeryToken()
 @if(!ViewData.ModelState.IsValid) { <div asp-validation-summary="All" class="errors" role="alert"></div> }
 <div class="form-field"><label for="guest-name">Nombre y apellido de quien responde</label><input id="guest-name" name="Name" value="@form.Name" required maxlength="120" autocomplete="name" /></div>

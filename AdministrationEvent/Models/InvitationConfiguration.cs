@@ -9,6 +9,8 @@ namespace AdministrationEvent.Models
         [Required, StringLength(120)] public string Title { get; set; } = "Nueva invitación";
         [Required, RegularExpression("^[a-z0-9]+(?:-[a-z0-9]+)*$"), StringLength(120)] public string Slug { get; set; } = "nuevo-evento";
         public bool IsPublished { get; set; }
+        [Required, RegularExpression("^(public|link)$")] public string SharingMode { get; set; } = "public";
+        [RegularExpression("^$|^[a-f0-9]{48}$")] public string ShareKey { get; set; } = "";
         [Required, StringLength(80)] public string EventType { get; set; } = "Casamiento";
         [StringLength(200)] public string Hosts { get; set; } = "Ana & Mateo";
         public DateTime? Date { get; set; }
@@ -18,6 +20,7 @@ namespace AdministrationEvent.Models
         [Required, StringLength(100)] public string TimeZone { get; set; } = "America/Montevideo";
         [StringLength(2000)] public string Message { get; set; } = "Queremos compartir este día con vos.";
         public string CoverImageUrl { get; set; } = "";
+        [Required, RegularExpression("^[a-z0-9]+(?:-[a-z0-9]+)*$"), StringLength(120)] public string AssetCollection { get; set; } = "shared";
         public InvitationTheme Theme { get; set; } = new InvitationTheme();
         public List<InvitationSection> Sections { get; set; } = new List<InvitationSection>();
     }
@@ -25,7 +28,7 @@ namespace AdministrationEvent.Models
     {
         [StringLength(2000), RegularExpression(@"^$|^https://open\.spotify\.com/(?:embed/)?(?:track|playlist)/[a-zA-Z0-9]{22}/?(?:\?[^\s]*)?$")]
         public string SpotifyTrackUrl { get; set; } = "";
-        [Required, RegularExpression("^(classic|vineyard|vineyard-archive|relaxed|save-date|beach)$")] public string Layout { get; set; } = "classic";
+        [Required, RegularExpression("^(classic|vineyard|vineyard-archive|relaxed|save-date|beach|custom)$")] public string Layout { get; set; } = "custom";
         [Required, RegularExpression("^#[0-9a-fA-F]{6}$")] public string Secondary { get; set; } = "#76805e";
         [Required, RegularExpression("^#[0-9a-fA-F]{6}$")] public string Highlight { get; set; } = "#eee3bd";
         [Required, RegularExpression("^#[0-9a-fA-F]{6}$")] public string Background { get; set; } = "#f9f5ee";
@@ -41,6 +44,10 @@ namespace AdministrationEvent.Models
     }
     public class InvitationSection
     {
+        // The layout-specific renderer uses this presentation hint instead of
+        // inferring a visual treatment from the wording of the title.
+        [Required, RegularExpression("^(standard|art-above|backdrop)$")]
+        public string DisplayMode { get; set; } = "standard";
         [Range(16, 80)] public int? TitleFontSize { get; set; }
         public bool Enabled { get; set; } = true;
         [Required, StringLength(120)] public string Title { get; set; } = "Celebración";

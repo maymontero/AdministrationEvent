@@ -17,6 +17,7 @@ namespace Application
         public string TimeZone { get; set; } = "America/Montevideo";
         public string? Message { get; set; }
         public string? CoverImageUrl { get; set; }
+        public string AssetCollection { get; set; } = "shared";
         public ICollection<InvitationSection> Sections { get; set; } = new List<InvitationSection>();
 
         public string Title { get; set; } = string.Empty;
@@ -24,6 +25,8 @@ namespace Application
         public string Slug { get; set; } = string.Empty;
 
         public bool IsPublished { get; set; }
+        public string SharingMode { get; set; } = "public";
+        public string? ShareKey { get; set; }
 
         public ICollection<Event> Events { get; set; } = new List<Event>();
 

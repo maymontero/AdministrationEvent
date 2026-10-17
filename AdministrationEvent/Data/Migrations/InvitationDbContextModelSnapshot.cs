@@ -369,6 +369,13 @@ namespace AdministrationEvent.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
+                    b.Property<string>("AssetCollection")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(120)
+                        .HasColumnType("varchar(120)")
+                        .HasDefaultValue("shared");
+
                     b.Property<string>("CoverImageUrl")
                         .HasMaxLength(2000)
                         .HasColumnType("varchar(2000)");
@@ -403,6 +410,17 @@ namespace AdministrationEvent.Migrations
                     b.Property<bool>("RsvpEnabled")
                         .HasColumnType("tinyint(1)");
 
+                    b.Property<string>("ShareKey")
+                        .HasMaxLength(48)
+                        .HasColumnType("varchar(48)");
+
+                    b.Property<string>("SharingMode")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar(10)")
+                        .HasDefaultValue("public");
+
                     b.Property<bool>("ShowCountdown")
                         .HasColumnType("tinyint(1)");
 
@@ -426,6 +444,9 @@ namespace AdministrationEvent.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("PublicId")
+                        .IsUnique();
+
+                    b.HasIndex("ShareKey")
                         .IsUnique();
 
                     b.HasIndex("Slug")
@@ -461,6 +482,13 @@ namespace AdministrationEvent.Migrations
                     b.Property<string>("Content")
                         .HasMaxLength(5000)
                         .HasColumnType("longtext");
+
+                    b.Property<string>("DisplayMode")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasDefaultValue("standard");
 
                     b.Property<bool>("Enabled")
                         .HasColumnType("tinyint(1)");
@@ -521,7 +549,7 @@ namespace AdministrationEvent.Migrations
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(20)
                         .HasColumnType("varchar(20)")
-                        .HasDefaultValue("classic");
+                        .HasDefaultValue("custom");
 
                     b.HasKey("Id");
 
