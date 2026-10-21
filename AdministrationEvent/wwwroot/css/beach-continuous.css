@@ -1,0 +1,108 @@
+/* Simple flat shapes share one palette and an overhead view. Chairs and surf belong to the same drawing. */
+body:has(.coastal-invitation) { background: #f7ebdc; }
+main.coastal-invitation { position: relative; max-width: 850px; background: #fae9c8; isolation: isolate; }
+.coastal-invitation .coastal-hero { position: relative; background: transparent; padding: 0; }
+.coastal-hero-copy { position: absolute; z-index: 1; top: 28px; left: 3%; padding: 0; width: 80%; margin: 0; }
+.coastal-hero-copy .beach-music-control { margin-bottom: 16px; }
+.coastal-hero-copy h1 { margin: 0; max-width: none; }
+.coastal-hero-copy h1, .coastal-hero-copy .beach-music-control { color: #365d53; }
+.coastal-hero-copy h1 span { display: block; }
+.coastal-hero-copy h1 span:first-child { font-size: clamp(80px, 14vw, 140px); line-height: 1; }
+.coastal-hero-copy h1 span + span { font-size: clamp(32px, 6vw, 54px); margin-top: 8px; }
+.coastal-cover { display: block; width: 100%; height: auto; margin: 0; }
+.coastal-intro { position: relative; padding: 12px 22% 10px 4%; width: 100%; margin: 0; }
+.coastal-invitation .discover { max-width: 330px; font-size: 17px; }
+.coastal-arrow { display: inline-block; font-size: 26px; padding: 12px 20px; text-decoration: none; }
+.coastal-shore { position: relative; isolation: isolate; padding-top: 0; }
+.coastal-shore::before { content: ""; position: absolute; z-index: -1; inset: 0; background: url("/images/despedida-playa/simple/mar-continuo.svg") top left / 100% 100% no-repeat; pointer-events: none; }
+.coastal-invitation .beach-section,
+.coastal-invitation .beach-playlist,
+.coastal-invitation .beach-countdown,
+.coastal-invitation footer,
+.coastal-invitation .rsvp-section { background: transparent; width: 78%; margin-left: 4%; margin-right: 18%; padding: 36px 20px; }
+.coastal-invitation .beach-section h2 { font-size: clamp(34px, 5vw, 46px); margin-bottom: 22px; text-wrap: balance; }
+.coastal-invitation .beach-section p { max-width: 420px; }
+.coastal-invitation .section-art { display: block; height: auto; object-fit: contain; max-height: none; }
+.coastal-invitation .section-0 { padding-top: 12px; padding-bottom: 34px; }
+.coastal-invitation .section-0 p { font-size: 22px; }
+.coastal-invitation .section-0 .section-art { width: 160px; max-height: none; margin: 0 0 12px auto; transform: rotate(7deg); }
+.coastal-invitation .section-1 { padding-top: 24px; padding-bottom: 22px; }
+.coastal-invitation .section-1 .section-art { width: 65%; max-width: 300px; margin: 26px auto 0 0; transform: rotate(-5deg); }
+.coastal-invitation .section-2 { padding-top: 32px; padding-bottom: 24px; }
+.coastal-invitation .section-2 p { font: 400 clamp(22px, 3vw, 28px)/1.65 BeachDetail, serif; max-width: 320px; }
+.coastal-invitation .section-2 .section-art { width: 64%; max-width: 300px; margin: 26px 0 0 auto; transform: rotate(4deg); }
+.coastal-invitation .section-3 { padding-top: 18px; padding-bottom: 28px; }
+.coastal-invitation .section-3 .section-art { width: 220px; max-height: none; margin: 0 auto 18px; transform: none; }
+.coastal-invitation .beach-playlist { padding-top: 28px; padding-bottom: 24px; }
+.coastal-invitation .beach-playlist h2 { max-width: 450px; text-wrap: balance; }
+.coastal-invitation .beach-playlist > img { width: 92%; max-width: 420px; margin-top: 28px; }
+.coastal-invitation .beach-countdown { padding-top: 22px; }
+.coastal-countdown-art { display: block; width: 64%; max-width: 260px; height: auto; margin: 32px auto 0; }
+.coastal-invitation footer { padding-top: 14px; padding-bottom: 42px; }
+.coastal-invitation .rsvp-section h2 { font-size: 36px; }
+.coastal-invitation .rsvp-form { display: grid; gap: 16px; text-align: left; }
+.coastal-invitation .form-field { display: grid; gap: 6px; }
+.coastal-invitation .rsvp-form input,
+.coastal-invitation .rsvp-form select,
+.coastal-invitation .rsvp-form textarea { width: 100%; min-width: 0; padding: 10px; border: 1px solid var(--sea); border-radius: 8px; background: #fff8edbd; color: inherit; font: inherit; }
+.coastal-invitation .rsvp-form small { font-size: 12px; }
+@media(max-width: 600px) {
+    .coastal-hero-copy { top: 20px; left: 3%; padding: 0; width: 80%; margin: 0; }
+    .coastal-hero-copy .beach-music-control { margin-bottom: 12px; }
+    .coastal-hero-copy .beach-music-control svg { width: 34px; height: 34px; }
+    .coastal-hero-copy h1 span:first-child { font-size: clamp(72px, 21vw, 110px); }
+    .coastal-hero-copy h1 span + span { font-size: clamp(30px, 8vw, 42px); margin-top: 5px; }
+    .coastal-cover { width: 100%; margin: 0; }
+    .coastal-intro { padding: 12px 20% 0 3%; width: 100%; margin: 0; }
+    .coastal-invitation .discover { font-size: 16px; }
+    .coastal-invitation .beach-section,
+    .coastal-invitation .beach-playlist,
+    .coastal-invitation .beach-countdown,
+    .coastal-invitation footer,
+    .coastal-invitation .rsvp-section { width: 80%; margin-left: 3%; margin-right: 17%; padding-left: 16px; padding-right: 16px; }
+    .coastal-invitation .beach-section h2 { font-size: 34px; }
+    .coastal-invitation .section-0 p { font-size: 20px; }
+    .coastal-invitation .section-0 .section-art { width: 125px; }
+    .coastal-invitation .section-1 .section-art { width: 78%; margin-top: 22px; }
+    .coastal-invitation .section-2 .section-art { width: 76%; }
+    .coastal-invitation .section-3 .section-art { width: 180px; }
+    .coastal-invitation .beach-playlist h2 { font-size: 32px; }
+}
+
+.coastal-divider { display: block; position: relative; left: 43%; transform: translateX(-50%); width: 174px; height: auto; margin: 4px 0 20px; }
+
+/* The tide returns whenever a section re-enters the viewport in either direction. */
+.coastal-invitation .shore-reveal {
+    opacity: 0;
+    translate: 38px 16px;
+    transition: opacity .8s ease, translate 1.15s cubic-bezier(.2,.75,.25,1);
+}
+.coastal-invitation .shore-reveal.shore-entered { opacity: 1; translate: 0 0; }
+.coastal-invitation .shore-reveal.shore-entered .section-art,
+.coastal-invitation .shore-reveal.shore-entered > img {
+    animation: tide-delivery 1.55s cubic-bezier(.2,.7,.25,1) both;
+}
+.coastal-invitation .shore-reveal.shore-entered h2 { animation: tide-text .9s .08s both; }
+.coastal-invitation .shore-reveal.shore-entered > p { animation: tide-text 1s .16s both; }
+.coastal-invitation .coastal-divider.shore-reveal.shore-entered { animation: tide-delivery 1.4s both; }
+@keyframes tide-delivery {
+    0% { opacity: 0; translate: 38px 12px; rotate: 5deg; }
+    60% { opacity: 1; translate: -4px -2px; rotate: -1deg; }
+    100% { opacity: 1; translate: 0 0; rotate: 0deg; }
+}
+@keyframes tide-text {
+    from { opacity: 0; translate: 12px 8px; }
+    to { opacity: 1; translate: 0 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .coastal-invitation .shore-reveal { opacity: 1; translate: none; transition: none; }
+    .coastal-invitation.shore-motion *,
+    .coastal-invitation.shore-motion .coastal-shore::before { animation: none !important; }
+}
+
+/* The cover title arrives with the tide again when returning to the top. */
+.coastal-hero-copy.shore-entered h1 span { animation: tide-text 1.2s both; }
+.coastal-hero-copy.shore-entered h1 span + span { animation-delay: .18s; }
+@media (prefers-reduced-motion: reduce) {
+    .coastal-hero-copy.shore-entered h1 span { animation: none; }
+}

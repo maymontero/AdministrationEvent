@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="260" height="160" viewBox="0 0 260 160">
+<g id="anillo" transform="translate(7 17)"><circle cx="60" cy="73" r="28" fill="none" stroke="#e3c373" stroke-width="9"/><path d="M39 31 49 19H71L81 31 60 54Z" fill="#b8dfd9"/><path d="M39 31H81M49 19 60 54 71 19" fill="none" stroke="#fff9eb" stroke-width="2.5" stroke-linejoin="round"/></g>
+<g id="velo"><path d="M165 37Q159 77 139 128Q148 140 159 132Q169 145 181 134Q193 144 204 132Q215 139 225 127Q204 77 198 37Q181 25 165 37Z" fill="#fffdf3" fill-opacity=".94" stroke="#d8cdb5" stroke-width="2.5" stroke-linejoin="round"/><path d="M174 40Q170 85 160 128M188 40Q193 85 203 128" fill="none" stroke="#e7deca" stroke-width="2.5" stroke-linecap="round"/><path d="M163 36Q181 18 201 36" fill="none" stroke="#e3c373" stroke-width="5" stroke-linecap="round"/><path d="M170 31 171 37M180 28v6M190 30 189 36" fill="none" stroke="#fff9eb" stroke-width="2.5" stroke-linecap="round"/></g>
+</svg>

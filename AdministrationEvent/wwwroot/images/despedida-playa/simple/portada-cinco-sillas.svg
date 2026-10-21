@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="850" height="900" viewBox="0 0 850 900"><style>
+.cover-wave { animation: cover-surf 6s ease-in-out infinite; }
+.cover-wave-back { animation-delay: -3s; }
+@keyframes cover-surf { 0%,100% { transform: translateY(0); opacity: .75; } 50% { transform: translateY(9px); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .cover-wave { animation: none; } }
+</style><rect width="850" height="900" fill="#fae9c8"/>
+<path d="M0 0H850V900H773C788 710 735 618 738 520S714 330 620 316 469 357 356 326 124 285 0 302Z" fill="#fbfbeb"/>
+<path d="M0 0H850V900H796C807 712 754 615 758 514S730 306 629 294 465 334 360 306 128 265 0 280Z" fill="#b8dfd9"/>
+<path d="M0 0H850V900H824C834 693 786 614 787 500S755 278 642 266 461 304 370 276 143 231 0 247Z" fill="#91caca"/>
+<path d="M0 0H850V890C862 693 817 618 816 495S780 251 650 239 469 280 376 248 153 203 0 218Z" fill="#79b5b8"/>
+<path class="cover-wave" d="M-10 198C150 181 263 208 371 226S535 202 640 220 799 304 810 366" fill="none" stroke="#e6f4e9" stroke-width="6" stroke-linecap="round"/>
+<path class="cover-wave cover-wave-back" d="M-10 161C148 147 256 174 368 188S531 171 640 186 799 270 831 331" fill="none" stroke="#cae7df" stroke-width="3" stroke-linecap="round"/>
+<defs><g id="chair"><path d="M10 18 86 18 92 180 15 180Z" fill="#ccb190" opacity=".22"/><rect x="0" y="0" width="76" height="168" rx="5" fill="#fff9eb"/><path d="M8 9h12v145H8zm24 0h12v145H32zm24 0h12v145H56z" fill="currentColor"/><path d="M3 117h70M2 153h72" stroke="#fff9eb" stroke-width="7"/><rect x="7" y="8" width="62" height="18" rx="4" fill="#fff9eb" opacity=".6"/></g></defs><use href="#chair" x="78" y="450" color="#efd184"/><use href="#chair" x="195" y="450" color="#85bdbd"/><use href="#chair" x="312" y="450" color="#df887e"/><use href="#chair" x="429" y="450" color="#efd184"/><use href="#chair" x="546" y="450" color="#85bdbd"/>
+<g transform="translate(114 731)"><circle r="69" fill="#fff8e8"/><path d="M0 0-49-49A69 69 0 0 1 0-69ZM0 0 49-49A69 69 0 0 1 69 0ZM0 0 49 49A69 69 0 0 1 0 69ZM0 0-49 49A69 69 0 0 1-69 0Z" fill="#df887e"/><circle r="6" fill="#c6a883"/></g><g transform="translate(654 750) rotate(15)" fill="#df887e"><path d="M0-24 7-8 24-7 12 5 15 23 0 14-15 23-12 5-24-7-7-8Z"/></g><g transform="translate(679 797) scale(.5) rotate(-12)" fill="#efd184"><path d="M0-24 7-8 24-7 12 5 15 23 0 14-15 23-12 5-24-7-7-8Z"/></g></svg>

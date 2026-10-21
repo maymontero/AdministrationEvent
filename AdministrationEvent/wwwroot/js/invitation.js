@@ -106,3 +106,48 @@
     attendance.addEventListener('change', update); update();
   }
 })();
+
+// Reveal only the experimental beach layout; other invitations stay unchanged.
+(() => {
+  const beach = document.querySelector('.coastal-invitation');
+  if (!beach || !('IntersectionObserver' in window)) return;
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  if (reducedMotion.matches) return;
+
+  const sections = Array.from(beach.querySelectorAll(
+    '.coastal-hero-copy, .beach-section, .coastal-divider, .beach-playlist, .beach-countdown, .rsvp-section, footer'
+  ));
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      // Reset only once fully outside the viewport so either scroll direction
+      // brings the tide animation back without hiding visible content.
+      const focused = entry.target.contains(document.activeElement);
+      entry.target.classList.toggle('shore-entered', entry.isIntersecting || focused);
+    });
+  }, { threshold: 0 });
+
+  sections.forEach(section => {
+    const bounds = section.getBoundingClientRect();
+    section.classList.add('shore-reveal');
+    section.classList.toggle('shore-entered', bounds.bottom > 0 && bounds.top < window.innerHeight);
+    observer.observe(section);
+  });
+  beach.classList.add('shore-motion');
+
+  const revealTarget = target => {
+    const section = target?.closest('.shore-reveal');
+    if (!section) return;
+    section.classList.add('shore-entered');
+  };
+  beach.addEventListener('focusin', event => revealTarget(event.target));
+  window.addEventListener('hashchange', () => {
+    const id = window.location.hash.slice(1);
+    if (id) revealTarget(document.getElementById(id));
+  });
+  reducedMotion.addEventListener('change', event => {
+    if (!event.matches) return;
+    observer.disconnect();
+    beach.classList.remove('shore-motion');
+    sections.forEach(section => section.classList.remove('shore-reveal', 'shore-entered'));
+  });
+})();

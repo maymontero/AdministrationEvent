@@ -1,0 +1,82 @@
+@model InvitationConfiguration
+@using System.Globalization
+@{
+    Layout = null;
+    var t = Model.Theme;
+    const string closingArt = "/images/despedida-playa/simple/conchas-estrella.svg";
+    var hasClosingArt = Model.Sections.Any(s => s.Enabled && s.ImageUrl == closingArt);
+    ViewData["MusicControlInHero"] = true;
+    ViewData["CompactMusic"] = true;
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>@Model.Title</title>
+<link rel="icon" type="image/svg+xml" href="~/images/despedida/favicon-z.svg" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/beach.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/beach-continuous.css" asp-append-version="true" />
+<script src="~/js/invitation.js" asp-append-version="true" defer></script>
+</head>
+<body class="beach" style="--paper:@t.Background;--ink:@t.Text;--coral:@t.Accent;--sea:@t.Secondary;--butter:@t.Highlight">
+@if(ViewData["Preview"] != null) { <aside class="preview-banner">Vista previa · @(Model.IsPublished ? "Publicada" : "Borrador") @if(User.IsInRole("Owner")) { <a href="/admin/edit/@Model.Id">Volver a configurar</a> } else { <a href="/mis-invitaciones">Mis invitaciones</a> }</aside> }
+<main class="coastal-invitation">
+<header class="coastal-hero" id="inicio">
+<div class="coastal-hero-copy">
+@if(!string.IsNullOrEmpty(t.SpotifyTrackUrl)) {
+<button class="beach-music-control" data-spotify-toggle type="button" hidden aria-pressed="false" aria-label="Reproducir música">
+<span aria-hidden="true">♪</span><svg viewBox="0 0 48 48" width="44" height="44" aria-hidden="true"><circle cx="24" cy="24" r="21" fill="none" stroke="currentColor" stroke-width="1.3"/><path data-play-symbol d="M19 14L34 24L19 34Z" fill="currentColor"/></svg><span data-spotify-label class="music-label-hidden">Play</span><span aria-hidden="true">♫</span>
+</button>
+} else {
+<a class="beach-music-control" href="#musica" aria-label="Ver la playlist de la invitación"><span aria-hidden="true">♪</span><svg viewBox="0 0 48 48" width="44" height="44" aria-hidden="true"><circle cx="24" cy="24" r="21" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M19 14L34 24L19 34Z" fill="currentColor"/></svg><span class="music-label-hidden">Play</span><span aria-hidden="true">♫</span></a>
+}
+<h1>@foreach(var line in Model.Hosts.Split('\n', StringSplitOptions.RemoveEmptyEntries)) { <span>@line</span> }</h1>
+</div>
+<img class="coastal-cover" src="@Model.CoverImageUrl" alt="Playa vista desde arriba: cinco sillas vacías en la arena mirando hacia el mar y una sombrilla" fetchpriority="high" />
+</header>
+<div class="coastal-shore">
+<div class="coastal-intro">
+<a class="discover" href="#planes">@Model.Message</a>
+<a class="coastal-arrow" href="#planes" aria-label="Descubrir los planes">↓</a>
+</div>
+<div id="planes" class="beach-sections">
+@{ var index = 0; }
+@foreach(var block in Model.Sections.Where(s => s.Enabled)) {
+var displayMode = string.IsNullOrEmpty(block.DisplayMode) ? "standard" : block.DisplayMode;
+var smallArt = displayMode == "art-above";
+<section class="beach-section section-@(index % 4)" aria-labelledby="beach-title-@index">
+@if(smallArt && !string.IsNullOrEmpty(block.ImageUrl) && block.ImageUrl != closingArt) { <img class="section-art" src="@block.ImageUrl" alt="" loading="lazy" /> }
+@if(index % 4 == 3) { <span class="section-note handwritten" aria-hidden="true">shhh…</span> }
+<h2 id="beach-title-@index" style="@(block.TitleFontSize.HasValue ? $"font-size:{block.TitleFontSize.Value}px" : null)">@block.Title</h2>
+@if(block.Title == "Reservate estos días") {
+var scheduleLines = block.Content.Split('\n');
+<p>@foreach(var scheduleLine in scheduleLines) { if(scheduleLine.Contains("aeropuerto", StringComparison.OrdinalIgnoreCase)) { <small class="airport-note">@scheduleLine</small> } else { <span class="schedule-line">@scheduleLine</span> } }</p>
+} else { <p>@block.Content</p> }
+@if(!smallArt && !string.IsNullOrEmpty(block.ImageUrl) && block.ImageUrl != closingArt) { <img class="section-art" src="@block.ImageUrl" alt="" loading="lazy" /> }
+@if(!string.IsNullOrEmpty(block.LinkUrl)) { <a class="beach-button" href="@block.LinkUrl" target="_blank" rel="noopener noreferrer">@block.LinkLabel ↗</a> }
+</section>
+@if(index == 0) { <img class="coastal-divider" src="~/images/despedida-playa/simple/anillo.svg" asp-append-version="true" alt="" loading="lazy" /> }
+index++;
+}
+</div>
+@if(Model.RsvpEnabled) { <partial name="_Rsvp" model="Model" /> }
+<section class="cheers beach-playlist" id="musica" aria-labelledby="playlist-title"><h2 id="playlist-title">De fiesta por todo lo que se viene</h2>
+@if(!string.IsNullOrEmpty(t.SpotifyTrackUrl)) { <partial name="_SpotifyMusic" model="Model" /> }
+else { <p class="playlist-pending">La playlist está en camino.</p> }
+<img src="/images/despedida-playa/simple/cinco-tragos.svg" alt="Cinco tragos dibujados con formas simples" loading="lazy" />
+</section>
+@if(Model.ShowCountdown && Model.Date.HasValue) {
+<section class="beach-countdown beach-countdown-final" aria-label="Cuenta regresiva">
+<p>Ya falta poquito</p>
+<div class="countdown" data-days-only="@(!Model.HasConfirmedTime).ToString().ToLowerInvariant()" data-date="@Model.Date.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)" data-zone="@Model.TimeZone" data-confirmed="@Model.HasConfirmedTime.ToString().ToLowerInvariant()" data-target="@(new DateTimeOffset(DateTime.SpecifyKind(Model.Date.Value, DateTimeKind.Unspecified), TimeZoneInfo.FindSystemTimeZoneById(Model.TimeZone).GetUtcOffset(DateTime.SpecifyKind(Model.Date.Value, DateTimeKind.Unspecified))).ToString("o", CultureInfo.InvariantCulture))">
+<div><strong data-days>—</strong><span>días</span></div>
+@if(Model.HasConfirmedTime) { <div><strong data-hours>—</strong><span>horas</span></div><div><strong data-minutes>—</strong><span>minutos</span></div> }
+</div>
+@if(hasClosingArt) { <img class="coastal-countdown-art" src="@closingArt" alt="" loading="lazy" /> }
+</section>
+}
+else if(hasClosingArt) { <div class="beach-countdown"><img class="coastal-countdown-art" src="@closingArt" alt="" loading="lazy" /></div> }
+<footer><p>Con amor, tus amigas</p><a href="#inicio">Volver arriba ↑</a></footer>
+</div>
+</main>
+</body></html>

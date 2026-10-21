@@ -20,6 +20,8 @@
 }
 @if(t.Layout == "vineyard-archive") {
     <partial name="_VineyardArchive" model="Model" />
+} else if(t.Layout == "beach-continuous") {
+    <partial name="_BeachContinuous" model="Model" />
 } else if(t.Layout == "beach") {
     <partial name="_Beach" model="Model" />
 } else if(t.Layout == "save-date") {
