@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="260" viewBox="0 0 180 260">
+<rect width="180" height="260" fill="#fff7e8"/>
+<filter id="paper" x="-15%" y="-5%" width="130%" height="110%"><feTurbulence type="fractalNoise" baseFrequency=".12 .25" numOctaves="3" seed="8" result="grain"/><feDisplacementMap in="SourceGraphic" in2="grain" scale="5"/><feComposite in2="SourceGraphic" operator="in"/></filter>
+<path fill="#f8e6a4" opacity=".82" filter="url(#paper)" d="M30-5 59-5 58 22 61 45 58 75 60 98 57 125 60 150 58 178 60 200 57 233 59 265 30 265 32 240 29 215 31 185 29 160 32 132 29 105 31 78 28 50 31 22Z"/>
+<path fill="#d9937c" opacity=".76" filter="url(#paper)" d="M120-5 149-5 148 22 151 45 148 75 150 98 147 125 150 150 148 178 150 200 147 233 149 265 120 265 122 240 119 215 121 185 119 160 122 132 119 105 121 78 118 50 121 22Z"/>
+<path stroke="#fff7e8" opacity=".46" stroke-width="2" d="m35 0 1 38-2 15m19 13 1 22-2 24m-14 10 1 45-2 11m16 20-1 33 1 18m68-249 1 38-2 15m19 13 1 22-2 24m-14 10 1 45-2 11m16 20-1 33 1 18"/>
+</svg>

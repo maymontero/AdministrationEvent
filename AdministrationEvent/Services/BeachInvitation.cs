@@ -19,7 +19,7 @@ namespace AdministrationEvent.Services
                 new InvitationSection { DisplayMode = "art-above", Title = "Reservate estos días", ImageUrl = "/images/despedida/calendario-playita-v2.png", Content = "24 de febrero de 2027\nal 3 de marzo de 2027\n\nSalida · 7:20 am\nEstar en el aeropuerto 2 horas antes" },
                 new InvitationSection { Title = "Dress code", ImageUrl = "/images/despedida/bikinis-cuerda-v3.png", Content = "Imprescindible bikini y ropita de verano\n\nDe a poquito te vamos a revelar la paleta de colores de cada día, para que elijas tu color y armes tus looks." },
                 new InvitationSection { DisplayMode = "backdrop", Title = "El plan", ImageUrl = "/images/despedida/plan-cinco-sillitas-dibujo-v2.png", Content = "Sol, mar y arena y mucho alcohol." },
-                new InvitationSection { DisplayMode = "art-above", Title = "El destino?", ImageUrl = "/images/despedida/avioncito-detalle-v1.png", Content = "Por ahora es nuestro secreto. Vos solo ocupate de hacer lugar en la valija." }
+                new InvitationSection { DisplayMode = "art-above", Title = "El destino?", ImageUrl = "/images/despedida/avioncito-detalle-v1.png", Content = "Por ahora es nuestro secreto. Vos solo preocupate por hacer la valija." }
             }
         };
     }
