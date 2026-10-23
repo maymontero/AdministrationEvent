@@ -4,6 +4,7 @@
  const stage=root.querySelector('#design-stage'),status=root.querySelector('#design-status'),token=root.querySelector('[name="__RequestVerificationToken"]').value;
  let undo=[],redo=[],assets=[];
  const baseFonts=['Georgia, serif','Arial, sans-serif','Verdana, sans-serif','Palatino, serif','Courier New, monospace'];
+ const colorControls=[];
  let fonts=baseFonts.map(name=>({name,family:name,url:''}));
  const fontObserver=new IntersectionObserver(entries=>entries.forEach(entry=>{if(!entry.isIntersecting)return;const url=entry.target.dataset.fontUrl;if(url)InvitationCanvas.fontFamily(url);fontObserver.unobserve(entry.target);}),{root:root.querySelector('#font-samples')});
  const $=id=>root.querySelector('#'+id),section=()=>doc.sections[sectionIndex],element=()=>section().elements[elementIndex];
@@ -16,6 +17,7 @@
  function renderSections(){const list=$('design-sections');list.replaceChildren();doc.sections.forEach((s,i)=>{const b=document.createElement('button');b.type='button';b.textContent=`${i+1}. ${s.name}`;b.setAttribute('aria-pressed',String(i===sectionIndex));b.onclick=()=>{sectionIndex=i;elementIndex=-1;render();};list.append(b);});}
  function inspector(){
   const s=section(),e=element();$('section-name').value=s.name;$('section-height').value=s.height;$('section-bg').value=s.background;$('section-image').value=s.backgroundImage;
+  colorControls.forEach(control=>control.sync());
   $('element-properties').hidden=!e;$('no-element').hidden=!!e;
   if(!e)return;
   $('element-section').replaceChildren();doc.sections.forEach((s,i)=>$('element-section').add(new Option(`${i+1}. ${s.name}`,i)));$('element-section').value=sectionIndex;
@@ -87,17 +89,48 @@
  $('section-down').onclick=()=>{if(sectionIndex<doc.sections.length-1)mutate(()=>{[doc.sections[sectionIndex+1],doc.sections[sectionIndex]]=[doc.sections[sectionIndex],doc.sections[sectionIndex+1]];sectionIndex++;});};
  $('section-copy').onclick=()=>{if(doc.sections.length>=30)return;mutate(()=>{doc.sections.splice(sectionIndex+1,0,structuredClone(section()));sectionIndex++;elementIndex=-1;});};
  $('section-remove').onclick=()=>{if(doc.sections.length===1)return msg('Dejá al menos una sección.',true);mutate(()=>{doc.sections.splice(sectionIndex,1);sectionIndex=Math.min(sectionIndex,doc.sections.length-1);elementIndex=-1;});};
- for(const [id,key]of Object.entries({'section-name':'name','section-height':'height','section-bg':'background','section-image':'backgroundImage'}))$(id).addEventListener('change',event=>mutate(()=>{section()[key]=key==='height'?clamp(Number(event.target.value)||700,200,2400):event.target.value;section().elements.forEach(fit);}));
+ for(const [id,key]of Object.entries({'section-name':'name','section-height':'height','section-image':'backgroundImage'}))$(id).addEventListener('change',event=>mutate(()=>{section()[key]=key==='height'?clamp(Number(event.target.value)||700,200,2400):event.target.value;section().elements.forEach(fit);}));
  function canAdd(){if(doc.sections.reduce((n,s)=>n+s.elements.length,0)>=300){msg('El diseño admite hasta 300 elementos.',true);return false;}return true;}
  root.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{if(!canAdd())return;mutate(()=>{section().elements.push({type:b.dataset.add,text:b.dataset.add==='title'?'Tu título':b.dataset.add==='button'?'Ver más':b.dataset.add==='image'?'':'Tu texto',x:10,y:40,width:80,height:Math.min(140,section().height-40),fontSize:b.dataset.add==='title'?52:28,font:'Georgia, serif',color:'#365d53',background:'#f1dfc4',align:'center',image:'',link:''});elementIndex=section().elements.length-1;});});
- const fields={'element-text':'text','element-image':'image','element-link':'link','element-font':'font','element-size':'fontSize','element-color':'color','element-bg':'background','element-align':'align','element-x':'x','element-y':'y','element-width':'width','element-height':'height'};
+ const fields={'element-text':'text','element-image':'image','element-link':'link','element-font':'font','element-size':'fontSize','element-align':'align','element-x':'x','element-y':'y','element-width':'width','element-height':'height'};
  for(const [id,key]of Object.entries(fields))$(id).addEventListener('change',event=>{if(!element())return;mutate(()=>{let value=event.target.value;if(['x','y','width','height','fontSize'].includes(key))value=Number(value)||0;element()[key]=value;if(key==='fontSize')element().fontSize=clamp(value,10,160);fit(element());});});
  $('element-copy').onclick=()=>{if(!element()||!canAdd())return;mutate(()=>{const e=structuredClone(element());e.y+=20;fit(e);section().elements.push(e);elementIndex=section().elements.length-1;});};
  $('element-remove').onclick=()=>{if(element())mutate(()=>{section().elements.splice(elementIndex,1);elementIndex=-1;});};
  $('element-front').onclick=()=>{if(element())mutate(()=>{const [e]=section().elements.splice(elementIndex,1);section().elements.push(e);elementIndex=section().elements.length-1;});};
  $('element-back').onclick=()=>{if(element())mutate(()=>{const [e]=section().elements.splice(elementIndex,1);section().elements.unshift(e);elementIndex=0;});};
+ function normalizeDesignColor(value){
+  const hex=value.trim().replace(/^#/,'');
+  if(!/^(?:[a-f0-9]{3}|[a-f0-9]{6})$/i.test(hex))return null;
+  return '#'+(hex.length===3?[...hex].map(c=>c+c).join(''):hex).toUpperCase();
+ }
+ function bindDesignColor(id,getValue,setValue){
+  const picker=$(id),hex=root.querySelector(`[data-design-color-for="${id}"]`);let editing=false;
+  const clearError=()=>{hex.setCustomValidity('');hex.removeAttribute('aria-invalid');};
+  const paint=value=>{picker.value=value;picker.style.backgroundColor=value;};
+  const update=value=>{
+   if((getValue()||'').toUpperCase()===value)return;
+   if(!editing){remember();editing=true;}setValue(value);change();renderStage();
+  };
+  colorControls.push({sync(){editing=false;clearError();const value=normalizeDesignColor(getValue()||'#FFFFFF');paint(value||'#FFFFFF');hex.value=value||'#FFFFFF';}});
+  const pick=commit=>{const value=normalizeDesignColor(picker.value);clearError();paint(value);hex.value=value;update(value);if(commit)editing=false;};
+  picker.addEventListener('input',()=>pick(false));picker.addEventListener('change',()=>pick(true));
+  const type=commit=>{
+   const value=normalizeDesignColor(hex.value);
+   if(!value){hex.setCustomValidity('Escribí un código de 3 o 6 caracteres, por ejemplo #C66FFF.');hex.setAttribute('aria-invalid','true');return;}
+   clearError();paint(value);update(value);if(commit){hex.value=value;editing=false;}
+  };
+  hex.addEventListener('input',()=>type(false));hex.addEventListener('change',()=>type(true));hex.addEventListener('blur',()=>type(true));
+ }
+ bindDesignColor('section-bg',()=>section().background,value=>{section().background=value;});
+ bindDesignColor('element-color',()=>element()?.color,value=>{if(element())element().color=value;});
+ bindDesignColor('element-bg',()=>element()?.background,value=>{if(element())element().background=value;});
+ function checkDesignColors(){
+  for(const input of root.querySelectorAll('[data-design-color-hex]')){
+   if(!input.closest('[hidden]')&&!input.checkValidity()){input.reportValidity();throw new Error('Revisá el código hexadecimal del color antes de guardar.');}
+  }
+ }
  async function request(path,body,json=false){const response=await fetch(root.dataset.url+path,{method:'POST',headers:{RequestVerificationToken:token,...(json?{'Content-Type':'application/json'}:{})},body:json?JSON.stringify(body):body});if(response.redirected)throw new Error('La sesión terminó. Volvé a iniciar sesión para guardar.');if(!response.ok){let text='No se pudo guardar. Revisá la conexión e intentá de nuevo.';try{text=(await response.json()).error||text;}catch{}throw new Error(text);}return response;}
- async function save(){const savedRevision=revision;const result=await(await request('',{document:doc,version},true)).json();version=result.version;if(revision===savedRevision){dirty=false;msg('Borrador guardado. La invitación publicada conserva su diseño.');}else msg('Se guardó la versión anterior. Guardá los últimos cambios.');}
+ async function save(){checkDesignColors();const savedRevision=revision;const result=await(await request('',{document:doc,version},true)).json();version=result.version;if(revision===savedRevision){dirty=false;msg('Borrador guardado. La invitación publicada conserva su diseño.');}else msg('Se guardó la versión anterior. Guardá los últimos cambios.');}
  $('design-save').onclick=async()=>{const button=$('design-save');button.disabled=true;try{await save();}catch(e){msg(e.message,true);}finally{button.disabled=false;}};
  $('design-preview').onclick=event=>{if(dirty){event.preventDefault();msg('Guardá el borrador para ver los últimos cambios en la vista previa.',true);}};
  for(const [id,enabled]of [['design-activate',true],['design-deactivate',false]]){if(!$(id))continue;$(id).onclick=async()=>{const button=$(id);button.disabled=true;try{await save();const body=new FormData();body.set('enabled',String(enabled));await request('/activate',body);version++;msg(enabled?'Diseño aplicado a la invitación.':'La invitación vuelve a usar su diseño anterior.');}catch(e){msg(e.message,true);}finally{button.disabled=false;}};}
