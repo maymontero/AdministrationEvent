@@ -2,6 +2,9 @@
 @{ ViewData["Title"] = "Configurar invitación"; }
 <a href="/admin">← Mis invitaciones</a>
 <div class="page-heading"><div><span class="eyebrow">TU EVENTO, TU ESTILO</span><h1>Configurar invitación</h1><p>Hacé los cambios cotidianos desde esta pantalla. La configuración avanzada queda disponible al final.</p></div>@if(ViewData["New"] == null) { <a href="/admin/preview/@Model.Id" target="_blank" rel="noopener">Vista previa guardada ↗</a> }</div>
+@if(ViewData["InvitationActions"] is InvitationConfiguration actionInvitation) {
+<nav class="invitation-detail-actions" aria-label="Acciones de la invitación"><partial name="_InvitationActionLinks" model="actionInvitation" /></nav>
+}
 @if(TempData["Success"] != null) { <p class="success" role="status">@TempData["Success"]</p> }
 <form class="editor-form" method="post" action="/admin/edit/@Model.Id" data-invitation-editor>
 @Html.AntiForgeryToken()<div asp-validation-summary="All" class="errors"></div>

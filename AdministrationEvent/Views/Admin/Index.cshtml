@@ -10,12 +10,11 @@
 } else {
 <div class="invitation-list"><table><caption class="sr-only">Lista de invitaciones y sus acciones</caption><thead><tr><th scope="col">Nombre</th><th class="invitation-meta-column" scope="col">Fecha</th><th class="invitation-meta-column" scope="col">Tipo</th><th class="invitation-meta-column" scope="col">Estado</th><th scope="col" class="invitation-actions-heading"><span class="sr-only">Acciones</span></th></tr></thead><tbody>
 @foreach(var item in Model.Items) {
-    var shareUrl = item.SharingMode == "link" && !string.IsNullOrEmpty(item.ShareKey) ? "/" + item.Slug + "/acceso/" + item.ShareKey : "/" + item.Slug;
     var state = item.IsPublished ? (item.SharingMode == "link" ? "Enlace privado" : "Pública") : "Borrador";
 <tr><th scope="row" class="invitation-name"><a href="/admin/edit/@item.Id">@item.Title</a><div class="invitation-mobile-meta"><span>@(item.Date?.ToString("dd/MM/yyyy") ?? "Sin fecha")</span><span>@item.EventType</span><span>@state</span></div></th>
 <td class="invitation-meta-column invitation-date">@(item.Date?.ToString("dd/MM/yyyy") ?? "Sin fecha")</td><td class="invitation-meta-column">@item.EventType</td><td class="invitation-meta-column"><span class="invitation-state @(item.IsPublished ? "published" : "draft")">@state</span></td>
 <td class="invitation-actions-cell"><details class="invitation-actions-menu"><summary aria-label="Acciones de @item.Title" title="Acciones de @item.Title"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></summary><nav class="invitation-row-menu" aria-label="Acciones de @item.Title">
-<a href="/admin/edit/@item.Id">Configurar</a><a href="/design/@item.Id">Editor visual</a>@if(item.RsvpEnabled) { <a href="/admin/guests/@item.Id">Invitados y asistencia</a> }@if(item.SeatingPlanEnabled) { <a href="/admin/guests/@item.Id/plan">Plano de mesas</a> }<a href="/admin/preview/@item.Id" target="_blank" rel="noopener">Vista previa ↗</a>@if(item.IsPublished) { <a href="@shareUrl" target="_blank" rel="noopener">@(item.SharingMode == "link" ? "Abrir enlace privado ↗" : "Abrir invitación ↗")</a> }<a class="invitation-delete" href="/admin/delete/@item.Id">Eliminar invitación</a>
+<partial name="_InvitationActionLinks" model="item" />
 </nav></details></td></tr>
 }
 </tbody></table></div>

@@ -85,7 +85,7 @@ namespace AdministrationEvent.Controllers
         }
         [HttpGet("new")] public IActionResult Create() { var invitation = new InvitationConfiguration { AssetCollection = "invitacion-" + Guid.NewGuid().ToString("N") }; ViewData["New"] = true; return View("Edit", new InvitationEditor { Id = invitation.Id, ConfigurationJson = JsonSerializer.Serialize(invitation, InvitationStore.JsonOptions) }); }
         [HttpGet("edit/{id:guid}")]
-        public IActionResult Edit(Guid id) { var item = store.Find(id); return item == null ? (IActionResult)NotFound() : View(new InvitationEditor { Id = id, ConfigurationJson = JsonSerializer.Serialize(item, InvitationStore.JsonOptions) }); }
+        public IActionResult Edit(Guid id) { var item = store.Find(id); ViewData["InvitationActions"] = item; return item == null ? (IActionResult)NotFound() : View(new InvitationEditor { Id = id, ConfigurationJson = JsonSerializer.Serialize(item, InvitationStore.JsonOptions) }); }
         [HttpGet("assets")]
         public IActionResult Assets(Guid invitationId)
         {
@@ -131,7 +131,9 @@ namespace AdministrationEvent.Controllers
         public IActionResult Edit(Guid id, InvitationEditor editor)
         {
             editor.Id = id;
-            if (store.Find(id) == null) ViewData["New"] = true;
+            var saved = store.Find(id);
+            ViewData["InvitationActions"] = saved;
+            if (saved == null) ViewData["New"] = true;
             if (ModelState.IsValid)
             {
                 try {

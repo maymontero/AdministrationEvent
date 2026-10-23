@@ -51,23 +51,26 @@ window.addEventListener('pageshow', () => {
   const close = except => menus.forEach(menu => { if (menu !== except) menu.open = false; });
   menus.forEach(menu => {
     const trigger = menu.querySelector('summary'), panel = menu.querySelector('.invitation-row-menu');
-    menu.addEventListener('toggle', () => {
+    const position = () => {
       if (!menu.open) return;
-      close(menu);
       panel.classList.add('is-positioned');
       const bounds = trigger.getBoundingClientRect(), box = panel.getBoundingClientRect();
       panel.style.left = Math.max(16, Math.min(window.innerWidth - box.width - 16, bounds.right - box.width)) + 'px';
       const below = bounds.bottom + 5;
       const above = bounds.top - box.height - 5;
       panel.style.top = Math.max(16, Math.min(window.innerHeight - box.height - 16, below + box.height <= window.innerHeight - 16 ? below : above)) + 'px';
-    });
+    };
+    menu.addEventListener('toggle', () => { if (menu.open) { close(menu); position(); } });
+    window.addEventListener('resize', position);
+    document.addEventListener('scroll', position, true);
     menu.addEventListener('keydown', event => {
       if (event.key === 'Escape' && menu.open) { event.preventDefault(); menu.open = false; trigger.focus(); }
     });
-    menu.addEventListener('focusout', () => setTimeout(() => { if (!menu.contains(document.activeElement)) menu.open = false; }, 0));
-    panel.addEventListener('click', event => { if (event.target.closest('a')) menu.open = false; });
+    // Tab can leave the disclosure; pointer clicks must reach their link before it disappears.
+    menu.addEventListener('focusout', event => {
+      if (event.relatedTarget && !menu.contains(event.relatedTarget)) menu.open = false;
+    });
   });
   document.addEventListener('click', event => { if (!event.target.closest('.invitation-actions-menu')) close(); });
-  window.addEventListener('resize', () => close());
-  document.addEventListener('scroll', event => { if (!event.target.closest?.('.invitation-row-menu')) close(); }, true);
+
 })();

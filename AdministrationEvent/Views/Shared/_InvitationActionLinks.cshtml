@@ -1,0 +1,12 @@
+@model InvitationConfiguration
+@{ var shareUrl = Model.SharingMode == "link" && !string.IsNullOrEmpty(Model.ShareKey) ? "/" + Model.Slug + "/acceso/" + Model.ShareKey : "/" + Model.Slug; }
+<a href="/admin/edit/@Model.Id">Configurar</a>
+<a href="/design/@Model.Id">Editor visual</a>
+@if(Model.RsvpEnabled) {
+<a href="/admin/guests/@Model.Id">Invitados y asistencia</a>
+<a href="/admin/guests/@Model.Id/organization#etiquetas">Etiquetas</a>
+}
+@if(Model.SeatingPlanEnabled) { <a href="/admin/guests/@Model.Id/plan">Plano de mesas</a> }
+<a href="/admin/preview/@Model.Id" target="_blank" rel="noopener">Vista previa ↗</a>
+@if(Model.IsPublished) { <a href="@shareUrl" target="_blank" rel="noopener">@(Model.SharingMode == "link" ? "Abrir enlace privado ↗" : "Abrir invitación ↗")</a> }
+<a class="invitation-delete" href="/admin/delete/@Model.Id">Eliminar invitación</a>
