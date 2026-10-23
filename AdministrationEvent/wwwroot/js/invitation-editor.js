@@ -47,10 +47,30 @@
     sharingLink.innerHTML = `<strong>${config.SharingMode === 'link' ? 'Enlace privado' : 'Enlace público'}</strong><code>${escape(url)}</code><button type="button" class="quiet-button" data-copy-link>Copiar enlace</button>`;
     sharingLink.querySelector('[data-copy-link]').addEventListener('click', async () => { await navigator.clipboard.writeText(url); sharingLink.querySelector('[data-copy-link]').textContent = 'Copiado'; });
   };
-  form.querySelectorAll('[data-color]').forEach(input => {
-    input.value = get(config, input.dataset.color) || '#ffffff';
-    input.addEventListener('input', () => set(config, input.dataset.color, input.value));
+  const normalizeColor = value => {
+    const hex = value.trim().replace(/^#/, '');
+    if (!/^(?:[a-f0-9]{3}|[a-f0-9]{6})$/i.test(hex)) return null;
+    return '#' + (hex.length === 3 ? [...hex].map(char => char + char).join('') : hex).toUpperCase();
+  };
+  const bindColors = () => form.querySelectorAll('[data-color]').forEach(input => {
+    const hex = input.closest('[data-color-field]').querySelector('[data-color-hex]');
+    const apply = value => { input.value = value; input.style.backgroundColor = value; set(config, input.dataset.color, value); };
+    apply(normalizeColor(get(config, input.dataset.color) || '#ffffff') || '#FFFFFF');
+    hex.value = input.value.toUpperCase();
+    const clearError = () => { hex.setCustomValidity(''); hex.removeAttribute('aria-invalid'); };
+    const pick = () => { const value = normalizeColor(input.value); apply(value); hex.value = value; clearError(); };
+    input.oninput = pick; input.onchange = pick;
+    const type = commit => {
+      const value = normalizeColor(hex.value);
+      if (!value) { hex.setCustomValidity('Escribí un código de 3 o 6 caracteres, por ejemplo #C66FFF.'); hex.setAttribute('aria-invalid', 'true'); return; }
+      clearError(); apply(value); if (commit) hex.value = value;
+    };
+    hex.oninput = () => type(false);
+    hex.onchange = () => type(true);
+    hex.onblur = () => type(true);
   });
+
+  bindColors();
 
   const newSection = () => ({ DisplayMode: 'standard', Enabled: true, Title: 'Nueva sección', Content: '', ImageUrl: '', LinkLabel: 'Ver más', LinkUrl: '' });
   const addSection = (section) => {
@@ -79,7 +99,7 @@
   });
   form.querySelector('[data-add-section]').addEventListener('click', () => { const section = newSection(); config.Sections.push(section); originalAdd(section); list.lastElementChild.__section = section; list.lastElementChild.querySelector('[data-section="Title"]').focus(); });
   advanced.addEventListener('change', () => {
-    try { config = JSON.parse(advanced.value); normalize(); bindFields(); renderSections(); renderLayoutStatus(); renderSharingLink(); advanced.setCustomValidity(''); }
+    try { config = JSON.parse(advanced.value); normalize(); bindFields(); bindColors(); renderSections(); renderLayoutStatus(); renderSharingLink(); advanced.setCustomValidity(''); }
     catch { advanced.setCustomValidity('El JSON no es válido.'); }
   });
   form.addEventListener('submit', () => { syncOrder(); source.value = JSON.stringify(config); advanced.value = JSON.stringify(config, null, 2); });

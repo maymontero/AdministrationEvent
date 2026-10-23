@@ -7,11 +7,21 @@
   let positions = data.positions.filter(p => tables.has(p.TableId)), selected = null, venue = data.useVenueImage, hasImage = root.dataset.hasImage === 'true', dirty = false, revision = 0;
   const tooltip = document.createElement('div'); tooltip.id = 'table-tooltip'; tooltip.className = 'plan-tooltip'; tooltip.setAttribute('role', 'tooltip'); tooltip.hidden = true; board.append(tooltip);
   const describe = p => { tooltip.textContent = `${tables.get(p.TableId).name}: ${p.Description || ''}`; tooltip.hidden = !p.Description; tooltip.style.left = Math.max(25, Math.min(75, p.X)) + '%'; tooltip.style.top = (p.Y > 70 ? p.Y - 20 : p.Y + 10) + '%'; };
+  const saveButton = root.querySelector('#save-plan');
+  const toast = document.createElement('div'); toast.className = 'plan-save-notice'; toast.hidden = true; toast.setAttribute('role', 'status'); toast.setAttribute('aria-live', 'polite'); toast.setAttribute('aria-atomic', 'true');
+  const toastText = document.createElement('span');
+  const closeNotice = document.createElement('button'); closeNotice.type = 'button'; closeNotice.textContent = '×'; closeNotice.setAttribute('aria-label', 'Cerrar aviso');
+  toast.append(toastText, closeNotice); root.append(toast);
+  let noticeTimer;
+  const hideNotice = () => { toast.hidden = true; clearTimeout(noticeTimer); };
+  closeNotice.addEventListener('click', hideNotice);
+  const notify = (text, kind = 'success') => { clearTimeout(noticeTimer); toast.className = 'plan-save-notice ' + kind; toastText.textContent = text; toast.hidden = false; noticeTimer = setTimeout(hideNotice, kind === 'success' ? 6500 : 12000); };
   const token = root.querySelector('[name="__RequestVerificationToken"]').value;
   const message = (text, error = false) => { status.textContent = text; status.classList.toggle('error', error); };
-  const changed = () => { revision++; dirty = true; message('Hay cambios sin guardar.'); };
+  const changed = () => { revision++; dirty = true; saveButton.textContent = 'Guardar distribución'; saveButton.classList.remove('plan-saved'); hideNotice(); message('Hay cambios sin guardar.'); };
   async function request(path, body, json = false) {
     const response = await fetch(root.dataset.url + path, { method: 'POST', headers: { RequestVerificationToken: token, ...(json ? {'Content-Type':'application/json'} : {}) }, body: json ? JSON.stringify(body) : body });
+    if (response.redirected) throw new Error('La sesión terminó. Volvé a iniciar sesión para guardar.');
     if (!response.ok) { let text = 'No se pudo guardar. Intentá de nuevo.'; try { text = (await response.json()).error || text; } catch {} throw new Error(text); }
     return response;
   }
@@ -64,7 +74,20 @@
   root.querySelector('#table-shape').addEventListener('change',e=>{const p=positions.find(p=>p.TableId===selected);if(p){p.Shape=e.target.value;render();changed();}});
   root.querySelector('#rotate-table').addEventListener('click',()=>{const p=positions.find(p=>p.TableId===selected);if(p){p.Rotation=(p.Rotation+45)%360;render();changed();}});
   root.querySelector('#unplace-table').addEventListener('click',()=>{positions=positions.filter(p=>p.TableId!==selected);selected=null;render();changed();});
-  root.querySelector('#save-plan').addEventListener('click',async e=>{e.target.disabled=true;const savingRevision=revision;try{await request('',{tables:positions,useVenueImage:venue},true);if(revision===savingRevision){dirty=false;message('Distribución guardada.');}else{message('Se guardó la distribución anterior. Guardá los últimos cambios.');}}catch(e){message(e.message,true);}finally{e.target.disabled=false;}});
+  saveButton.addEventListener('click', async () => {
+    saveButton.disabled = true; saveButton.textContent = 'Guardando…'; saveButton.classList.remove('plan-saved'); hideNotice();
+    const savingRevision = revision;
+    try {
+      await request('', {tables:positions,useVenueImage:venue}, true);
+      if (revision === savingRevision) {
+        dirty = false; message('Distribución guardada.'); saveButton.textContent = '✓ Guardado'; saveButton.classList.add('plan-saved'); notify('✓ Distribución guardada correctamente');
+      } else {
+        saveButton.textContent = 'Guardar distribución'; message('Se guardó la distribución anterior. Guardá los últimos cambios.'); notify('Se guardó la versión anterior. Tenés cambios nuevos por guardar.', 'warning');
+      }
+    } catch (error) {
+      saveButton.textContent = 'Guardar distribución'; const text = error instanceof TypeError ? 'No se pudo guardar. Revisá la conexión e intentá de nuevo.' : error.message; message(text, true); notify(text, 'error');
+    } finally { saveButton.disabled = false; }
+  });
   root.querySelector('#venue-file').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;if(file.size>5*1024*1024){message('La imagen debe pesar hasta 5 MB.',true);return;}const body=new FormData();body.set('file',file);e.target.disabled=true;try{await request('/image',body);hasImage=true;root.querySelector('#venue-image').src=root.dataset.url+'/image?v='+Date.now();mode(true);render();changed();message('Plano subido. Acomodá las mesas y guardá la distribución.');}catch(error){message(error.message,true);}finally{e.target.disabled=false;}});
   window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});
   mode(venue);render();
