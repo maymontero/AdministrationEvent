@@ -14,6 +14,45 @@ class DatabaseChecks
 {
     static void Check(bool condition, string message) { if (!condition) throw new Exception(message); }
     static System.Security.Claims.ClaimsPrincipal Principal(long id) => new(new System.Security.Claims.ClaimsIdentity(new[] { new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, id.ToString()) }, "test"));
+    static void CheckInvitationList(InvitationDbContext db, InvitationStore store)
+    {
+        var prefix="lista-"+Guid.NewGuid().ToString("N");
+        var rows=Enumerable.Range(0,25).Select(i=>new Application.Invitation { Title=prefix+"-"+i.ToString("D2"),Slug=prefix+"-"+i,EventType="Evento de prueba",Hosts=i==0?"Familia-"+prefix:"Protagonistas",IsPublished=i%2==0,SeatingPlanEnabled=i==0,RsvpEnabled=i==0 }).ToList();
+        db.Invitations.AddRange(rows);db.SaveChanges();
+        var controller=new AdminController(store,null,db,null) { ControllerContext=new ControllerContext { HttpContext=new DefaultHttpContext() } };
+        InvitationListPage List(string search,string status="all",int page=1)=>(InvitationListPage)((ViewResult)controller.Index(search,status,page)).Model;
+        var first=List(prefix);Check(first.Total==25 && first.Items.Count==20 && first.PageCount==2,"Lista: paginar resumen de invitaciones");
+        Check(first.Items.First().SeatingPlanEnabled && first.Items.First().RsvpEnabled,"Lista: conservar opciones para acciones de cada fila");
+        var last=List(prefix,page:999);Check(last.Page==2 && last.Items.Count==5,"Lista: limitar páginas fuera de rango");
+        Check(!first.Items.Select(i=>i.Id).Intersect(last.Items.Select(i=>i.Id)).Any(),"Lista: sin filas repetidas entre páginas");
+        Check(List(prefix,"draft").Total==12 && List(prefix,"published").Total==13,"Lista: filtrar borradores y publicadas");
+        Check(List("Familia-"+prefix).Total==1,"Lista: buscar por protagonistas");
+        Check(List("no-existe-"+prefix).Total==0,"Lista: resultado vacío");
+        db.Invitations.RemoveRange(rows);db.SaveChanges();
+    }
+    static void CheckAccountList(InvitationDbContext db)
+    {
+        var prefix="cuentas-"+Guid.NewGuid().ToString("N");
+        var users=Enumerable.Range(0,25).Select(i=>new Application.AdminUser {DisplayName=prefix+"-"+i.ToString("D2"),Username=prefix+"-"+i,NormalizedUsername=(prefix+"-"+i).ToUpperInvariant(),IsActive=i%2==0}).ToList();
+        db.AdminUsers.AddRange(users);db.SaveChanges();
+        var invitation=db.Invitations.First();
+        var access=new Application.InvitationAccess {UserId=users[0].Id,InvitationId=invitation.Id,CanDesign=true};db.InvitationAccesses.Add(access);db.SaveChanges();
+        var controller=new AccountsController(db,new AdminAccounts(db,null));
+        AccountPage List(string status="all",int page=1)=>(AccountPage)((ViewResult)controller.Index(prefix,status,page)).Model;
+        var first=List();var last=List(page:999);
+        Check(first.Total==25&&first.Users.Count==20&&last.Page==2&&last.Users.Count==5,"Cuentas: paginación y límites");
+        Check(!first.Users.Select(u=>u.Id).Intersect(last.Users.Select(u=>u.Id)).Any(),"Cuentas: páginas sin duplicados");
+        Check(List("active").Total==13&&List("inactive").Total==12,"Cuentas: filtros de estado");
+        Check(first.InvitationCounts[users[0].Id]==1,"Cuentas: cantidad de invitaciones asignadas");
+        Check(first.Users.All(u=>string.IsNullOrEmpty(u.PasswordHash)),"Cuentas: resumen sin contraseñas");
+        var permissions=(AccountPermissionsPage)((ViewResult)controller.Permissions(users[0].Id,invitation.Title)).Model;
+        Check(permissions.Accesses.Count==1&&permissions.Accesses[0].CanDesign,"Cuentas: permisos del usuario seleccionado");
+        var other=(AccountPermissionsPage)((ViewResult)controller.Permissions(users[1].Id,invitation.Title)).Model;
+        Check(other.Accesses.Count==0,"Cuentas: aislamiento de permisos entre usuarios");
+        var owner=db.AdminUsers.First(u=>u.IsOwner);
+        Check(controller.Permissions(owner.Id) is NotFoundResult&&controller.ResetPassword(owner.Id) is NotFoundResult,"Cuentas: conservar protección de administradora");
+        db.InvitationAccesses.Remove(access);db.AdminUsers.RemoveRange(users);db.SaveChanges();
+    }
     static void CheckVisualDesign(InvitationDbContext db, InvitationStore store, InvitationConfiguration invitation)
     {
         var owner=db.AdminUsers.First(x=>x.IsOwner);
@@ -230,6 +269,8 @@ class DatabaseChecks
                 CheckOrganization(db, store, restored);
                 CheckSeatingPlan(db, store, restored);
                 CheckVisualDesign(db, store, restored);
+                CheckInvitationList(db, store);
+                CheckAccountList(db);
                 Check(db.ColorResources.CountAsync().Result == 5 && db.FontResources.CountAsync().Result == 2, "Sin recursos duplicados");
                 Check(store.Save(new InvitationConfiguration { Slug = item.Slug }) != null, "Slug duplicado rechazado");
                 var invalid = new InvitationConfiguration { Slug = "invalida", CoverImageUrl = "javascript:alert(1)" };
@@ -383,6 +424,8 @@ class DatabaseChecks
             CheckOrganization(db, store, published);
             CheckSeatingPlan(db, store, published);
             CheckVisualDesign(db, store, published);
+            CheckInvitationList(db, store);
+                CheckAccountList(db);
             Check(published.Theme.Accent == "#123456" && published.Sections.Count == 1 && published.Sections[0].Title == "Nueva primera", "MySQL: tema y secciones actualizados");
             Check(store.Save(new InvitationConfiguration { Slug = item.Slug }) != null, "MySQL: enlace duplicado rechazado");
             db.Invitations.Remove(db.Invitations.SingleAsync(x => x.PublicId == item.Id).Result); db.SaveChanges();

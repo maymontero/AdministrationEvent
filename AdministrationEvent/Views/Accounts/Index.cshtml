@@ -1,24 +1,21 @@
 @model AccountPage
 @{ ViewData["Title"] = "Cuentas y accesos"; }
-<div class="page-heading"><div><span class="eyebrow">TU ADMINISTRACIÓN</span><h1>Cuentas y accesos</h1><p>Cada persona tiene su propio ingreso. Vos conservás el control de las cuentas.</p></div></div>
+<div class="page-heading invitation-list-heading"><div><span class="eyebrow">TU ADMINISTRACIÓN</span><h1>Cuentas y accesos</h1><p>Administrá las cuentas y elegí qué invitaciones puede ver o diseñar cada persona.</p></div><a class="button" href="/admin/accounts/new">+ Nueva cuenta</a></div>
 @if(TempData["Success"] != null) { <p class="success" role="status">@TempData["Success"]</p> }
 @if(TempData["Error"] != null) { <p class="errors" role="alert">@TempData["Error"]</p> }
-<div class="account-layout"><section class="panel"><h2>Crear cuenta</h2><form method="post" action="/admin/accounts/create">@Html.AntiForgeryToken()<div asp-validation-summary="All" class="errors"></div>
-<label for="account-name">Nombre</label><input id="account-name" name="DisplayName" value="@Model.Editor.DisplayName" maxlength="100" required />
-<label for="account-user">Usuario</label><input id="account-user" name="Username" value="@Model.Editor.Username" pattern="[a-zA-Z0-9._-]{3,40}" autocomplete="off" required />
-<label for="account-password">Contraseña inicial</label><input id="account-password" name="Password" type="password" minlength="12" maxlength="128" autocomplete="new-password" required />
-<p class="account-hint">Al menos 12 caracteres. Podrá ver los borradores que le habilites. Las invitaciones publicadas tienen acceso público.</p><button class="button">Crear cuenta</button></form></section>
-<section class="account-list">@foreach(var user in Model.Users) { <article class="panel"><span class="eyebrow">@(user.IsOwner ? "Administradora principal" : "Acceso a invitaciones")</span><h2>@user.DisplayName</h2><p>@user.Username · @(user.IsActive ? "Activa" : "Desactivada")</p>
-@if(!user.IsOwner) {
-<h3>Vistas previas permitidas</h3><p class="account-hint">Estos permisos permiten ver borradores sin editarlos. Una fecha futura habilita la vista previa automáticamente (hora de Uruguay). Las invitaciones publicadas se abren con el enlace, sin iniciar sesión.</p>
-@foreach(var invitation in Model.Invitations) {
-    var access = Model.Accesses.FirstOrDefault(x => x.UserId == user.Id && x.InvitationId == invitation.Id);
-    var localDate = access?.AvailableFromUtc is System.DateTime utc ? System.TimeZoneInfo.ConvertTimeFromUtc(System.DateTime.SpecifyKind(utc, System.DateTimeKind.Utc), System.TimeZoneInfo.FindSystemTimeZoneById("America/Montevideo")).ToString("yyyy-MM-ddTHH:mm") : "";
-    <form method="post" action="/admin/accounts/access/@user.Id" class="permission-form">@Html.AntiForgeryToken()
-    <input type="hidden" name="invitationId" value="@invitation.Id" />
-    <label><input type="checkbox" name="enabled" value="true" checked="@(access != null)" /> @invitation.Title @(invitation.IsPublished ? "" : "(borrador)")</label>
-    <label><input type="checkbox" name="canDesign" value="true" checked="@(access?.CanDesign == true)" /> Permitir editar diseño (sin publicar)</label><label for="from-@user.Id-@invitation.Id">Disponible desde (opcional)</label><input id="from-@user.Id-@invitation.Id" type="datetime-local" name="availableFrom" value="@localDate" />
-    <button class="quiet">Guardar permiso</button></form>
+<form class="invitation-list-filters" method="get" action="/admin/accounts" role="search"><div><label for="account-search">Buscar cuentas</label><input id="account-search" name="search" value="@Model.Search" type="search" maxlength="120" placeholder="Nombre o usuario" /></div><div><label for="account-status">Estado</label><select id="account-status" name="status"><option value="all" selected="@(Model.Status=="all")">Todas</option><option value="active" selected="@(Model.Status=="active")">Activas</option><option value="inactive" selected="@(Model.Status=="inactive")">Desactivadas</option></select></div><button class="button" type="submit">Buscar</button>@if(Model.Search.Length>0||Model.Status!="all"){<a href="/admin/accounts">Limpiar filtros</a>}</form>
+<p class="invitation-list-count" role="status">@Model.Total @(Model.Total==1 ? "cuenta" : "cuentas")@if(Model.Total>Model.PageSize){<span> · Mostrando @((Model.Page-1)*Model.PageSize+1)–@(Math.Min(Model.Page*Model.PageSize,Model.Total))</span>}</p>
+@if(Model.Users.Count==0){<div class="panel invitation-list-empty"><h2>No encontramos cuentas</h2><p>Probá con otro nombre o cambiá los filtros.</p></div>}
+else {
+<div class="invitation-list"><table><caption class="sr-only">Cuentas y sus acciones</caption><thead><tr><th scope="col">Nombre</th><th class="invitation-meta-column" scope="col">Usuario</th><th class="invitation-meta-column" scope="col">Invitaciones asignadas</th><th class="invitation-meta-column" scope="col">Estado</th><th scope="col"><span class="sr-only">Acciones</span></th></tr></thead><tbody>
+@foreach(var user in Model.Users){
+    var count=Model.InvitationCounts.TryGetValue(user.Id,out var assigned)?assigned:0;
+<tr><th scope="row" class="invitation-name">@if(user.IsOwner){<span>@user.DisplayName</span>}else{<a href="/admin/accounts/permissions/@user.Id">@user.DisplayName</a>}<span class="account-role-label">@(user.IsOwner?"Administradora principal":"Acceso a invitaciones")</span><div class="invitation-mobile-meta"><span>@user.Username</span><span>@(user.IsActive?"Activa":"Desactivada")</span><span>@(user.IsOwner?"Todas las invitaciones":$"{count} invitaciones asignadas")</span></div></th><td class="invitation-meta-column">@user.Username</td><td class="invitation-meta-column">@(user.IsOwner?"Todas":count.ToString())</td><td class="invitation-meta-column"><span class="invitation-state @(user.IsActive?"published":"draft")">@(user.IsActive?"Activa":"Desactivada")</span></td><td class="invitation-actions-cell"><details class="invitation-actions-menu"><summary aria-label="Acciones de @user.DisplayName" title="Acciones de @user.DisplayName"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></summary><nav class="invitation-row-menu" aria-label="Acciones de @user.DisplayName">
+@if(user.IsOwner){<a href="/admin/accounts/password">Cambiar mi contraseña</a>}else{
+<a href="/admin/accounts/permissions/@user.Id">Gestionar permisos</a><a href="/admin/accounts/reset/@user.Id">Restablecer contraseña</a><form method="post" action="/admin/accounts/toggle/@user.Id">@Html.AntiForgeryToken()<input type="hidden" name="search" value="@Model.Search"/><input type="hidden" name="status" value="@Model.Status"/><input type="hidden" name="page" value="@Model.Page"/><button class="account-access-action @(user.IsActive?"deactivate":"")" type="submit">@(user.IsActive?"Desactivar acceso":"Activar acceso")</button></form>
 }
- <form method="post" action="/admin/accounts/toggle/@user.Id">@Html.AntiForgeryToken()<button class="quiet">@(user.IsActive ? "Desactivar acceso" : "Activar acceso")</button></form><details><summary>Restablecer contraseña</summary><form method="post" action="/admin/accounts/reset/@user.Id">@Html.AntiForgeryToken()<label for="reset-@user.Id">Nueva contraseña</label><input id="reset-@user.Id" type="password" name="password" minlength="12" maxlength="128" autocomplete="new-password" required /><button class="button">Guardar contraseña</button></form></details> }
-</article> }</section></div>
+</nav></details></td></tr>
+}
+</tbody></table></div>
+}
+@if(Model.PageCount>1){<nav class="invitation-pagination" aria-label="Páginas de cuentas">@if(Model.Page>1){<a href="@Url.Action("Index",new {search=Model.Search,status=Model.Status,page=Model.Page-1})">← Anterior</a>}<span>Página @Model.Page de @Model.PageCount</span>@if(Model.Page<Model.PageCount){<a href="@Url.Action("Index",new {search=Model.Search,status=Model.Status,page=Model.Page+1})">Siguiente →</a>}</nav>}

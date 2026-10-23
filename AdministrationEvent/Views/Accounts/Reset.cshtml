@@ -1,0 +1,5 @@
+@model AccountPasswordReset
+@{ViewData["Title"]="Restablecer contraseña";}
+<a href="/admin/accounts">← Cuentas y accesos</a>
+<div class="page-heading invitation-list-heading account-form-heading"><div><span class="eyebrow">@Model.Username</span><h1>Restablecer contraseña</h1><p>Definí una nueva contraseña para @Model.DisplayName.</p></div></div>
+<section class="panel account-single-form"><form method="post" action="/admin/accounts/reset/@Model.Id">@Html.AntiForgeryToken()<div asp-validation-summary="All" class="errors"></div><label for="reset-password">Nueva contraseña</label><input id="reset-password" type="password" name="password" minlength="12" maxlength="128" autocomplete="new-password" required /><p class="account-hint">Al menos 12 caracteres. Al guardar, las sesiones anteriores de esta cuenta se cerrarán.</p><div class="actions"><button class="button" type="submit">Guardar contraseña</button><a href="/admin/accounts">Cancelar</a></div></form></section>

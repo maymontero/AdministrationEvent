@@ -31,7 +31,23 @@ namespace AdministrationEvent.Controllers
             return RedirectToAction("Index", "Guests", new { id });
         }
         [AllowAnonymous, HttpGet("denied")] public IActionResult Denied() { Response.StatusCode = 403; return View(); }
-        [HttpGet("")] public IActionResult Index() => View(store.All());
+        [HttpGet("")]
+        public IActionResult Index(string search = "", string status = "all", int page = 1)
+        {
+            search = (search ?? "").Trim(); if (search.Length > 120) search = search.Substring(0, 120);
+            if (status != "draft" && status != "published") status = "all";
+            var query = db.Invitations.AsNoTracking();
+            if (search.Length > 0) query = query.Where(i => i.Title.Contains(search) || (i.Hosts != null && i.Hosts.Contains(search)) || i.EventType.Contains(search));
+            if (status == "draft") query = query.Where(i => !i.IsPublished);
+            if (status == "published") query = query.Where(i => i.IsPublished);
+            var total = query.Count(); const int pageSize = 20;
+            var pageCount = Math.Max(1, (int)Math.Ceiling(total / (double)pageSize)); page = Math.Clamp(page, 1, pageCount);
+            var items = query.OrderBy(i => i.Title).ThenBy(i => i.Id).Skip((page - 1) * pageSize).Take(pageSize)
+                .Select(i => new InvitationConfiguration { Id = i.PublicId, Title = i.Title, Hosts = i.Hosts, Date = i.Date, EventType = i.EventType,
+                    Slug = i.Slug, IsPublished = i.IsPublished, SharingMode = i.SharingMode, ShareKey = i.ShareKey,
+                    RsvpEnabled = i.RsvpEnabled, SeatingPlanEnabled = i.SeatingPlanEnabled }).ToList();
+            return View(new InvitationListPage { Items = items, Search = search, Status = status, Page = page, PageCount = pageCount, PageSize = pageSize, Total = total });
+        }
         [AllowAnonymous, HttpGet("login")] public IActionResult Login(string returnUrl = null) { ViewData["ReturnUrl"] = Url.IsLocalUrl(returnUrl) ? returnUrl : ""; return View(new AccountLogin()); }
         [AllowAnonymous, HttpPost("login"), ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(AccountLogin form, string returnUrl, [FromServices] AdminAccounts accounts)

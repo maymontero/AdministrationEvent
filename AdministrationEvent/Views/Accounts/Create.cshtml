@@ -1,0 +1,9 @@
+@model CreateAccount
+@{ViewData["Title"]="Crear cuenta";}
+<a href="/admin/accounts">← Cuentas y accesos</a>
+<div class="page-heading invitation-list-heading account-form-heading"><div><span class="eyebrow">CUENTAS</span><h1>Nueva cuenta</h1><p>Creá el ingreso de una persona. Después podés asignarle sus invitaciones.</p></div></div>
+<section class="panel account-single-form"><form method="post" action="/admin/accounts/create">@Html.AntiForgeryToken()<div asp-validation-summary="All" class="errors"></div>
+<label for="account-name">Nombre</label><input id="account-name" name="DisplayName" value="@Model.DisplayName" maxlength="100" required />
+<label for="account-user">Usuario</label><input id="account-user" name="Username" value="@Model.Username" pattern="[a-zA-Z0-9._-]{3,40}" autocomplete="off" required />
+<label for="account-password">Contraseña inicial</label><input id="account-password" name="Password" type="password" minlength="12" maxlength="128" autocomplete="new-password" required />
+<p class="account-hint">Al menos 12 caracteres. Los permisos de lectura y edición se asignan por invitación.</p><div class="actions"><button class="button" type="submit">Crear cuenta</button><a href="/admin/accounts">Cancelar</a></div></form></section>

@@ -1,0 +1,21 @@
+@model AccountPermissionsPage
+@{ViewData["Title"]="Permisos de "+Model.User.DisplayName;}
+<a href="/admin/accounts">← Cuentas y accesos</a>
+<div class="page-heading invitation-list-heading account-form-heading"><div><span class="eyebrow">@Model.User.Username</span><h1>Permisos de @Model.User.DisplayName</h1><p>Elegí qué invitaciones puede ver y en cuáles puede usar el editor visual.</p></div></div>
+@if(TempData["Success"]!=null){<p class="success" role="status">@TempData["Success"]</p>}@if(TempData["Error"]!=null){<p class="errors" role="alert">@TempData["Error"]</p>}
+@if(!Model.User.IsActive){<p class="account-inactive-note">Esta cuenta está desactivada. Sus permisos se conservan, pero no puede ingresar hasta que la actives.</p>}
+<p class="account-hint">La edición permite guardar borradores, sin publicar. La fecha de habilitación se interpreta en hora de Uruguay.</p>
+<form class="invitation-list-filters" method="get" action="/admin/accounts/permissions/@Model.User.Id" role="search"><div><label for="permission-search">Buscar invitación</label><input id="permission-search" name="search" value="@Model.Search" type="search" maxlength="120" placeholder="Nombre de la invitación"/></div><button class="button" type="submit">Buscar</button>@if(Model.Search.Length>0){<a href="/admin/accounts/permissions/@Model.User.Id">Limpiar búsqueda</a>}</form>
+<p class="invitation-list-count">@Model.Total @(Model.Total==1?"invitación":"invitaciones")</p>
+@if(Model.Invitations.Count==0){<div class="panel"><p>No hay invitaciones que coincidan con la búsqueda.</p></div>}
+<div class="account-permissions-list">
+@foreach(var invitation in Model.Invitations){
+    var access=Model.Accesses.FirstOrDefault(x=>x.InvitationId==invitation.Id);
+    var localDate=access?.AvailableFromUtc is System.DateTime utc?System.TimeZoneInfo.ConvertTimeFromUtc(System.DateTime.SpecifyKind(utc,System.DateTimeKind.Utc),System.TimeZoneInfo.FindSystemTimeZoneById("America/Montevideo")).ToString("yyyy-MM-ddTHH:mm"):"";
+<form method="post" action="/admin/accounts/access/@Model.User.Id" class="panel permission-form account-permission-row">@Html.AntiForgeryToken()<input type="hidden" name="invitationId" value="@invitation.Id"/><input type="hidden" name="search" value="@Model.Search"/><input type="hidden" name="page" value="@Model.Page"/>
+<div class="account-permission-title"><h2>@invitation.Title</h2><span class="invitation-state @(invitation.IsPublished?"published":"draft")">@(invitation.IsPublished?"Publicada":"Borrador")</span></div>
+<label><input type="checkbox" name="enabled" value="true" checked="@(access!=null)"/> Permitir acceso</label><label><input type="checkbox" name="canDesign" value="true" checked="@(access?.CanDesign==true)"/> Editar diseño</label><div><label for="from-@invitation.Id">Disponible desde (opcional)</label><input id="from-@invitation.Id" type="datetime-local" name="availableFrom" value="@localDate"/></div><button class="button" type="submit">Guardar permiso</button>
+</form>
+}
+</div>
+@if(Model.PageCount>1){<nav class="invitation-pagination" aria-label="Páginas de permisos">@if(Model.Page>1){<a href="@Url.Action("Permissions",new {id=Model.User.Id,search=Model.Search,page=Model.Page-1})">← Anterior</a>}<span>Página @Model.Page de @Model.PageCount</span>@if(Model.Page<Model.PageCount){<a href="@Url.Action("Permissions",new {id=Model.User.Id,search=Model.Search,page=Model.Page+1})">Siguiente →</a>}</nav>}
