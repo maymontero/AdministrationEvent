@@ -15,6 +15,10 @@ public class InvitationDbContext : DbContext
 
     public DbSet<GuestResponse> GuestResponses => Set<GuestResponse>();
     public DbSet<GuestTag> GuestTags => Set<GuestTag>();
+    public DbSet<VisualDesign> VisualDesigns => Set<VisualDesign>();
+
+    public DbSet<SeatingPlan> SeatingPlans => Set<SeatingPlan>();
+
     public DbSet<SeatingTable> SeatingTables => Set<SeatingTable>();
     public DbSet<GuestTagAssignment> GuestTagAssignments => Set<GuestTagAssignment>();
     public DbSet<Guest> Guests => Set<Guest>();
@@ -59,6 +63,21 @@ public class InvitationDbContext : DbContext
             e.HasOne<Invitation>().WithMany().HasForeignKey(x => x.InvitationId).OnDelete(DeleteBehavior.Cascade);
         });
         ConfigureInvitation(modelBuilder);
+        modelBuilder.Entity<VisualDesign>(e => {
+            e.HasKey(x => x.Id); e.HasIndex(x => x.InvitationId).IsUnique();
+            e.Property(x => x.DraftJson).HasColumnType("longtext").IsRequired();
+            e.Property(x => x.PublishedJson).HasColumnType("longtext");
+            e.Property(x => x.Version).IsConcurrencyToken();
+            e.HasOne<Invitation>().WithMany().HasForeignKey(x => x.InvitationId).OnDelete(DeleteBehavior.Cascade);
+        });
+        modelBuilder.Entity<SeatingPlan>(e => {
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => x.InvitationId).IsUnique();
+            e.Property(x => x.LayoutJson).HasColumnType("longtext").IsRequired();
+            e.Property(x => x.Image).HasColumnType("longblob");
+            e.Property(x => x.ImageType).HasMaxLength(30);
+            e.HasOne<Invitation>().WithMany().HasForeignKey(x => x.InvitationId).OnDelete(DeleteBehavior.Cascade);
+        });
         modelBuilder.Entity<GuestTag>(e => {
             e.HasKey(x => x.Id); e.Property(x => x.Name).HasMaxLength(80).IsRequired(); e.Property(x => x.Color).HasMaxLength(7).IsRequired();
             e.HasIndex(x => new { x.InvitationId, x.Name }).IsUnique();

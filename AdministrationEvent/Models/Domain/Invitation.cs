@@ -14,6 +14,7 @@ namespace Application
         public bool HasConfirmedTime { get; set; } = true;
         public bool ShowCountdown { get; set; }
         public bool RsvpEnabled { get; set; }
+        public bool SeatingPlanEnabled { get; set; }
         public string TimeZone { get; set; } = "America/Montevideo";
         public string? Message { get; set; }
         public string? CoverImageUrl { get; set; }

@@ -1,3 +1,4 @@
+@inject AdministrationEvent.Services.InvitationPermissions Permissions
 @model System.Collections.Generic.List<InvitationConfiguration>
 @{ ViewData["Title"] = "Mis invitaciones"; }
 
@@ -9,6 +10,7 @@
 @foreach(var invitation in Model) {
     <article class="panel">
         <h2>@invitation.Title</h2>
+        @if(Permissions.CanDesign(User, invitation.Id, System.DateTime.UtcNow)) { <a class="button" href="/design/@invitation.Id">Diseñar mi tarjeta</a> }
         <a class="button" href="/admin/preview/@invitation.Id">Ver vista previa →</a>
     </article> }
 <form method="post" action="/admin/logout">

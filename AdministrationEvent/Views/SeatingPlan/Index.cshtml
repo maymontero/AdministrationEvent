@@ -1,0 +1,28 @@
+@model InvitationConfiguration
+@using Application
+@using System.Text.Json
+@{
+    ViewData["Title"] = "Plano de mesas";
+    var plan = (SeatingPlan)ViewData["Plan"];
+    var tables = (List<SeatingTable>)ViewData["Tables"];
+}
+<link rel="stylesheet" href="~/css/seating-plan.css" asp-append-version="true" />
+<a href="/admin/guests/@Model.Id/organization">← Etiquetas y mesas</a>
+<div class="page-heading"><div><span class="eyebrow">@Model.Hosts</span><h1>Un lugar para cada mesa</h1><p>Armá la distribución del salón y acomodá las mesas a tu gusto.</p></div><a href="/admin/guests/@Model.Id">Ver invitados</a></div>
+<div id="seating-editor" data-url="/admin/guests/@Model.Id/plan" data-has-image="@(plan.Image != null ? "true" : "false")">
+@Html.AntiForgeryToken()
+<script type="application/json" id="plan-data">@Html.Raw(JsonSerializer.Serialize(new { positions = JsonSerializer.Deserialize<JsonElement>(plan.LayoutJson), useVenueImage = plan.UseVenueImage, tables = tables.Select(t => new { id = t.Id, name = t.Name, capacity = t.Capacity }) }))</script>
+<div class="plan-options" role="group" aria-label="Elegir plano">
+<button type="button" data-mode="default"><strong>A · Plano por defecto</strong><span>Un espacio vacío para empezar a organizar.</span></button>
+<button type="button" data-mode="venue"><strong>B · Plano del lugar</strong><span>Usá una imagen de tu salón como fondo.</span></button>
+</div>
+<div class="plan-upload" hidden><label for="venue-file">Subir plano del lugar</label><input id="venue-file" type="file" accept="image/png,image/jpeg" /><small>PNG o JPG · hasta 5 MB. La imagen se ajusta completa, sin recortarse.</small></div>
+<div class="plan-workspace">
+<aside class="panel plan-tools"><h2>Mesas</h2>
+<form id="add-plan-table"><label for="plan-name">Número o nombre</label><input id="plan-name" maxlength="80" placeholder="Mesa 1" required /><label for="plan-capacity">Lugares</label><input id="plan-capacity" type="number" min="1" max="100" value="8" required /><button class="button" type="submit">+ Agregar mesa</button></form>
+<label for="existing-table">Mesas disponibles</label><select id="existing-table"><option value="">Elegí una mesa</option></select><button id="place-table" type="button" class="quiet">Agregar al plano</button>
+<div id="selected-table" hidden><h3 id="selected-name"></h3><p id="selected-capacity"></p><label for="table-description">Descripción (opcional)</label><input id="table-description" maxlength="200" placeholder="Ej.: Amigas, familia…" /><small>Se muestra al pasar el mouse sobre la mesa.</small><label for="table-shape">Forma</label><select id="table-shape"><option value="round">Redonda</option><option value="rectangle">Rectangular</option></select><button id="rotate-table" type="button" class="quiet">Girar 45°</button><button id="unplace-table" type="button" class="quiet">Quitar del plano</button><small>La mesa y sus invitados se conservan en la lista.</small></div>
+</aside>
+<section class="panel plan-canvas-panel" aria-label="Distribución del salón"><div class="plan-toolbar"><span id="placed-count"></span><button id="save-plan" class="button" type="button">Guardar distribución</button></div><p class="plan-hint">Arrastrá las mesas para moverlas. También podés seleccionarlas y usar las flechas del teclado.</p><div class="plan-board" tabindex="-1"><img id="venue-image" alt="Plano del lugar" hidden /><div class="plan-empty">Tu salón, a tu manera<br /><span>Agregá la primera mesa para empezar</span></div><div id="plan-tables"></div></div><p id="plan-status" role="status" aria-live="polite">Distribución lista para editar.</p></section>
+</div></div>
+@section Scripts { <script src="~/js/seating-plan.js" asp-append-version="true" defer></script> }

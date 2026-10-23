@@ -37,7 +37,7 @@ namespace AdministrationEvent.Controllers
             return RedirectToAction(nameof(Index));
         }
         [Authorize(Policy = "ManageAccounts"), HttpPost("access/{id:long}"), ValidateAntiForgeryToken]
-        public IActionResult Access(long id, long invitationId, bool enabled, DateTime? availableFrom)
+        public IActionResult Access(long id, long invitationId, bool enabled, DateTime? availableFrom, bool canDesign = false)
         {
             var user = db.AdminUsers.SingleOrDefault(x => x.Id == id && !x.IsOwner);
             if (user == null || !db.Invitations.Any(x => x.Id == invitationId)) return NotFound();
@@ -45,7 +45,7 @@ namespace AdministrationEvent.Controllers
             DateTime? utc = availableFrom.HasValue ? TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(availableFrom.Value, DateTimeKind.Unspecified), TimeZoneInfo.FindSystemTimeZoneById("America/Montevideo")) : null;
             var access = db.InvitationAccesses.SingleOrDefault(x => x.UserId == id && x.InvitationId == invitationId);
             if (!enabled) { if (access != null) db.InvitationAccesses.Remove(access); }
-            else { if (access == null) { access = new Application.InvitationAccess { UserId = id, InvitationId = invitationId }; db.InvitationAccesses.Add(access); } access.AvailableFromUtc = utc; }
+            else { if (access == null) { access = new Application.InvitationAccess { UserId = id, InvitationId = invitationId }; db.InvitationAccesses.Add(access); } access.AvailableFromUtc = utc; access.CanDesign = canDesign; }
             db.SaveChanges(); TempData["Success"] = "Permiso actualizado."; return RedirectToAction(nameof(Index));
         }
         [HttpGet("password")] public IActionResult Password() => View(new ChangeAccountPassword());

@@ -13,7 +13,7 @@
 <div class="page-heading"><div><span class="eyebrow">@Model.Invitation.Hosts</span><h1>Etiquetas y mesas</h1><p>Organizá los grupos y los lugares para compartir la celebración.</p></div></div>
 @if(TempData["Success"] != null) { <p class="success" role="status">@TempData["Success"]</p> }
 @if(TempData["Error"] != null) { <p class="errors" role="alert">@TempData["Error"]</p> }
-<nav class="actions organization-nav"><a href="#mesas">Mesas (@Model.Tables.Count)</a><a href="#sin-mesa">Sin mesa (@unseated.Sum(Planned) personas)</a><a href="#etiquetas">Etiquetas (@Model.Tags.Count)</a></nav>
+<nav class="actions organization-nav">@if(Model.Invitation.SeatingPlanEnabled) { <a href="/admin/guests/@Model.Invitation.Id/plan">Organizar mesas en el plano ↗</a> }<a href="#mesas">Mesas (@Model.Tables.Count)</a><a href="#sin-mesa">Sin mesa (@unseated.Sum(Planned) personas)</a><a href="#etiquetas">Etiquetas (@Model.Tags.Count)</a></nav>
 <section id="mesas"><h2>Mesas</h2>
 <p>Los lugares previstos incluyen a quienes aún no respondieron y usan la cantidad confirmada cuando hay respuesta. Las ausencias, la lista de espera y los archivados no ocupan lugares. Cada pareja o familia se asigna completa a una mesa.</p>
 <form class="panel organization-create" method="post" action="/admin/guests/@Model.Invitation.Id/table">@Html.AntiForgeryToken()

@@ -147,3 +147,12 @@ Usar la conexión externa de MySQL si se ejecuta fuera del hosting (una direcci�
 
 
 Las copias Guardá esta fecha abiertas desde el panel no se guardan hasta confirmar el editor. Un error de validación no crea la invitación y el mismo formulario conserva su ID al reintentarlo. La administradora puede eliminar invitaciones desde el panel con confirmación escrita; se eliminan también sus invitados, respuestas, mesas, etiquetas y permisos. Las operaciones de administración requieren el rol Owner; las vistas previas requieren sesión y permiso por invitación.
+
+
+### Editor visual y plano de mesas (octubre de 2026)
+
+Antes de usar esta versión en producción, aplicar `dotnet ef database update` desde el checkout actualizado con la conexión de producción configurada según las instrucciones anteriores. Se incorporan `SeatingFloorPlan`, `VisualInvitationDesigner` y `OptionalSeatingPlan`. La imagen de Railway no aplica estas migraciones al arrancar.
+
+El plano se habilita por invitación con «Habilitar plano de mesas». Las nuevas invitaciones lo tienen desactivado; las que ya tenían mesas o distribución lo conservan habilitado. Desactivarlo oculta y bloquea el plano sin borrar los datos.
+
+El editor visual tiene borrador y diseño aplicado separados. En Cuentas, Owner puede habilitar expresamente «Permitir editar diseño (sin publicar)» para una invitación; las otras cuentas mantienen acceso de lectura hasta que se les concede ese permiso. Aplicar el diseño final sigue siendo exclusivo de Owner. Más detalles en `docs/editor-visual.md` y `docs/plano-de-mesas.md`.

@@ -17,7 +17,7 @@
     <form method="post" action="/admin/accounts/access/@user.Id" class="permission-form">@Html.AntiForgeryToken()
     <input type="hidden" name="invitationId" value="@invitation.Id" />
     <label><input type="checkbox" name="enabled" value="true" checked="@(access != null)" /> @invitation.Title @(invitation.IsPublished ? "" : "(borrador)")</label>
-    <label for="from-@user.Id-@invitation.Id">Disponible desde (opcional)</label><input id="from-@user.Id-@invitation.Id" type="datetime-local" name="availableFrom" value="@localDate" />
+    <label><input type="checkbox" name="canDesign" value="true" checked="@(access?.CanDesign == true)" /> Permitir editar diseño (sin publicar)</label><label for="from-@user.Id-@invitation.Id">Disponible desde (opcional)</label><input id="from-@user.Id-@invitation.Id" type="datetime-local" name="availableFrom" value="@localDate" />
     <button class="quiet">Guardar permiso</button></form>
 }
  <form method="post" action="/admin/accounts/toggle/@user.Id">@Html.AntiForgeryToken()<button class="quiet">@(user.IsActive ? "Desactivar acceso" : "Activar acceso")</button></form><details><summary>Restablecer contraseña</summary><form method="post" action="/admin/accounts/reset/@user.Id">@Html.AntiForgeryToken()<label for="reset-@user.Id">Nueva contraseña</label><input id="reset-@user.Id" type="password" name="password" minlength="12" maxlength="128" autocomplete="new-password" required /><button class="button">Guardar contraseña</button></form></details> }

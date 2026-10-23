@@ -1,0 +1,9 @@
+@model AdministrationEvent.Models.CanvasDocument
+@using System.Text.Json
+@{Layout=null;var invitation=(InvitationConfiguration)ViewData["Invitation"];}
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>@invitation.Title</title><link rel="stylesheet" href="~/css/canvas.css" asp-append-version="true"/><script src="~/js/canvas-renderer.js" asp-append-version="true" defer></script><script src="~/js/invitation.js" asp-append-version="true" defer></script></head><body class="canvas-public-body">
+@if(ViewData["CanvasPreview"]!=null){<div class="canvas-preview-banner">Borrador del editor visual · <a href="/design/@invitation.Id">Volver a editar</a></div>}
+<script id="canvas-document" type="application/json">@Html.Raw(JsonSerializer.Serialize(Model, AdministrationEvent.Controllers.DesignController.CanvasJson))</script>
+<div class="canvas-public-wrap"><main id="canvas-invitation" data-event-date="@invitation.Date?.ToString("yyyy-MM-ddTHH:mm:ss")"></main></div>
+<div class="canvas-live-extras">@if(invitation.RsvpEnabled){<partial name="~/Views/Invitations/_Rsvp.cshtml" model="invitation"/>}@if(!string.IsNullOrEmpty(invitation.Theme.SpotifyTrackUrl)){<partial name="~/Views/Invitations/_SpotifyMusic.cshtml" model="invitation"/>}</div>
+</body></html>

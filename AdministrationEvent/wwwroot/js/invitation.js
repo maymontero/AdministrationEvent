@@ -107,16 +107,19 @@
   }
 })();
 
-// Reveal only the experimental beach layout; other invitations stay unchanged.
+// Animate the two beach layouts while leaving other invitation designs unchanged.
 (() => {
-  const beach = document.querySelector('.coastal-invitation');
+  const striped = document.querySelector('body.beach main > .beach-hero')?.parentElement;
+  const beach = document.querySelector('.coastal-invitation') || striped;
   if (!beach || !('IntersectionObserver' in window)) return;
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   if (reducedMotion.matches) return;
 
-  const sections = Array.from(beach.querySelectorAll(
-    '.coastal-hero-copy, .beach-section, .coastal-divider, .beach-playlist, .beach-countdown, .rsvp-section, footer'
+  const sections = Array.from(beach.querySelectorAll(striped
+    ? '.beach-hero > h1, .beach-hero > .beach-art, .beach-hero > .discover, .beach-section > h2, .beach-section > p, .beach-section > .section-art, .beach-section > .section-note, .beach-playlist > h2, .beach-playlist > img, .beach-countdown, footer > p'
+    : '.coastal-hero-copy, .beach-section, .coastal-divider, .beach-playlist, .beach-countdown, .rsvp-section, footer'
   ));
+  if (striped) beach.classList.add('striped-motion');
   const observer = new IntersectionObserver(entries => {
     entries.forEach(entry => {
       // Reset only once fully outside the viewport so either scroll direction

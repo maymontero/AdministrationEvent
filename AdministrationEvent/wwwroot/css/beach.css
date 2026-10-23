@@ -63,3 +63,12 @@ footer{padding:14px 24px 28px}
 
 
 .beach-countdown{background:rgba(255,249,237,.87);padding:26px 24px 30px}.beach-countdown>p{margin:0 0 8px;color:var(--sea);font:400 clamp(28px,4vw,36px)/1.1 BeachTitle,serif}.beach-countdown .countdown{display:flex;justify-content:center;gap:28px}.beach-countdown .countdown div{display:grid;gap:1px}.beach-countdown strong{font:400 clamp(38px,6vw,54px)/1 BeachTitle,serif;color:var(--sea)}.beach-countdown span{font-size:12px;letter-spacing:.08em;text-transform:uppercase}@media(max-width:600px){.beach-countdown{padding:22px 20px 25px}.beach-countdown .countdown{gap:20px}}
+
+/* Small movements on the original striped invitation; section backgrounds stay still. */
+.striped-motion .shore-reveal{opacity:0;translate:0 10px;transition:opacity .8s ease,translate 1s cubic-bezier(.2,.7,.3,1)}
+.striped-motion .shore-reveal.shore-entered{opacity:1;translate:0 0}
+.striped-motion .beach-hero h1.shore-entered{animation:striped-arrival 1s ease both}
+.striped-motion .beach-art.shore-entered{animation:striped-arrival 1.2s ease both,striped-float 7s 1.2s ease-in-out infinite}
+@keyframes striped-arrival{from{opacity:0;translate:0 10px}to{opacity:1;translate:0 0}}
+@keyframes striped-float{0%,100%{translate:0 0}50%{translate:0 -4px}}
+@media(prefers-reduced-motion:reduce){.striped-motion .shore-reveal{opacity:1;translate:none;transition:none;animation:none!important}}

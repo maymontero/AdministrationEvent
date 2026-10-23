@@ -37,7 +37,7 @@ namespace AdministrationEvent.Services
             result.Theme.Layout = "save-date";
             if (string.IsNullOrEmpty(result.Theme.SpotifyTrackUrl)) result.Theme.SpotifyTrackUrl = "https://open.spotify.com/track/2TD8Bhc5hFPKh52lFJ2Ec5";
             result.Message = "Nos casamos y queremos compartir este día con vos. Más adelante te enviaremos todos los detalles.";
-            result.HasConfirmedTime = false; result.ShowCountdown = false; result.RsvpEnabled = false;
+            result.HasConfirmedTime = false; result.ShowCountdown = false; result.RsvpEnabled = false; result.SeatingPlanEnabled = false;
             foreach (var section in result.Sections) section.Enabled = false;
             return persist ? Save(result) : null;
         }
@@ -66,7 +66,7 @@ namespace AdministrationEvent.Services
             if (entity == null) { entity = new Domain.Invitation { PublicId = item.Id }; db.Invitations.Add(entity); }
             entity.Title = item.Title; entity.Slug = item.Slug; entity.IsPublished = item.IsPublished; entity.SharingMode = item.SharingMode;
             entity.ShareKey = item.IsPublished && item.SharingMode == "link" ? (string.IsNullOrWhiteSpace(item.ShareKey) ? Convert.ToHexString(System.Security.Cryptography.RandomNumberGenerator.GetBytes(24)).ToLowerInvariant() : item.ShareKey) : null;
-            entity.HasConfirmedTime = item.HasConfirmedTime; entity.ShowCountdown = item.ShowCountdown; entity.RsvpEnabled = item.RsvpEnabled; entity.TimeZone = item.TimeZone;
+            entity.HasConfirmedTime = item.HasConfirmedTime; entity.ShowCountdown = item.ShowCountdown; entity.RsvpEnabled = item.RsvpEnabled; entity.SeatingPlanEnabled = item.SeatingPlanEnabled; entity.TimeZone = item.TimeZone;
             entity.EventType = item.EventType; entity.Hosts = item.Hosts; entity.Date = item.Date;
             entity.Message = item.Message; entity.CoverImageUrl = item.CoverImageUrl; entity.AssetCollection = string.IsNullOrWhiteSpace(item.AssetCollection) ? "shared" : item.AssetCollection;
             if (entity.Theme == null) entity.Theme = new Domain.InvitationTheme();
@@ -98,7 +98,7 @@ namespace AdministrationEvent.Services
         { var font = theme.Fonts.SingleOrDefault(x => x.Key == key); if (font == null) { font = new Domain.FontResource { Key = key }; theme.Fonts.Add(font); } font.FontFamily = family; font.Url = url; }
         private static InvitationConfiguration ToConfiguration(Domain.Invitation entity)
         {
-            var result = new InvitationConfiguration { Id = entity.PublicId, Title = entity.Title, Slug = entity.Slug, IsPublished = entity.IsPublished, SharingMode = entity.SharingMode, ShareKey = entity.ShareKey ?? "", EventType = entity.EventType, Hosts = entity.Hosts, Date = entity.Date, HasConfirmedTime = entity.HasConfirmedTime, ShowCountdown = entity.ShowCountdown, RsvpEnabled = entity.RsvpEnabled, TimeZone = entity.TimeZone, Message = entity.Message, CoverImageUrl = entity.CoverImageUrl, AssetCollection = string.IsNullOrWhiteSpace(entity.AssetCollection) ? CollectionFromAssets(entity) : entity.AssetCollection };
+            var result = new InvitationConfiguration { Id = entity.PublicId, Title = entity.Title, Slug = entity.Slug, IsPublished = entity.IsPublished, SharingMode = entity.SharingMode, ShareKey = entity.ShareKey ?? "", EventType = entity.EventType, Hosts = entity.Hosts, Date = entity.Date, HasConfirmedTime = entity.HasConfirmedTime, ShowCountdown = entity.ShowCountdown, RsvpEnabled = entity.RsvpEnabled, SeatingPlanEnabled = entity.SeatingPlanEnabled, TimeZone = entity.TimeZone, Message = entity.Message, CoverImageUrl = entity.CoverImageUrl, AssetCollection = string.IsNullOrWhiteSpace(entity.AssetCollection) ? CollectionFromAssets(entity) : entity.AssetCollection };
             if (entity.Theme != null) {
                 var theme = entity.Theme;
                 result.Theme.Layout = theme.Layout;

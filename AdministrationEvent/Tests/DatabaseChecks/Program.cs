@@ -14,6 +14,80 @@ class DatabaseChecks
 {
     static void Check(bool condition, string message) { if (!condition) throw new Exception(message); }
     static System.Security.Claims.ClaimsPrincipal Principal(long id) => new(new System.Security.Claims.ClaimsIdentity(new[] { new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, id.ToString()) }, "test"));
+    static void CheckVisualDesign(InvitationDbContext db, InvitationStore store, InvitationConfiguration invitation)
+    {
+        var owner=db.AdminUsers.First(x=>x.IsOwner);
+        var http=new DefaultHttpContext { User=Principal(owner.Id) };
+        var permissions=new InvitationPermissions(db);
+        var controller=new DesignController(db,store,permissions,null,null) { ControllerContext=new ControllerContext { HttpContext=http } };
+        var doc=DesignController.Starter(invitation);
+        Check(doc.Validate()==null, "Canvas: diseño inicial válido");
+        doc.Sections[0].Elements[0].Font="CanvasFonttest";
+        doc.Sections[0].Elements[0].FontUrl="/fonts/library/Bright Darling Script.otf";
+        Check(doc.Validate()==null, "Canvas: aceptar fuentes locales compartidas con espacios");
+        doc.Sections[0].Elements[0].FontUrl="https://example.com/font.ttf";
+        Check(doc.Validate()!=null, "Canvas: rechazar fuentes fuera de la biblioteca local");
+        doc.Sections[0].Elements[0].FontUrl="/fonts/library/Bright Darling Script.otf";
+        var input=new DesignController.SaveInput { Document=doc,Version=0 };
+        Check(controller.Save(invitation.Id,input) is JsonResult, "Canvas: guardar borrador");
+        var entityId=db.Invitations.Single(x=>x.PublicId==invitation.Id).Id;
+        var design=db.VisualDesigns.Single(x=>x.InvitationId==entityId);
+        Check(design.PublishedJson==null, "Canvas: guardar no altera diseño publicado");
+        Check(design.DraftJson.Contains("Bright Darling Script.otf"), "Canvas: conservar fuente al guardar");
+        Check(controller.Save(invitation.Id,input) is ConflictObjectResult, "Canvas: rechazar versión obsoleta");
+        Check(controller.Activate(invitation.Id,true) is OkResult && design.PublishedJson==design.DraftJson, "Canvas: aplicar instantánea");
+        var applied=design.PublishedJson;input.Version=design.Version;doc.Sections[0].Elements[0].Text="Nuevo borrador";
+        Check(controller.Save(invitation.Id,input) is JsonResult && design.PublishedJson==applied, "Canvas: seguir editando conserva versión aplicada");
+        doc.Sections[0].Elements[0].Link="javascript:alert(1)";
+        Check(controller.Save(invitation.Id,input) is BadRequestObjectResult, "Canvas: rechazar enlaces ejecutables");
+        var viewer=new Application.AdminUser { Username="canvas-test",NormalizedUsername="CANVAS-TEST",DisplayName="Diseñadora" };db.AdminUsers.Add(viewer);db.SaveChanges();
+        http.User=Principal(viewer.Id);
+        Check(controller.Index(invitation.Id) is NotFoundResult, "Canvas: sin permiso no se puede editar");
+        var access=new Application.InvitationAccess { UserId=viewer.Id,InvitationId=entityId };db.InvitationAccesses.Add(access);db.SaveChanges();
+        Check(controller.Index(invitation.Id) is NotFoundResult, "Canvas: permiso de lectura no permite editar");
+        access.CanDesign=true;db.SaveChanges();
+        Check(controller.Index(invitation.Id) is ViewResult, "Canvas: permiso explícito permite editar");
+        access.AvailableFromUtc=DateTime.UtcNow.AddDays(1);db.SaveChanges();
+        Check(controller.Index(invitation.Id) is NotFoundResult, "Canvas: respetar fecha de acceso");
+        http.User=Principal(owner.Id);Check(controller.Activate(invitation.Id,false) is OkResult && design.PublishedJson==null, "Canvas: restaurar diseño anterior");
+        db.AdminUsers.Remove(viewer);db.VisualDesigns.Remove(design);db.SaveChanges();
+    }
+    static void CheckSeatingPlan(InvitationDbContext db, InvitationStore store, InvitationConfiguration invitation)
+    {
+        var controller = new SeatingPlanController(db, store);
+        var previouslyEnabled = invitation.SeatingPlanEnabled;
+        invitation.SeatingPlanEnabled = false; Check(store.Save(invitation) == null, "Plano: deshabilitar por invitación");
+        Check(controller.Index(invitation.Id) is NotFoundResult && controller.AddTable(invitation.Id, "No crear", 8) is NotFoundResult, "Plano: desactivado bloquea acceso y creación");
+        invitation.SeatingPlanEnabled = true; Check(store.Save(invitation) == null && store.Find(invitation.Id).SeatingPlanEnabled, "Plano: habilitación persistida");
+        var entityId = db.Invitations.Single(x => x.PublicId == invitation.Id).Id;
+        Check(controller.AddTable(invitation.Id, "Plano prueba", 8) is JsonResult, "Plano: crear mesa vinculada a invitados");
+        var table = db.SeatingTables.Single(x => x.InvitationId == entityId && x.Name == "Plano prueba");
+        var input = new SeatingPlanController.PlanInput { Tables = new() { new() { TableId = table.Id, X = 30, Y = 40, Shape = "rectangle", Rotation = 45, Description = "Amigas" } } };
+        Check(controller.Save(invitation.Id, input) is OkResult, "Plano: guardar posición y forma");
+        Check(db.SeatingPlans.Single(x => x.InvitationId == entityId).LayoutJson.Contains("Amigas"), "Plano: distribución persistida");
+        input.Tables[0].X = 100;
+        Check(controller.Save(invitation.Id, input) is BadRequestObjectResult, "Plano: rechazar posiciones fuera del salón");
+        input.Tables[0].X = 40; input.Tables[0].TableId = long.MaxValue;
+        Check(controller.Save(invitation.Id, input) is BadRequestObjectResult, "Plano: rechazar mesas ajenas");
+        input.Tables.Clear(); input.UseVenueImage = true;
+        Check(controller.Save(invitation.Id, input) is BadRequestObjectResult, "Plano: no usar imagen inexistente");
+        input.UseVenueImage = false;
+        Check(controller.Save(invitation.Id, input) is OkResult && db.SeatingTables.Any(x => x.Id == table.Id), "Plano: quitar posición conserva mesa");
+        using var stream = new System.IO.MemoryStream(new byte[] { 60,115,118,103,62 });
+        var upload = new FormFile(stream, 0, stream.Length, "file", "fake.png");
+        Check(controller.Upload(invitation.Id, upload).GetAwaiter().GetResult() is BadRequestObjectResult, "Plano: rechazar archivos que no son PNG/JPG");
+        var png = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jH1sAAAAASUVORK5CYII=");
+        using var pngStream = new System.IO.MemoryStream(png);
+        Check(controller.Upload(invitation.Id, new FormFile(pngStream, 0, png.Length, "file", "plano.png")).GetAwaiter().GetResult() is OkResult, "Plano: subir PNG");
+        input.UseVenueImage = true;
+        Check(controller.Save(invitation.Id, input) is OkResult && controller.Image(invitation.Id) is FileContentResult image && image.FileContents.SequenceEqual(png), "Plano: usar y recuperar imagen privada");
+        Check(controller.Image(Guid.NewGuid()) is NotFoundResult, "Plano: imagen limitada a su invitación");
+        invitation.SeatingPlanEnabled = false; Check(store.Save(invitation) == null, "Plano: desactivar con distribución existente");
+        Check(controller.Image(invitation.Id) is NotFoundResult && db.SeatingPlans.Any(x => x.InvitationId == entityId), "Plano: ocultar conserva datos y bloquea imagen");
+        invitation.SeatingPlanEnabled = true; Check(store.Save(invitation) == null && controller.Image(invitation.Id) is FileContentResult, "Plano: reactivar recupera distribución");
+        db.SeatingPlans.RemoveRange(db.SeatingPlans.Where(x => x.InvitationId == entityId)); db.SeatingTables.Remove(table); db.SaveChanges();
+        invitation.SeatingPlanEnabled = previouslyEnabled; Check(store.Save(invitation) == null, "Plano: restaurar opción original");
+    }
     static void CheckPermissions(InvitationDbContext db, InvitationStore store, InvitationConfiguration invitation)
     {
         var viewer = new Application.AdminUser { Username = "viewer-test", NormalizedUsername = "VIEWER-TEST", DisplayName = "Amiga" };
@@ -154,6 +228,8 @@ class DatabaseChecks
                 CheckRsvp(db, store, restored);
                 CheckGuests(db, store, restored);
                 CheckOrganization(db, store, restored);
+                CheckSeatingPlan(db, store, restored);
+                CheckVisualDesign(db, store, restored);
                 Check(db.ColorResources.CountAsync().Result == 5 && db.FontResources.CountAsync().Result == 2, "Sin recursos duplicados");
                 Check(store.Save(new InvitationConfiguration { Slug = item.Slug }) != null, "Slug duplicado rechazado");
                 var invalid = new InvitationConfiguration { Slug = "invalida", CoverImageUrl = "javascript:alert(1)" };
@@ -305,6 +381,8 @@ class DatabaseChecks
                 CheckRsvp(db, store, published);
             CheckGuests(db, store, published);
             CheckOrganization(db, store, published);
+            CheckSeatingPlan(db, store, published);
+            CheckVisualDesign(db, store, published);
             Check(published.Theme.Accent == "#123456" && published.Sections.Count == 1 && published.Sections[0].Title == "Nueva primera", "MySQL: tema y secciones actualizados");
             Check(store.Save(new InvitationConfiguration { Slug = item.Slug }) != null, "MySQL: enlace duplicado rechazado");
             db.Invitations.Remove(db.Invitations.SingleAsync(x => x.PublicId == item.Id).Result); db.SaveChanges();

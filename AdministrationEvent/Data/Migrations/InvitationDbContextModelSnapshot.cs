@@ -410,6 +410,9 @@ namespace AdministrationEvent.Migrations
                     b.Property<bool>("RsvpEnabled")
                         .HasColumnType("tinyint(1)");
 
+                    b.Property<bool>("SeatingPlanEnabled")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<string>("ShareKey")
                         .HasMaxLength(48)
                         .HasColumnType("varchar(48)");
@@ -465,6 +468,9 @@ namespace AdministrationEvent.Migrations
 
                     b.Property<DateTime?>("AvailableFromUtc")
                         .HasColumnType("datetime(6)");
+
+                    b.Property<bool>("CanDesign")
+                        .HasColumnType("tinyint(1)");
 
                     b.HasKey("UserId", "InvitationId");
 
@@ -614,6 +620,37 @@ namespace AdministrationEvent.Migrations
                     b.ToTable("RSVPConfigurations");
                 });
 
+            modelBuilder.Entity("Application.SeatingPlan", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    b.Property<byte[]>("Image")
+                        .HasColumnType("longblob");
+
+                    b.Property<string>("ImageType")
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)");
+
+                    b.Property<long>("InvitationId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("LayoutJson")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<bool>("UseVenueImage")
+                        .HasColumnType("tinyint(1)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InvitationId")
+                        .IsUnique();
+
+                    b.ToTable("SeatingPlans");
+                });
+
             modelBuilder.Entity("Application.SeatingTable", b =>
                 {
                     b.Property<long>("Id")
@@ -637,6 +674,34 @@ namespace AdministrationEvent.Migrations
                         .IsUnique();
 
                     b.ToTable("SeatingTables");
+                });
+
+            modelBuilder.Entity("Application.VisualDesign", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("DraftJson")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<long>("InvitationId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("PublishedJson")
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InvitationId")
+                        .IsUnique();
+
+                    b.ToTable("VisualDesigns");
                 });
 
             modelBuilder.Entity("Application.AudioResource", b =>
@@ -808,7 +873,25 @@ namespace AdministrationEvent.Migrations
                     b.Navigation("Invitation");
                 });
 
+            modelBuilder.Entity("Application.SeatingPlan", b =>
+                {
+                    b.HasOne("Application.Invitation", null)
+                        .WithMany()
+                        .HasForeignKey("InvitationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Application.SeatingTable", b =>
+                {
+                    b.HasOne("Application.Invitation", null)
+                        .WithMany()
+                        .HasForeignKey("InvitationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Application.VisualDesign", b =>
                 {
                     b.HasOne("Application.Invitation", null)
                         .WithMany()

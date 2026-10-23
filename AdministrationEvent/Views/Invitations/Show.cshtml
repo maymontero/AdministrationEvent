@@ -1,8 +1,10 @@
+@inject InvitationDbContext CanvasDb
 @model InvitationConfiguration
 @using System.Globalization
 @using System.Linq
 @{
     Layout = null;
+    var canvasJson = CanvasDb.VisualDesigns.Where(d => CanvasDb.Invitations.Any(i => i.Id == d.InvitationId && i.PublicId == Model.Id)).Select(d => d.PublishedJson).FirstOrDefault();
     var t = Model.Theme;
     var vineyard = t.Layout == "vineyard";
     var preview = ViewData["Preview"] != null;
@@ -18,7 +20,10 @@
     var blocks = Model.Sections.Where(x => x.Enabled && (!vineyard || !(detailTitles.Contains(x.Title) || (x.ImageUrl == "/images/zenia-diego/regalos-acuarela.png" || x.ImageUrl == "/images/zenia-diego/regalos-estilo-sagrada-familia-v2.png")))).ToList();
     var form = ViewData["RsvpForm"] as RsvpForm ?? new RsvpForm();
 }
-@if(t.Layout == "vineyard-archive") {
+@if(!string.IsNullOrEmpty(canvasJson)) {
+    ViewData["Invitation"] = Model;
+    <partial name="~/Views/Design/Canvas.cshtml" model="System.Text.Json.JsonSerializer.Deserialize<AdministrationEvent.Models.CanvasDocument>(canvasJson, AdministrationEvent.Controllers.DesignController.CanvasJson)" />
+} else if(t.Layout == "vineyard-archive") {
     <partial name="_VineyardArchive" model="Model" />
 } else if(t.Layout == "beach-continuous") {
     <partial name="_BeachContinuous" model="Model" />

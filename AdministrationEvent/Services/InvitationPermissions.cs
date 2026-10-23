@@ -7,6 +7,11 @@ namespace AdministrationEvent.Services
     {
         private readonly InvitationDbContext db;
         public InvitationPermissions(InvitationDbContext db) { this.db = db; }
+        public bool CanDesign(ClaimsPrincipal principal, Guid invitationId, DateTime utcNow)
+        {
+            if (!CanView(principal, invitationId, utcNow) || !long.TryParse(principal.FindFirstValue(ClaimTypes.NameIdentifier), out var userId)) return false;
+            return db.AdminUsers.Any(u => u.Id == userId && u.IsOwner) || db.InvitationAccesses.Any(a => a.UserId == userId && a.CanDesign && db.Invitations.Any(i => i.Id == a.InvitationId && i.PublicId == invitationId));
+        }
         public bool CanView(ClaimsPrincipal principal, Guid invitationId, DateTime utcNow)
         {
             if (!long.TryParse(principal.FindFirstValue(ClaimTypes.NameIdentifier), out var userId)) return false;

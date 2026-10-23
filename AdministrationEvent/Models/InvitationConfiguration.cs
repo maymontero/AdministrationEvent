@@ -17,6 +17,7 @@ namespace AdministrationEvent.Models
         public bool HasConfirmedTime { get; set; } = true;
         public bool ShowCountdown { get; set; }
         public bool RsvpEnabled { get; set; }
+        public bool SeatingPlanEnabled { get; set; }
         [Required, StringLength(100)] public string TimeZone { get; set; } = "America/Montevideo";
         [StringLength(2000)] public string Message { get; set; } = "Queremos compartir este día con vos.";
         public string CoverImageUrl { get; set; } = "";
